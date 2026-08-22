@@ -28,6 +28,7 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
             <h1 class="hero-title">
               <span class="days-count pulse">{{ stats.daysSmokeFree }}</span>
               <span class="days-label">Days Smoke Free!</span>
+              <span class="duration-breakdown" *ngIf="durationBreakdown">≈ {{ durationBreakdown }}</span>
             </h1>
             <p class="hero-subtitle">{{ stats.currentMilestone }} 🎉</p>
             <div class="next-milestone">
@@ -192,6 +193,12 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
     .days-label {
       font-size: 28px;
       font-weight: 600;
+    }
+
+    .duration-breakdown {
+      font-size: 22px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
     }
 
     .hero-subtitle {
@@ -440,6 +447,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateProgressRing(stats.progressPercentage);
       }
     });
+  }
+
+  get durationBreakdown(): string | null {
+    const days = this.stats?.daysSmokeFree ?? 0;
+    if (days < 30) return null;
+
+    const years = Math.floor(days / 365);
+    const months = Math.floor((days % 365) / 30);
+
+    if (years > 0) {
+      return months > 0
+        ? `${years} year${years === 1 ? '' : 's'}, ${months} month${months === 1 ? '' : 's'}`
+        : `${years} year${years === 1 ? '' : 's'}`;
+    }
+    return `${months} month${months === 1 ? '' : 's'}`;
   }
 
   loadEncouragement(): void {
