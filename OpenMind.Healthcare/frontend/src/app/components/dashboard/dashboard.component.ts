@@ -12,6 +12,13 @@ import {
   RELAPSE_TRIGGERS
 } from '../../models/models';
 
+/** One trigger's share of the days marked as smoked. */
+interface TriggerSummary {
+  trigger: RelapseTrigger;
+  days: number;
+  cigarettes: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: false,
@@ -32,6 +39,7 @@ import {
       <div *ngIf="hasProgress && stats" class="dashboard-content">
         <!-- Hero Section -->
         <div class="hero-section">
+          <div class="hero-main">
           <div class="hero-left">
             <h1 class="hero-title">
               <span class="days-count pulse">{{ stats.daysSmokeFree }}</span>
@@ -39,19 +47,25 @@ import {
               <span class="duration-breakdown" *ngIf="durationBreakdown">≈ {{ durationBreakdown }}</span>
             </h1>
             <p class="hero-subtitle">{{ stats.currentMilestone }} 🎉</p>
-            <div class="next-milestone">
+            <div class="next-milestone" *ngIf="stats.nextMilestone; else milestonesComplete">
               <span>Next: {{ stats.nextMilestone }}</span>
               <span class="days-remaining" *ngIf="stats.daysToNextMilestone > 0">
                 ({{ stats.daysToNextMilestone }} days to go)
               </span>
             </div>
+            <ng-template #milestonesComplete>
+              <div class="milestones-complete">
+                <span class="complete-icon">🏆</span>
+                <span>
+                  Every milestone unlocked -
+                  <strong>{{ daysBeyondFinalMilestone | number }}</strong>
+                  {{ daysBeyondFinalMilestone === 1 ? 'day' : 'days' }} past your first year
+                </span>
+              </div>
+            </ng-template>
             <div class="quit-date-line" *ngIf="quitDate">
               <span class="quit-date-label">Smoke-free since</span>
               <span class="quit-date-value">{{ quitDate | date:'d MMM yyyy, HH:mm' }}</span>
-            </div>
-            <div class="journey-integrity" *ngIf="stats.smokedDays > 0">
-              🚬 {{ stats.smokedDays }} day{{ stats.smokedDays === 1 ? '' : 's' }} marked as smoked
-              and excluded · {{ stats.smokeFreeRate | number:'1.0-1' }}% smoke-free
             </div>
           </div>
           <div class="hero-right">
@@ -64,38 +78,43 @@ import {
               </svg>
               <div class="progress-text">
                 <span class="percentage">{{ stats.progressPercentage | number:'1.0-0' }}%</span>
-                <span class="to-year">to 1 year</span>
+                <span class="to-year">{{ stats.nextMilestone ? 'to 1 year' : 'year one done' }}</span>
               </div>
             </div>
           </div>
-        </div>
+          </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <app-stats-card
-            icon="🚬"
-            [value]="(stats.cigarettesNotSmoked | number) || '0'"
-            label="Cigarettes Not Smoked"
-            colorClass="primary">
-          </app-stats-card>
-          <app-stats-card
-            icon="💰"
-            [value]="formatMoney(stats.moneySaved)"
-            label="Money Saved"
-            colorClass="gold">
-          </app-stats-card>
-          <app-stats-card
-            icon="⏰"
-            [value]="stats.lifeRegainedFormatted"
-            label="Life Regained"
-            colorClass="blue">
-          </app-stats-card>
-          <app-stats-card
-            icon="🔥"
-            [value]="(stats.currentStreak | number) || '0'"
-            label="Current Streak (days)"
-            colorClass="pink">
-          </app-stats-card>
+          <!-- What those days add up to -->
+          <div class="hero-stats">
+            <div class="hero-stat primary">
+              <span class="stat-icon">🚬</span>
+              <span class="stat-text">
+                <span class="stat-value">{{ (stats.cigarettesNotSmoked | number) || '0' }}</span>
+                <span class="stat-label">Cigarettes Not Smoked</span>
+              </span>
+            </div>
+            <div class="hero-stat gold">
+              <span class="stat-icon">💰</span>
+              <span class="stat-text">
+                <span class="stat-value">{{ formatMoney(stats.moneySaved) }}</span>
+                <span class="stat-label">Money Saved</span>
+              </span>
+            </div>
+            <div class="hero-stat blue">
+              <span class="stat-icon">⏰</span>
+              <span class="stat-text">
+                <span class="stat-value">{{ stats.lifeRegainedFormatted }}</span>
+                <span class="stat-label">Life Regained</span>
+              </span>
+            </div>
+            <div class="hero-stat pink">
+              <span class="stat-icon">🔥</span>
+              <span class="stat-text">
+                <span class="stat-value">{{ (stats.currentStreak | number) || '0' }}</span>
+                <span class="stat-label">Current Streak (days)</span>
+              </span>
+            </div>
+          </div>
         </div>
 
         <!-- Failed Days -->
@@ -104,14 +123,7 @@ import {
             <div class="failed-header">
               <div class="failed-title">
                 <span class="failed-icon">{{ failedDayCount === 0 ? '🌟' : '🚬' }}</span>
-                <div>
-                  <h2>Failed Days</h2>
-                  <p class="failed-subtitle">
-                    {{ failedDayCount === 0
-                        ? 'Nothing marked so far - every day counts towards your total.'
-                        : 'Days you marked as smoked. These are left out of your smoke-free total.' }}
-                  </p>
-                </div>
+                <h2>Failed Days</h2>
               </div>
               <span class="failed-count-badge">
                 {{ failedDayCount }}
@@ -136,6 +148,22 @@ import {
                 <div class="figure">
                   <span class="figure-value">{{ stats.smokeFreeRate | number:'1.0-1' }}%</span>
                   <span class="figure-label">Still smoke-free</span>
+                </div>
+              </div>
+
+              <div class="trigger-breakdown" *ngIf="triggerBreakdown.length > 0">
+                <span class="breakdown-title">What triggers your relapses</span>
+                <div class="trigger-row" *ngFor="let t of triggerBreakdown">
+                  <span class="trigger-name">
+                    <span class="trigger-emoji">{{ triggerIcon(t.trigger) }}</span>
+                    {{ triggerLabel(t.trigger) }}
+                  </span>
+                  <span class="trigger-track">
+                    <span class="trigger-fill" [style.width.%]="triggerShare(t.days)"></span>
+                  </span>
+                  <span class="trigger-count">
+                    {{ t.days }}<span class="unit">{{ t.days === 1 ? ' day' : ' days' }}</span>
+                  </span>
                 </div>
               </div>
 
@@ -256,13 +284,73 @@ import {
 
     .hero-section {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 35px;
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2));
       border-radius: 30px;
       padding: 50px;
       margin-bottom: 30px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hero-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-stat {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .stat-icon {
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      .stat-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1.15;
+        color: white;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      &.primary .stat-value { color: #34d399; }
+      &.gold .stat-value    { color: #fbbf24; }
+      &.blue .stat-value    { color: #60a5fa; }
+      &.pink .stat-value    { color: #f472b6; }
     }
 
     .hero-title {
@@ -305,6 +393,28 @@ import {
       .days-remaining {
         color: #f59e0b;
         margin-left: 5px;
+      }
+    }
+
+    .milestones-complete {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      padding: 9px 16px;
+      border-radius: 25px;
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 15px;
+
+      .complete-icon {
+        font-size: 19px;
+        line-height: 1;
+      }
+
+      strong {
+        color: #fbbf24;
       }
     }
 
@@ -375,24 +485,6 @@ import {
       }
     }
 
-    .journey-integrity {
-      margin-top: 12px;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.65);
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: 10px;
-      padding: 8px 12px;
-      display: inline-block;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
     .failed-days-section {
       margin-bottom: 30px;
     }
@@ -409,31 +501,24 @@ import {
 
     .failed-header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 20px;
 
       .failed-title {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 15px;
       }
 
       .failed-icon {
-        font-size: 34px;
+        font-size: 30px;
         line-height: 1;
       }
 
       h2 {
         font-size: 22px;
         color: white;
-        margin-bottom: 4px;
-      }
-
-      .failed-subtitle {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.6);
-        max-width: 460px;
       }
 
       .failed-count-badge {
@@ -491,6 +576,79 @@ import {
         font-size: 11px;
         color: rgba(255, 255, 255, 0.55);
         margin-top: 5px;
+      }
+    }
+
+    .trigger-breakdown {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+      .breakdown-title {
+        display: block;
+        margin-bottom: 14px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgba(255, 255, 255, 0.45);
+      }
+    }
+
+    .trigger-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 62px;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 9px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .trigger-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .trigger-emoji {
+        font-size: 15px;
+      }
+
+      .trigger-track {
+        display: block;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .trigger-fill {
+        display: block;
+        height: 100%;
+        min-width: 3px;
+        border-radius: 0 4px 4px 0;
+        background: #ef4444;
+        transition: width 0.4s ease;
+      }
+
+      .trigger-count {
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .unit {
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.45);
       }
     }
 
@@ -693,10 +851,28 @@ import {
 
     @media (max-width: 768px) {
       .hero-section {
+        gap: 25px;
+        padding: 30px;
+      }
+
+      .hero-main {
         flex-direction: column;
         text-align: center;
         gap: 30px;
-        padding: 30px;
+      }
+
+      .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+        padding-top: 25px;
+      }
+
+      .hero-stat {
+        .stat-icon { font-size: 24px; }
+        .stat-value { font-size: 18px; }
+      }
+
+      .quit-date-line {
+        justify-content: center;
       }
       
       .days-count {
@@ -729,6 +905,14 @@ import {
         grid-template-columns: repeat(2, 1fr);
       }
 
+      .trigger-row {
+        grid-template-columns: 110px 1fr 54px;
+
+        .trigger-name {
+          font-size: 12px;
+        }
+      }
+
       .latest-failed {
         flex-direction: column;
         align-items: stretch;
@@ -750,6 +934,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   /** Journey start, shown in the hero with a shortcut to change it. */
   quitDate: Date | null = null;
+
+  /**
+   * Trigger totals for the Failed Days panel. Held as a field rather than a getter so the
+   * array identity is stable between change-detection runs and *ngFor does not re-render.
+   */
+  triggerBreakdown: TriggerSummary[] = [];
 
   circumference = 2 * Math.PI * 45;
   progressOffset = this.circumference;
@@ -803,8 +993,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.apiService.getSmokedDays().subscribe({
       next: (days) => {
         this.smokedDays = days;
+        this.triggerBreakdown = this.summariseTriggers(days);
       }
     });
+  }
+
+  /** Bar length is relative to the busiest trigger, so the top row always fills the track. */
+  triggerShare(days: number): number {
+    const max = Math.max(1, ...this.triggerBreakdown.map(t => t.days));
+    return Math.min(100, (days / max) * 100);
+  }
+
+  /** Groups the marked days by trigger, busiest first - matching how the analytics page orders them. */
+  private summariseTriggers(days: SmokedDay[]): TriggerSummary[] {
+    const declaredOrder = RELAPSE_TRIGGERS.map(t => t.value);
+    const byTrigger = new Map<RelapseTrigger, TriggerSummary>();
+
+    for (const day of days) {
+      const entry = byTrigger.get(day.trigger) ?? { trigger: day.trigger, days: 0, cigarettes: 0 };
+      entry.days += 1;
+      entry.cigarettes += day.cigarettesSmoked;
+      byTrigger.set(day.trigger, entry);
+    }
+
+    return [...byTrigger.values()].sort((a, b) =>
+      b.days - a.days || declaredOrder.indexOf(a.trigger) - declaredOrder.indexOf(b.trigger));
   }
 
   get failedDayCount(): number {
@@ -839,6 +1052,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (days <= 0) return 'today';
     if (days === 1) return 'yesterday';
     return `${days} days ago`;
+  }
+
+  /** How far past the final (one year) milestone the user is. */
+  get daysBeyondFinalMilestone(): number {
+    return Math.max(0, (this.stats?.daysSmokeFree ?? 0) - 365);
   }
 
   get durationBreakdown(): string | null {

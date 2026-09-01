@@ -2,7 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { AuthResponse, User, LoginRequest, RegisterRequest } from '../models/models';
+import {
+  AuthResponse,
+  User,
+  LoginRequest,
+  RegisterRequest,
+  UpdateProfileRequest,
+  ChangePasswordRequest
+} from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +47,30 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.userApiUrl}/auth/register`, userData).pipe(
       tap(response => this.handleAuthResponse(response))
     );
+  }
+
+  /** Loads the signed-in user fresh from the API (includes createdAt / lastLoginAt). */
+  loadCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.userApiUrl}/auth/me`).pipe(
+      tap(user => this.storeUser(user))
+    );
+  }
+
+  updateProfile(request: UpdateProfileRequest): Observable<User> {
+    return this.http.put<User>(`${this.userApiUrl}/auth/profile`, request).pipe(
+      tap(user => this.storeUser(user))
+    );
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.userApiUrl}/auth/change-password`, request);
+  }
+
+  /** Keeps the cached user and every subscriber in step with the API. */
+  private storeUser(user: User): void {
+    const merged = { ...(this.currentUserSubject.value ?? {}), ...user } as User;
+    localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(merged));
+    this.currentUserSubject.next(merged);
   }
 
   refreshToken(): Observable<AuthResponse> {

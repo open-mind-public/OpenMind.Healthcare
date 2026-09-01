@@ -25,7 +25,8 @@ export interface ProgressStats {
   lifeRegainedFormatted: string;
   progressPercentage: number;
   currentMilestone: string;
-  nextMilestone: string;
+  /** null once every milestone has been passed. */
+  nextMilestone: string | null;
   daysToNextMilestone: number;
   totalDaysInJourney: number;
   smokedDays: number;
@@ -217,6 +218,16 @@ export interface RefreshTokenRequest {
 
 export interface RevokeTokenRequest {
   refreshToken: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface User {

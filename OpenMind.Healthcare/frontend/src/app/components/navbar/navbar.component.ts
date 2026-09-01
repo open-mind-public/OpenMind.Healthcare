@@ -3,12 +3,14 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { User } from '../../models/models';
 
-/** One row in the settings menu. */
+/** One row in the settings menu: either navigates to a route or runs an action. */
 interface SettingsItem {
   icon: string;
   label: string;
-  description: string;
-  route: string;
+  route?: string;
+  action?: () => void;
+  danger?: boolean;
+  separated?: boolean;
 }
 
 @Component({
@@ -73,17 +75,15 @@ interface SettingsItem {
               type="button"
               role="menuitem"
               *ngFor="let item of settingsItems"
+              [class.danger]="item.danger"
+              [class.separated]="item.separated"
               (click)="openSetting(item)">
               <span class="item-icon">{{ item.icon }}</span>
-              <span class="item-text">
-                <span class="item-label">{{ item.label }}</span>
-                <span class="item-description">{{ item.description }}</span>
-              </span>
+              <span class="item-label">{{ item.label }}</span>
             </button>
           </div>
         </div>
 
-        <button class="logout-btn" (click)="logout()">Logout</button>
       </div>
     </nav>
   `,
@@ -219,7 +219,7 @@ interface SettingsItem {
       top: calc(100% + 10px);
       right: 0;
       z-index: 50;
-      min-width: 260px;
+      min-width: 210px;
       padding: 8px;
       background: #111827;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -240,7 +240,7 @@ interface SettingsItem {
 
     .dropdown-item {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 12px;
       width: 100%;
       padding: 10px 12px;
@@ -258,25 +258,31 @@ interface SettingsItem {
       }
 
       .item-icon {
-        font-size: 18px;
-        line-height: 1.3;
-      }
-
-      .item-text {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
+        font-size: 17px;
+        line-height: 1;
       }
 
       .item-label {
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
+        white-space: nowrap;
       }
 
-      .item-description {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.55);
-        line-height: 1.4;
+      &.separated {
+        margin-top: 6px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0 0 10px 10px;
+      }
+
+      &.danger {
+        .item-label {
+          color: #f87171;
+        }
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.14);
+        }
       }
     }
 
@@ -285,22 +291,7 @@ interface SettingsItem {
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .logout-btn {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      
-      &:hover {
-        background: #ef4444;
-        color: white;
-      }
-    }
-    
+
     @media (max-width: 768px) {
       .navbar {
         flex-direction: column;
@@ -330,12 +321,9 @@ export class NavbarComponent implements OnInit {
 
   /** Everything in the settings menu. Add a row here to add a setting. */
   settingsItems: SettingsItem[] = [
-    {
-      icon: '📆',
-      label: 'Quit date & habits',
-      description: 'Adjust when you quit and what you used to smoke',
-      route: '/setup'
-    }
+    { icon: '📆', label: 'Quit date & habits', route: '/setup' },
+    { icon: '👤', label: 'Account', route: '/account' },
+    { icon: '🚪', label: 'Log out', action: () => this.logout(), danger: true, separated: true }
   ];
 
   constructor(
@@ -361,7 +349,16 @@ export class NavbarComponent implements OnInit {
   }
 
   openSetting(item: SettingsItem): void {
-    this.navigate(item.route);
+    this.settingsOpen = false;
+
+    if (item.action) {
+      item.action();
+      return;
+    }
+
+    if (item.route) {
+      this.router.navigate([item.route]);
+    }
   }
 
   @HostListener('document:click')

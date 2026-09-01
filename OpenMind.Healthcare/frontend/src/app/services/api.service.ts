@@ -14,6 +14,8 @@ import {
   RegisterRequest,
   AuthResponse,
   User,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
   SmokedDay,
   MarkSmokedDayRequest,
   RelapseAnalytics
@@ -56,6 +58,18 @@ export class ApiService {
 
   register(userData: RegisterRequest): Observable<AuthResponse> {
     return this.authService.register(userData);
+  }
+
+  loadCurrentUser(): Observable<User> {
+    return this.authService.loadCurrentUser();
+  }
+
+  updateProfile(request: UpdateProfileRequest): Observable<User> {
+    return this.authService.updateProfile(request);
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.authService.changePassword(request);
   }
 
   logout(): void {
