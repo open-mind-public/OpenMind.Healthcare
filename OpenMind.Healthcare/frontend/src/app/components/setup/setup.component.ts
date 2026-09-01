@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SmokedDay, UserProgress } from '../../models/models';
 
@@ -27,14 +27,43 @@ import { SmokedDay, UserProgress } from '../../models/models';
         <form [formGroup]="setupForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="quitDate">When did you quit smoking?</label>
-            <input
-              type="datetime-local"
-              id="quitDate"
-              formControlName="quitDate"
-              [max]="maxDate">
-            <span class="hint">Select the date and time you had your last cigarette</span>
-            <span class="error-text" *ngIf="setupForm.get('quitDate')?.hasError('required') && setupForm.get('quitDate')?.touched">
+            <div class="date-field">
+              <input
+                #quitDateInput
+                type="text"
+                id="quitDate"
+                formControlName="quitDate"
+                autocomplete="off"
+                placeholder="dd-mm-yyyy hh:mm">
+              <button
+                type="button"
+                class="picker-btn"
+                title="Pick from a calendar"
+                aria-label="Pick from a calendar"
+                (click)="openDatePicker()">📅</button>
+              <!-- Kept rendered (not display:none) so the browser will open its picker for it -->
+              <input
+                #nativePicker
+                type="datetime-local"
+                class="native-picker"
+                tabindex="-1"
+                aria-hidden="true"
+                [max]="maxNativeValue"
+                (input)="onPickerInput($event)"
+                (change)="onPickerCommit($event)">
+            </div>
+            <span class="hint">
+              The date and time you had your last cigarette - type it as
+              <strong>dd-mm-yyyy hh:mm</strong> or pick it from the calendar
+            </span>
+            <span class="error-text" *ngIf="quitDateControl?.touched && quitDateControl?.hasError('required')">
               A quit date is required
+            </span>
+            <span class="error-text" *ngIf="quitDateControl?.touched && quitDateControl?.hasError('invalidDate')">
+              Use the format dd-mm-yyyy hh:mm, for example {{ exampleDate }}
+            </span>
+            <span class="error-text" *ngIf="quitDateControl?.touched && quitDateControl?.hasError('future')">
+              Your quit date cannot be in the future
             </span>
           </div>
 
@@ -258,6 +287,48 @@ import { SmokedDay, UserProgress } from '../../models/models';
       }
     }
 
+    .date-field {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+
+      input[type="text"] {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
+    .picker-btn {
+      flex: 0 0 auto;
+      width: 52px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+    }
+
+    /* Collapsed rather than hidden: an unrendered input cannot show a picker */
+    .form-group .native-picker {
+      position: absolute;
+      right: 26px;
+      bottom: 0;
+      width: 1px;
+      height: 1px;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -352,12 +423,14 @@ import { SmokedDay, UserProgress } from '../../models/models';
 export class SetupComponent implements OnInit {
   setupForm: FormGroup;
   isSubmitting = false;
-  maxDate: string;
 
   /** Existing journey, when the user is adjusting rather than starting one. */
   currentProgress: UserProgress | null = null;
   currentQuitDate: Date | null = null;
   submitError = '';
+
+  @ViewChild('nativePicker') private nativePicker?: ElementRef<HTMLInputElement>;
+  @ViewChild('quitDateInput') private quitDateInput?: ElementRef<HTMLInputElement>;
 
   /** What the price field shows: grouped when idle, plain digits while being typed into. */
   priceDisplay = '';
@@ -370,15 +443,11 @@ export class SetupComponent implements OnInit {
     private apiService: ApiService,
     private router: Router
   ) {
-    // The input is local time, so the ceiling has to be local too - a UTC value
-    // would put the limit hours in the past for anyone east of Greenwich.
-    this.maxDate = SetupComponent.toInputValue(new Date());
-
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     this.setupForm = this.fb.group({
-      quitDate: [SetupComponent.toInputValue(twoWeeksAgo), Validators.required],
+      quitDate: [SetupComponent.toDisplayDate(twoWeeksAgo), [Validators.required, SetupComponent.quitDateFormat]],
       cigarettesPerDay: [20, [Validators.required, Validators.min(1), Validators.max(100)]],
       currency: ['USD', Validators.required],
       pricePerPack: [10.00, [Validators.required, Validators.min(0.01)]],
@@ -398,7 +467,7 @@ export class SetupComponent implements OnInit {
         this.currentQuitDate = SetupComponent.parseApiDate(progress.quitDate);
 
         this.setupForm.patchValue({
-          quitDate: SetupComponent.toInputValue(this.currentQuitDate),
+          quitDate: SetupComponent.toDisplayDate(this.currentQuitDate),
           cigarettesPerDay: progress.cigarettesPerDay,
           currency: progress.currency,
           pricePerPack: progress.pricePerPack,
@@ -412,6 +481,83 @@ export class SetupComponent implements OnInit {
         this.currentProgress = null; // no journey yet - stay in "start" mode
       }
     });
+  }
+
+  get quitDateControl(): AbstractControl | null {
+    return this.setupForm.get('quitDate');
+  }
+
+  /** Ceiling for the native picker, in its own local yyyy-MM-ddTHH:mm format. */
+  get maxNativeValue(): string {
+    return SetupComponent.toNativeValue(new Date());
+  }
+
+  /** Opens the browser's own date picker, seeded with whatever is currently typed. */
+  openDatePicker(): void {
+    const element = this.nativePicker?.nativeElement as
+      (HTMLInputElement & { showPicker?: () => void }) | undefined;
+    if (!element) return;
+
+    const typed = SetupComponent.parseDisplayDate(this.quitDateControl?.value);
+    element.value = SetupComponent.toNativeValue(typed ?? new Date());
+
+    if (typeof element.showPicker === 'function') {
+      element.showPicker();
+    } else {
+      // Older browsers: focusing and clicking is the best available fallback
+      element.focus();
+      element.click();
+    }
+  }
+
+  /**
+   * Writes a calendar choice back into the dd-mm-yyyy field. Bound to both input and change:
+   * the first click inside the picker raises input, while change can wait for the edit to be
+   * committed - listening only for change made a pick need a second interaction to show up.
+   */
+  /**
+   * Fires as the value moves inside the popup - including while paging between months,
+   * which is why this only mirrors the value and never dismisses.
+   */
+  onPickerInput(event: Event): void {
+    this.applyPickedDate(event.target as HTMLInputElement);
+  }
+
+  /** Fires once the user commits their choice, which is the point at which to close. */
+  onPickerCommit(event: Event): void {
+    const picker = event.target as HTMLInputElement;
+    this.applyPickedDate(picker);
+    this.dismissDatePicker(picker);
+  }
+
+  private applyPickedDate(picker: HTMLInputElement): void {
+    if (!picker.value) return;
+
+    const picked = new Date(picker.value);
+    if (Number.isNaN(picked.getTime())) return;
+
+    const display = SetupComponent.toDisplayDate(picked);
+    if (this.quitDateControl?.value === display) return; // input and change both land on a pick
+
+    this.quitDateControl?.setValue(display);
+    this.quitDateControl?.markAsTouched();
+    this.quitDateControl?.markAsDirty();
+  }
+
+  /**
+   * There is no hidePicker() in the platform, but blurring the input dismisses the popup.
+   * Focus then moves to the visible field so the user can carry on typing.
+   */
+  private dismissDatePicker(picker: HTMLInputElement): void {
+    picker.blur();
+    this.quitDateInput?.nativeElement.focus();
+  }
+
+  /** A concrete example in the expected shape, for the error message. */
+  get exampleDate(): string {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    return SetupComponent.toDisplayDate(twoWeeksAgo);
   }
 
   get isEditing(): boolean {
@@ -514,8 +660,15 @@ export class SetupComponent implements OnInit {
     this.submitError = '';
 
     const formValue = this.setupForm.value;
+    const quitDate = SetupComponent.parseDisplayDate(formValue.quitDate);
+    if (!quitDate) {
+      this.isSubmitting = false;
+      this.submitError = 'Enter the quit date as dd-mm-yyyy hh:mm.';
+      return;
+    }
+
     const progress = {
-      quitDate: new Date(formValue.quitDate).toISOString(),
+      quitDate: quitDate.toISOString(),
       cigarettesPerDay: formValue.cigarettesPerDay,
       pricePerPack: this.currencyHasDecimals ? formValue.pricePerPack : Math.round(formValue.pricePerPack),
       cigarettesPerPack: formValue.cigarettesPerPack,
@@ -542,10 +695,13 @@ export class SetupComponent implements OnInit {
     });
   }
 
-  /** yyyy-MM-dd of the quit date currently chosen in the form. */
+  /** yyyy-MM-dd of the quit date currently typed, for comparing against stored smoked days. */
   private selectedQuitDay(): string | null {
-    const value = this.setupForm.get('quitDate')?.value;
-    return typeof value === 'string' && value.length >= 10 ? value.slice(0, 10) : null;
+    const parsed = SetupComponent.parseDisplayDate(this.setupForm.get('quitDate')?.value);
+    if (!parsed) return null;
+
+    const pad = (n: number) => `${n}`.padStart(2, '0');
+    return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`;
   }
 
   /**
@@ -557,10 +713,51 @@ export class SetupComponent implements OnInit {
     return new Date(hasZone || value.length <= 10 ? value : `${value}Z`);
   }
 
-  /** Local yyyy-MM-ddTHH:mm, the format a datetime-local input expects. */
-  private static toInputValue(date: Date): string {
+  /** Local yyyy-MM-ddTHH:mm, the only format a datetime-local input accepts. */
+  private static toNativeValue(date: Date): string {
     const pad = (n: number) => `${n}`.padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
       + `T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  /** dd-mm-yyyy hh:mm in local time - what the field shows and accepts. */
+  private static toDisplayDate(date: Date): string {
+    const pad = (n: number) => `${n}`.padStart(2, '0');
+    return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`
+      + ` ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  /**
+   * Reads dd-mm-yyyy with an optional hh:mm. Returns null for anything that is not a real
+   * date - including rollovers like 31-02-2026, which the Date constructor would silently accept.
+   */
+  private static parseDisplayDate(value: unknown): Date | null {
+    if (typeof value !== 'string') return null;
+
+    const match = /^(\d{1,2})-(\d{1,2})-(\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/.exec(value.trim());
+    if (!match) return null;
+
+    const [, d, m, y, hh = '0', mi = '0'] = match;
+    const day = Number(d), month = Number(m), year = Number(y);
+    const hours = Number(hh), minutes = Number(mi);
+
+    if (month < 1 || month > 12 || day < 1 || day > 31 || hours > 23 || minutes > 59) return null;
+
+    const date = new Date(year, month - 1, day, hours, minutes);
+    const rolledOver = date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day;
+
+    return rolledOver ? null : date;
+  }
+
+  /** Field-level validation, since a text input has no native date constraints. */
+  private static quitDateFormat(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Validators.required covers the empty case
+
+    const parsed = SetupComponent.parseDisplayDate(control.value);
+    if (!parsed) return { invalidDate: true };
+
+    return parsed.getTime() > Date.now() ? { future: true } : null;
   }
 }

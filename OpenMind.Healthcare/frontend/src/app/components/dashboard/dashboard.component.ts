@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
@@ -7,6 +7,7 @@ import {
   DailyEncouragement,
   UserProgress,
   MoneySaved,
+  Achievement,
   SmokedDay,
   RelapseTrigger,
   RELAPSE_TRIGGERS
@@ -43,11 +44,21 @@ interface TriggerSummary {
           <div class="hero-left">
             <h1 class="hero-title">
               <span class="days-headline">
-                <span class="days-count pulse">{{ stats.daysSmokeFree }}</span>
-                <span class="days-label">Days Smoke Free!</span>
+                <span class="duration-part" *ngFor="let part of smokeFreeParts">
+                  <span class="days-count pulse">{{ part.value }}</span>
+                  <span class="days-label">{{ part.unit }}</span>
+                </span>
+                <span class="days-label">Smoke Free!</span>
               </span>
-              <span class="duration-breakdown" *ngIf="durationBreakdown">≈ {{ durationBreakdown }}</span>
             </h1>
+            <div
+              class="milestone-section"
+              role="button"
+              tabindex="0"
+              title="See every milestone you have reached"
+              (click)="openMilestones()"
+              (keydown.enter)="openMilestones()"
+              (keydown.space)="openMilestones()">
             <p class="hero-subtitle">{{ stats.currentMilestone }} 🎉</p>
             <div class="next-milestone" *ngIf="stats.nextMilestone; else milestonesComplete">
               <span>Next: {{ stats.nextMilestone }}</span>
@@ -65,6 +76,7 @@ interface TriggerSummary {
                 </span>
               </div>
             </ng-template>
+            </div>
             <div class="quit-date-line" *ngIf="quitDate">
               <span class="quit-date-label">Smoke-free since</span>
               <span class="quit-date-value">{{ quitDate | date:'d MMM yyyy, HH:mm' }}</span>
@@ -218,6 +230,49 @@ interface TriggerSummary {
           </div>
         </div>
 
+        <!-- Milestones reached -->
+        <div class="modal-backdrop" *ngIf="milestonesOpen" (click)="closeMilestones()">
+          <div
+            class="modal milestones-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Milestones reached"
+            (click)="$event.stopPropagation()">
+            <button class="modal-close" type="button" aria-label="Close" (click)="closeMilestones()">✕</button>
+
+            <h3>🏆 Milestones Reached</h3>
+            <p class="modal-sub">
+              {{ achievedMilestones.length }} of {{ totalMilestones }} on the way to a smoke-free year
+            </p>
+
+            <p class="modal-state" *ngIf="milestonesLoading && achievedMilestones.length === 0">Loading...</p>
+            <p class="modal-state" *ngIf="!milestonesLoading && achievedMilestones.length === 0">
+              No milestones reached yet - your first one lands after 24 hours.
+            </p>
+
+            <div class="milestone-list">
+              <div class="milestone-item" *ngFor="let milestone of achievedMilestones">
+                <span class="milestone-icon">{{ milestone.icon }}</span>
+                <div class="milestone-info">
+                  <span class="milestone-name">{{ milestone.name }}</span>
+                  <span class="milestone-desc">{{ milestone.description }}</span>
+                  <span class="milestone-when" *ngIf="milestone.unlockedAt">
+                    Reached {{ milestone.unlockedAt | date:'d MMM yyyy' }}
+                  </span>
+                </div>
+                <span class="milestone-days">{{ milestone.requiredDays }}d</span>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn-calendar-link" (click)="navigate('/achievements')">
+                🏅 All achievements
+                <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="quick-actions">
           <button class="action-btn health" (click)="navigate('/health')">
@@ -363,13 +418,19 @@ interface TriggerSummary {
 
     .days-headline {
       display: flex;
-      align-items: baseline;   /* a 100px numeral and a 28px label share a baseline */
+      align-items: baseline;   /* the numerals and their units share a baseline */
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 8px;   /* one word-space, so the whole line reads as a sentence */
+    }
+
+    .duration-part {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
     }
 
     .days-count {
-      font-size: 100px;
+      font-size: 64px;
       font-weight: 800;
       background: linear-gradient(135deg, #10b981, #34d399);
       -webkit-background-clip: text;
@@ -378,14 +439,8 @@ interface TriggerSummary {
     }
 
     .days-label {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 600;
-    }
-
-    .duration-breakdown {
-      font-size: 22px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.75);
     }
 
     .hero-subtitle {
@@ -403,6 +458,144 @@ interface TriggerSummary {
         color: #f59e0b;
         margin-left: 5px;
       }
+    }
+
+    .milestone-section {
+      display: inline-block;
+      margin: -6px -12px;
+      padding: 6px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+
+      &:hover,
+      &:focus-visible {
+        background: rgba(255, 255, 255, 0.07);
+        outline: none;
+      }
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal {
+      position: relative;
+      background: #111827;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 18px;
+      padding: 25px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow-y: auto;
+
+      h3 {
+        text-align: center;
+        color: #fbbf24;
+        font-size: 20px;
+        margin: 0 30px 4px;
+      }
+
+      .modal-sub {
+        text-align: center;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.55);
+        margin-bottom: 20px;
+      }
+
+      .modal-state {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 14px;
+        padding: 20px 0;
+      }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: white;
+      }
+    }
+
+    .milestone-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 12px;
+
+      .milestone-icon {
+        font-size: 26px;
+        line-height: 1;
+      }
+
+      .milestone-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .milestone-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .milestone-desc {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .milestone-when {
+        font-size: 11px;
+        color: #fbbf24;
+      }
+
+      .milestone-days {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
     }
 
     .milestones-complete {
@@ -886,15 +1079,19 @@ interface TriggerSummary {
       
       .days-headline {
         justify-content: center;
-        gap: 12px;
+        gap: 6px;
+      }
+
+      .duration-part {
+        gap: 6px;
       }
 
       .days-count {
-        font-size: 60px;
+        font-size: 42px;
       }
       
       .days-label {
-        font-size: 20px;
+        font-size: 18px;
       }
 
       .failed-header {
@@ -950,6 +1147,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   quitDate: Date | null = null;
 
   /**
+   * The headline duration split into years / months / days, zero parts left out.
+   * A field rather than a getter so *ngFor is not handed a new array every cycle.
+   */
+  smokeFreeParts: { value: number; unit: string }[] = [{ value: 0, unit: 'Days' }];
+
+  /** Milestone list popup, opened from the hero. */
+  milestonesOpen = false;
+  milestonesLoading = false;
+  achievedMilestones: Achievement[] = [];
+  totalMilestones = 0;
+
+  /**
    * Trigger totals for the Failed Days panel. Held as a field rather than a getter so the
    * array identity is stable between change-detection runs and *ngFor does not re-render.
    */
@@ -998,6 +1207,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.apiService.getStats().subscribe({
       next: (stats) => {
         this.stats = stats;
+        this.smokeFreeParts = DashboardComponent.splitDuration(stats.daysSmokeFree);
         this.updateProgressRing(stats.progressPercentage);
       }
     });
@@ -1043,6 +1253,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.smokedDays.length > 0 ? this.smokedDays[this.smokedDays.length - 1] : null;
   }
 
+  /** Milestones mirror the seeded achievements, so the achievements endpoint already has them. */
+  openMilestones(): void {
+    this.milestonesOpen = true;
+    this.milestonesLoading = true;
+
+    // Always refetch: a milestone may have been reached since the popup was last opened
+    this.apiService.getAchievements().subscribe({
+      next: (all) => {
+        this.totalMilestones = all.length;
+        this.achievedMilestones = all
+          .filter(a => a.isUnlocked)
+          .sort((a, b) => b.requiredDays - a.requiredDays); // most recent first
+        this.milestonesLoading = false;
+      },
+      error: () => {
+        this.milestonesLoading = false;
+      }
+    });
+  }
+
+  closeMilestones(): void {
+    this.milestonesOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMilestones();
+  }
+
   viewFailedDayOnCalendar(day: SmokedDay): void {
     this.router.navigate(['/calendar'], { queryParams: { date: day.date } });
   }
@@ -1073,19 +1312,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return Math.max(0, (this.stats?.daysSmokeFree ?? 0) - 365);
   }
 
-  get durationBreakdown(): string | null {
-    const days = this.stats?.daysSmokeFree ?? 0;
-    if (days < 30) return null;
+  /**
+   * Splits a smoke-free day count into years / months / days, dropping any that are zero.
+   * Falls back to "0 Days" so day one still reads as a sentence.
+   */
+  private static splitDuration(totalDays: number): { value: number; unit: string }[] {
+    const years = Math.floor(totalDays / 365);
+    const months = Math.floor((totalDays % 365) / 30);
+    const days = (totalDays % 365) % 30;
 
-    const years = Math.floor(days / 365);
-    const months = Math.floor((days % 365) / 30);
+    const parts: { value: number; unit: string }[] = [];
+    if (years > 0) parts.push({ value: years, unit: years === 1 ? 'Year' : 'Years' });
+    if (months > 0) parts.push({ value: months, unit: months === 1 ? 'Month' : 'Months' });
+    if (days > 0) parts.push({ value: days, unit: days === 1 ? 'Day' : 'Days' });
 
-    if (years > 0) {
-      return months > 0
-        ? `${years} year${years === 1 ? '' : 's'}, ${months} month${months === 1 ? '' : 's'}`
-        : `${years} year${years === 1 ? '' : 's'}`;
-    }
-    return `${months} month${months === 1 ? '' : 's'}`;
+    return parts.length > 0 ? parts : [{ value: 0, unit: 'Days' }];
   }
 
   loadEncouragement(): void {
