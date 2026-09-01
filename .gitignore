@@ -508,3 +508,12 @@ testem.log
 # Testing
 /coverage/
 /.nyc_output
+
+# SQLite databases (local dev data - schema comes from EF Core migrations)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
