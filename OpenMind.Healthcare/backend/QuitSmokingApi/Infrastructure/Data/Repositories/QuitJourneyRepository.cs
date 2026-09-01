@@ -23,7 +23,11 @@ public class QuitJourneyRepository(AppDbContext context) : IQuitJourneyRepositor
 
     public async Task UpdateAsync(QuitJourney journey, CancellationToken cancellationToken = default)
     {
-        context.QuitJourneys.Update(journey);
+        // A tracked journey already has its added/removed smoked days detected by the change
+        // tracker; calling Update() on it would mark new child rows as Modified instead of Added.
+        if (context.Entry(journey).State == EntityState.Detached)
+            context.QuitJourneys.Update(journey);
+
         await context.SaveChangesAsync(cancellationToken);
     }
 }

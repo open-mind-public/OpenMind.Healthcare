@@ -2,7 +2,15 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
-import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../../models/models';
+import {
+  ProgressStats,
+  DailyEncouragement,
+  UserProgress,
+  MoneySaved,
+  SmokedDay,
+  RelapseTrigger,
+  RELAPSE_TRIGGERS
+} from '../../models/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,6 +44,14 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
               <span class="days-remaining" *ngIf="stats.daysToNextMilestone > 0">
                 ({{ stats.daysToNextMilestone }} days to go)
               </span>
+            </div>
+            <div class="quit-date-line" *ngIf="quitDate">
+              <span class="quit-date-label">Smoke-free since</span>
+              <span class="quit-date-value">{{ quitDate | date:'d MMM yyyy, HH:mm' }}</span>
+            </div>
+            <div class="journey-integrity" *ngIf="stats.smokedDays > 0">
+              🚬 {{ stats.smokedDays }} day{{ stats.smokedDays === 1 ? '' : 's' }} marked as smoked
+              and excluded · {{ stats.smokeFreeRate | number:'1.0-1' }}% smoke-free
             </div>
           </div>
           <div class="hero-right">
@@ -75,11 +91,81 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
             colorClass="blue">
           </app-stats-card>
           <app-stats-card
-            icon="❤️"
-            [value]="(stats.hoursSmokeFree | number) || '0'"
-            label="Hours Smoke-Free"
+            icon="🔥"
+            [value]="(stats.currentStreak | number) || '0'"
+            label="Current Streak (days)"
             colorClass="pink">
           </app-stats-card>
+        </div>
+
+        <!-- Failed Days -->
+        <div class="failed-days-section">
+          <div class="card failed-card" [class.clean]="failedDayCount === 0">
+            <div class="failed-header">
+              <div class="failed-title">
+                <span class="failed-icon">{{ failedDayCount === 0 ? '🌟' : '🚬' }}</span>
+                <div>
+                  <h2>Failed Days</h2>
+                  <p class="failed-subtitle">
+                    {{ failedDayCount === 0
+                        ? 'Nothing marked so far - every day counts towards your total.'
+                        : 'Days you marked as smoked. These are left out of your smoke-free total.' }}
+                  </p>
+                </div>
+              </div>
+              <span class="failed-count-badge">
+                {{ failedDayCount }}
+                <span class="badge-unit">{{ failedDayCount === 1 ? 'day' : 'days' }}</span>
+              </span>
+            </div>
+
+            <ng-container *ngIf="failedDayCount > 0">
+              <div class="failed-figures">
+                <div class="figure">
+                  <span class="figure-value">{{ failedDayCount | number }}</span>
+                  <span class="figure-label">Failed days</span>
+                </div>
+                <div class="figure">
+                  <span class="figure-value">{{ stats.cigarettesSmoked | number }}</span>
+                  <span class="figure-label">Cigarettes smoked</span>
+                </div>
+                <div class="figure">
+                  <span class="figure-value">{{ formatMoney(stats.moneySpentOnRelapses) }}</span>
+                  <span class="figure-label">Spent on those days</span>
+                </div>
+                <div class="figure">
+                  <span class="figure-value">{{ stats.smokeFreeRate | number:'1.0-1' }}%</span>
+                  <span class="figure-label">Still smoke-free</span>
+                </div>
+              </div>
+
+              <div class="latest-failed" *ngIf="latestFailedDay as latest">
+                <div class="latest-info">
+                  <span class="latest-label">Most recent</span>
+                  <span class="latest-date">{{ latest.date | date:'EEEE, d MMMM yyyy' }}</span>
+                  <span class="latest-detail">
+                    {{ latest.cigarettesSmoked }} cigarette{{ latest.cigarettesSmoked === 1 ? '' : 's' }}
+                    <span class="dot">·</span>
+                    {{ triggerIcon(latest.trigger) }} {{ triggerLabel(latest.trigger) }}
+                    <span class="dot">·</span>
+                    {{ daysAgoLabel(latest.date) }}
+                  </span>
+                  <span class="latest-note" *ngIf="latest.note">“{{ latest.note }}”</span>
+                </div>
+                <button class="btn-calendar-link" (click)="viewFailedDayOnCalendar(latest)">
+                  📅 View on calendar
+                  <span class="arrow">→</span>
+                </button>
+              </div>
+            </ng-container>
+
+            <div class="failed-actions" *ngIf="failedDayCount === 0">
+              <button class="btn-calendar-link" (click)="navigate('/calendar')">
+                📅 Open the calendar
+                <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Encouragement Section -->
@@ -115,6 +201,10 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
           <button class="action-btn motivation" (click)="navigate('/motivation')">
             <span class="action-icon">💪</span>
             <span>Get Motivated</span>
+          </button>
+          <button class="action-btn analytics" (click)="navigate('/analytics')">
+            <span class="action-icon">📈</span>
+            <span>Relapse Analytics</span>
           </button>
           <button class="action-btn craving" (click)="navigate('/craving-help')">
             <span class="action-icon">🆘</span>
@@ -264,11 +354,225 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
       }
     }
 
+    .quit-date-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      font-size: 13px;
+
+      .quit-date-label {
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 11px;
+      }
+
+      .quit-date-value {
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 600;
+      }
+    }
+
+    .journey-integrity {
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.65);
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: inline-block;
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
       margin-bottom: 30px;
+    }
+
+    .failed-days-section {
+      margin-bottom: 30px;
+    }
+
+    .failed-card {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(248, 113, 113, 0.05));
+      border: 1px solid rgba(239, 68, 68, 0.28);
+
+      &.clean {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.05));
+        border-color: rgba(16, 185, 129, 0.28);
+      }
+    }
+
+    .failed-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+
+      .failed-title {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .failed-icon {
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      h2 {
+        font-size: 22px;
+        color: white;
+        margin-bottom: 4px;
+      }
+
+      .failed-subtitle {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        max-width: 460px;
+      }
+
+      .failed-count-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 74px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(239, 68, 68, 0.18);
+        color: #f87171;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+
+        .badge-unit {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: rgba(255, 255, 255, 0.55);
+          margin-top: 5px;
+        }
+      }
+    }
+
+    .failed-card.clean .failed-count-badge {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+    }
+
+    .failed-figures {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+
+      .figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 14px 10px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 12px;
+      }
+
+      .figure-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .figure-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.55);
+        margin-top: 5px;
+      }
+    }
+
+    .latest-failed {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+      .latest-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .latest-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      .latest-date {
+        font-size: 17px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .latest-detail {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.65);
+
+        .dot {
+          margin: 0 6px;
+          opacity: 0.5;
+        }
+      }
+
+      .latest-note {
+        font-size: 13px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 2px;
+      }
+    }
+
+    .failed-actions {
+      margin-top: 20px;
+    }
+
+    .btn-calendar-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+
+      .arrow {
+        transition: transform 0.3s ease;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+        transform: translateY(-2px);
+
+        .arrow {
+          transform: translateX(3px);
+        }
+      }
     }
 
     .encouragement-section {
@@ -376,6 +680,11 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
         &:hover { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
       }
       
+      &.analytics {
+        background: linear-gradient(135deg, #6366f1, #818cf8);
+        &:hover { box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+      }
+
       &.craving {
         background: linear-gradient(135deg, #ef4444, #f87171);
         &:hover { box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4); }
@@ -397,6 +706,37 @@ import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../
       .days-label {
         font-size: 20px;
       }
+
+      .failed-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+
+        .failed-count-badge {
+          flex-direction: row;
+          align-items: baseline;
+          justify-content: center;
+          gap: 8px;
+          font-size: 24px;
+
+          .badge-unit {
+            margin-top: 0;
+          }
+        }
+      }
+
+      .failed-figures {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .latest-failed {
+        flex-direction: column;
+        align-items: stretch;
+
+        .btn-calendar-link {
+          justify-content: center;
+        }
+      }
     }
   `]
 })
@@ -404,7 +744,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   stats: ProgressStats | null = null;
   encouragement: DailyEncouragement | null = null;
   hasProgress = false;
-  
+
+  /** Days marked as smoked, oldest first - drives the Failed Days section. */
+  smokedDays: SmokedDay[] = [];
+
+  /** Journey start, shown in the hero with a shortcut to change it. */
+  quitDate: Date | null = null;
+
   circumference = 2 * Math.PI * 45;
   progressOffset = this.circumference;
   
@@ -420,6 +766,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Refresh stats every minute
     this.refreshSubscription = interval(60000).subscribe(() => {
       this.loadStats();
+      this.loadSmokedDays();
     });
   }
 
@@ -431,8 +778,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.apiService.getProgress().subscribe({
       next: (progress) => {
         this.hasProgress = true;
+        // the API sends UTC with no zone marker, so pin it before JS reads it as local
+        this.quitDate = new Date(/[zZ]$/.test(progress.quitDate) ? progress.quitDate : `${progress.quitDate}Z`);
         this.loadStats();
         this.loadEncouragement();
+        this.loadSmokedDays();
       },
       error: () => {
         this.hasProgress = false;
@@ -447,6 +797,48 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateProgressRing(stats.progressPercentage);
       }
     });
+  }
+
+  loadSmokedDays(): void {
+    this.apiService.getSmokedDays().subscribe({
+      next: (days) => {
+        this.smokedDays = days;
+      }
+    });
+  }
+
+  get failedDayCount(): number {
+    return this.smokedDays.length;
+  }
+
+  /** The API returns smoked days oldest first, so the most recent one is last. */
+  get latestFailedDay(): SmokedDay | null {
+    return this.smokedDays.length > 0 ? this.smokedDays[this.smokedDays.length - 1] : null;
+  }
+
+  viewFailedDayOnCalendar(day: SmokedDay): void {
+    this.router.navigate(['/calendar'], { queryParams: { date: day.date } });
+  }
+
+  triggerLabel(trigger: RelapseTrigger): string {
+    return RELAPSE_TRIGGERS.find(t => t.value === trigger)?.label ?? trigger;
+  }
+
+  triggerIcon(trigger: RelapseTrigger): string {
+    return RELAPSE_TRIGGERS.find(t => t.value === trigger)?.icon ?? '📌';
+  }
+
+  /** "today" / "yesterday" / "12 days ago" for a yyyy-MM-dd date. */
+  daysAgoLabel(date: string): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const target = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const days = Math.round((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    return `${days} days ago`;
   }
 
   get durationBreakdown(): string | null {

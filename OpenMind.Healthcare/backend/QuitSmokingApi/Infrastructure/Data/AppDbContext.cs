@@ -2,6 +2,7 @@ using DDD.BuildingBlocks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QuitSmokingApi.Domain.Aggregates;
+using QuitSmokingApi.Domain.Entities;
 
 namespace QuitSmokingApi.Infrastructure.Data;
 
@@ -66,7 +67,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IMediator medi
                     price.Property(p => p.Currency).HasColumnName("Currency").HasMaxLength(3).HasDefaultValue("USD");
                 });
             });
-            
+
+            // Smoked ("failed") days are part of the QuitJourney aggregate: owned so that they are
+            // always loaded with the journey and deleted when removed from the collection.
+            entity.OwnsMany(e => e.SmokedDays, days =>
+            {
+                days.ToTable("SmokedDays");
+                days.WithOwner().HasForeignKey(d => d.QuitJourneyId);
+                days.HasKey(d => d.Id);
+                days.Property(d => d.Id).ValueGeneratedNever();
+                days.Property(d => d.Date).IsRequired();
+                days.Property(d => d.CigarettesSmoked).IsRequired();
+                days.Property(d => d.Trigger).HasConversion<string>().HasMaxLength(50);
+                days.Property(d => d.Note).HasMaxLength(SmokedDay.MaxNoteLength);
+                days.Property(d => d.RecordedAt).IsRequired();
+
+                // One record per calendar day per journey
+                days.HasIndex(d => new { d.QuitJourneyId, d.Date }).IsUnique();
+
+                days.Ignore(d => d.DomainEvents);
+            });
+
+            entity.Navigation(e => e.SmokedDays).UsePropertyAccessMode(PropertyAccessMode.Field);
+
             entity.Ignore(e => e.DomainEvents);
         });
         

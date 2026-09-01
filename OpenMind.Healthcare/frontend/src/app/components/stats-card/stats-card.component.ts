@@ -48,6 +48,11 @@ import { Component, Input } from '@angular/core';
         background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.1));
         border-color: rgba(236, 72, 153, 0.3);
       }
+
+      &.danger {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1));
+        border-color: rgba(239, 68, 68, 0.3);
+      }
     }
     
     .icon {

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +8,7 @@ using QuitSmokingApi.Domain.Services;
 using QuitSmokingApi.Features.Achievements;
 using QuitSmokingApi.Features.Motivation;
 using QuitSmokingApi.Features.Progress;
+using QuitSmokingApi.Features.SmokedDays;
 using QuitSmokingApi.Infrastructure.Data;
 using QuitSmokingApi.Infrastructure.Data.Repositories;
 using QuitSmokingApi.Services;
@@ -15,6 +17,12 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+
+// Accept and emit enums as their names (e.g. a smoked day's "Stress" trigger) rather than ordinals
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -79,6 +87,7 @@ app.UseAuthorization();
 app.MapProgressEndpoints();
 app.MapAchievementsEndpoints();
 app.MapMotivationEndpoints();
+app.MapSmokedDaysEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {

@@ -1,7 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { User } from '../../models/models';
+
+/** One row in the settings menu. */
+interface SettingsItem {
+  icon: string;
+  label: string;
+  description: string;
+  route: string;
+}
 
 @Component({
   selector: 'app-navbar',
@@ -20,6 +28,10 @@ import { User } from '../../models/models';
         <li (click)="navigate('/calendar')" [class.active]="isActive('/calendar')">
           <span class="icon">📅</span>
           Calendar
+        </li>
+        <li (click)="navigate('/analytics')" [class.active]="isActive('/analytics')">
+          <span class="icon">📈</span>
+          Analytics
         </li>
         <li (click)="navigate('/health')" [class.active]="isActive('/health')">
           <span class="icon">❤️</span>
@@ -40,6 +52,37 @@ import { User } from '../../models/models';
       </ul>
       <div class="user-menu">
         <span class="username">{{ getDisplayName() }}</span>
+
+        <div class="settings-menu">
+          <button
+            class="settings-btn"
+            [class.open]="settingsOpen"
+            type="button"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="settingsOpen"
+            aria-label="Settings"
+            title="Settings"
+            (click)="toggleSettings($event)">
+            <span class="gear">⚙️</span>
+          </button>
+
+          <div class="settings-dropdown" *ngIf="settingsOpen" role="menu">
+            <span class="dropdown-title">Settings</span>
+            <button
+              class="dropdown-item"
+              type="button"
+              role="menuitem"
+              *ngFor="let item of settingsItems"
+              (click)="openSetting(item)">
+              <span class="item-icon">{{ item.icon }}</span>
+              <span class="item-text">
+                <span class="item-label">{{ item.label }}</span>
+                <span class="item-description">{{ item.description }}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
         <button class="logout-btn" (click)="logout()">Logout</button>
       </div>
     </nav>
@@ -130,6 +173,118 @@ import { User } from '../../models/models';
       color: #10b981;
     }
     
+    .settings-menu {
+      position: relative;
+    }
+
+    .settings-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      .gear {
+        font-size: 17px;
+        line-height: 1;
+        display: block;
+        transition: transform 0.4s ease;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+
+        .gear {
+          transform: rotate(45deg);
+        }
+      }
+
+      &.open {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.45);
+
+        .gear {
+          transform: rotate(90deg);
+        }
+      }
+    }
+
+    .settings-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 50;
+      min-width: 260px;
+      padding: 8px;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+      animation: dropdownIn 0.18s ease-out;
+
+      .dropdown-title {
+        display: block;
+        padding: 8px 12px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .item-icon {
+        font-size: 18px;
+        line-height: 1.3;
+      }
+
+      .item-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .item-label {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .item-description {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.4;
+      }
+    }
+
+    @keyframes dropdownIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     .logout-btn {
       background: rgba(239, 68, 68, 0.1);
       color: #ef4444;
@@ -160,11 +315,28 @@ import { User } from '../../models/models';
       .user-menu {
         order: -1;
       }
+
+      .settings-dropdown {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+      }
     }
   `]
 })
 export class NavbarComponent implements OnInit {
   currentUser: User | null = null;
+  settingsOpen = false;
+
+  /** Everything in the settings menu. Add a row here to add a setting. */
+  settingsItems: SettingsItem[] = [
+    {
+      icon: '📆',
+      label: 'Quit date & habits',
+      description: 'Adjust when you quit and what you used to smoke',
+      route: '/setup'
+    }
+  ];
 
   constructor(
     private router: Router,
@@ -178,7 +350,28 @@ export class NavbarComponent implements OnInit {
   }
 
   navigate(path: string): void {
+    this.settingsOpen = false;
     this.router.navigate([path]);
+  }
+
+  toggleSettings(event: MouseEvent): void {
+    // stop the document listener below from closing it again straight away
+    event.stopPropagation();
+    this.settingsOpen = !this.settingsOpen;
+  }
+
+  openSetting(item: SettingsItem): void {
+    this.navigate(item.route);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.settingsOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.settingsOpen = false;
   }
 
   logout(): void {

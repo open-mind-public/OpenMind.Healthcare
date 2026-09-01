@@ -1,5 +1,7 @@
+using DDD.BuildingBlocks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using QuitSmokingApi.Domain.Aggregates;
 using QuitSmokingApi.Features.Progress.CreateOrUpdateProgress;
 using QuitSmokingApi.Features.Progress.GetHealthMilestones;
 using QuitSmokingApi.Features.Progress.GetProgress;
@@ -55,8 +57,17 @@ public static class ProgressEndpoints
         [FromBody] CreateOrUpdateProgressCommand command,
         IMediator mediator)
     {
-        var journey = await mediator.Send(command);
-        
+        QuitJourney journey;
+        try
+        {
+            journey = await mediator.Send(command);
+        }
+        catch (DomainException ex)
+        {
+            // e.g. a quit date in the future, or non-positive habits
+            return Results.BadRequest(new { message = ex.Message });
+        }
+
         // Map domain model to DTO
         var dto = new QuitJourneyDto(
             Id: journey.Id,
@@ -87,7 +98,14 @@ public static class ProgressEndpoints
             ProgressPercentage: stats.ProgressPercentage,
             CurrentMilestone: stats.CurrentMilestone.Name,
             NextMilestone: stats.NextMilestone?.Name,
-            DaysToNextMilestone: stats.DaysToNextMilestone
+            DaysToNextMilestone: stats.DaysToNextMilestone,
+            TotalDaysInJourney: stats.TotalDaysInJourney,
+            SmokedDays: stats.SmokedDays,
+            CigarettesSmoked: stats.CigarettesSmoked,
+            MoneySpentOnRelapses: stats.MoneySpentOnRelapses.Amount,
+            CurrentStreak: stats.CurrentStreak,
+            LongestStreak: stats.LongestStreak,
+            SmokeFreeRate: stats.SmokeFreeRate
         );
         return Results.Ok(dto);
     }

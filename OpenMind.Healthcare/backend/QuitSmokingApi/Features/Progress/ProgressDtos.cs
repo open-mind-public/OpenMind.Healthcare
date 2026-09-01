@@ -28,5 +28,12 @@ public record ProgressStatsDto(
     double ProgressPercentage,
     string CurrentMilestone,
     string? NextMilestone,
-    int DaysToNextMilestone
+    int DaysToNextMilestone,
+    int TotalDaysInJourney,
+    int SmokedDays,
+    int CigarettesSmoked,
+    decimal MoneySpentOnRelapses,
+    int CurrentStreak,
+    int LongestStreak,
+    double SmokeFreeRate
 );

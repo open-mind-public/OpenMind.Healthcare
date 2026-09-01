@@ -15,6 +15,7 @@ import { CravingHelpComponent } from './components/craving-help/craving-help.com
 import { StatsCardComponent } from './components/stats-card/stats-card.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ProgressCalendarComponent } from './components/progress-calendar/progress-calendar.component';
+import { RelapseAnalyticsComponent } from './components/relapse-analytics/relapse-analytics.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
@@ -30,7 +31,8 @@ const routes: Routes = [
   { path: 'health', component: HealthMilestonesComponent, canActivate: [AuthGuard] },
   { path: 'motivation', component: MotivationComponent, canActivate: [AuthGuard] },
   { path: 'craving-help', component: CravingHelpComponent, canActivate: [AuthGuard] },
-  { path: 'calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] }
+  { path: 'calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] },
+  { path: 'analytics', component: RelapseAnalyticsComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({
@@ -45,6 +47,7 @@ const routes: Routes = [
     StatsCardComponent,
     NavbarComponent,
     ProgressCalendarComponent,
+    RelapseAnalyticsComponent,
     LoginComponent,
     RegisterComponent
   ],

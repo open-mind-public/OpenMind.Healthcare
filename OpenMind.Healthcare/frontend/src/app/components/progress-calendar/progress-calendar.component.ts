@@ -1,18 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { UserProgress, Achievement, ProgressStats, MoneySaved } from '../../models/models';
+import {
+  UserProgress,
+  Achievement,
+  ProgressStats,
+  SmokedDay,
+  RelapseTrigger,
+  RELAPSE_TRIGGERS
+} from '../../models/models';
+
+type DayStatus = 'before-quit' | 'smoke-free' | 'smoked' | 'future';
 
 interface CalendarDay {
   date: Date;
+  dateKey: string;
   dayNumber: number;
   isCurrentMonth: boolean;
   isToday: boolean;
   isQuitDay: boolean;
   daysSinceQuit: number;
-  status: 'before-quit' | 'smoke-free' | 'future';
+  status: DayStatus;
   achievements: Achievement[];
   moneySaved: number;
   cigarettesAvoided: number;
+  smokedDay: SmokedDay | null;
 }
 
 interface CalendarWeek {
@@ -27,6 +39,15 @@ interface CalendarWeek {
       <div class="calendar-header">
         <h1>📅 Progress Calendar</h1>
         <p class="subtitle">Track your smoke-free journey day by day</p>
+      </div>
+
+      <div class="quick-mark" *ngIf="progress">
+        <button class="btn btn-danger" (click)="openMarkDialogForToday()">
+          🚬 I smoked today
+        </button>
+        <button class="btn btn-ghost" routerLink="/analytics">
+          📈 Relapse analytics
+        </button>
       </div>
 
       <div class="calendar-card" *ngIf="progress">
@@ -48,18 +69,22 @@ interface CalendarWeek {
 
         <!-- Calendar Grid -->
         <div class="calendar-grid">
-          <div 
-            *ngFor="let week of calendarWeeks" 
+          <div
+            *ngFor="let week of calendarWeeks"
             class="calendar-week">
-            <div 
+            <div
               *ngFor="let day of week.days"
               class="calendar-day"
               [class.other-month]="!day.isCurrentMonth"
               [class.today]="day.isToday"
               [class.quit-day]="day.isQuitDay"
               [class.smoke-free]="day.status === 'smoke-free'"
+              [class.smoked]="day.status === 'smoked'"
               [class.before-quit]="day.status === 'before-quit'"
               [class.future]="day.status === 'future'"
+              [class.selected]="selectedDay?.dateKey === day.dateKey && day.isCurrentMonth"
+              [class.highlighted]="highlightedKey === day.dateKey && day.isCurrentMonth"
+              [attr.title]="dayTooltip(day)"
               (click)="selectDay(day)">
               <span class="day-number">{{ day.dayNumber }}</span>
               <div class="day-indicators" *ngIf="day.isCurrentMonth && day.status === 'smoke-free'">
@@ -70,9 +95,16 @@ interface CalendarWeek {
                   🏆
                 </span>
               </div>
+              <div class="day-indicators" *ngIf="day.isCurrentMonth && day.status === 'smoked' && day.smokedDay as smoked">
+                <span class="smoked-badge">Smoked</span>
+                <span class="smoked-count">
+                  {{ smoked.cigarettesSmoked }} {{ smoked.cigarettesSmoked === 1 ? 'cig' : 'cigs' }}
+                </span>
+              </div>
               <div class="quit-badge" *ngIf="day.isQuitDay">
                 🚭
               </div>
+              <div class="smoked-mark" *ngIf="day.status === 'smoked'">✖</div>
             </div>
           </div>
         </div>
@@ -88,6 +120,10 @@ interface CalendarWeek {
             <span>Smoke-Free</span>
           </div>
           <div class="legend-item">
+            <span class="legend-color smoked"></span>
+            <span>Smoked (excluded)</span>
+          </div>
+          <div class="legend-item">
             <span class="legend-icon">🏆</span>
             <span>Achievement</span>
           </div>
@@ -98,27 +134,76 @@ interface CalendarWeek {
         </div>
       </div>
 
-      <!-- Selected Day Details -->
-      <div class="day-details" *ngIf="selectedDay && selectedDay.status === 'smoke-free'">
-        <div class="details-card">
+      <!-- Selected Day Details - opens as a popup when a day is clicked -->
+      <div
+        class="modal-backdrop"
+        *ngIf="selectedDay && isTrackable(selectedDay) && !markDialogDay"
+        (click)="closeDayDetails()">
+        <div
+          class="modal details-card"
+          [class.relapse]="selectedDay.status === 'smoked'"
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-label]="'Details for ' + (selectedDay.date | date:'fullDate')"
+          (click)="$event.stopPropagation()">
+          <button class="modal-close" type="button" aria-label="Close" (click)="closeDayDetails()">✕</button>
           <h3>{{ selectedDay.date | date:'EEEE, MMMM d, yyyy' }}</h3>
-          
-          <div class="details-grid">
-            <div class="detail-item">
-              <span class="detail-icon">📆</span>
-              <span class="detail-value">Day {{ selectedDay.daysSinceQuit }}</span>
-              <span class="detail-label">of your journey</span>
+
+          <ng-container *ngIf="selectedDay.status === 'smoke-free'">
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-icon">📆</span>
+                <span class="detail-value">Day {{ selectedDay.daysSinceQuit }}</span>
+                <span class="detail-label">of your journey</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">🚬</span>
+                <span class="detail-value">{{ selectedDay.cigarettesAvoided }}</span>
+                <span class="detail-label">cigarettes avoided</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">💰</span>
+                <span class="detail-value">{{ formatDayMoney(selectedDay.moneySaved) }}</span>
+                <span class="detail-label">money saved</span>
+              </div>
             </div>
-            <div class="detail-item">
-              <span class="detail-icon">🚬</span>
-              <span class="detail-value">{{ selectedDay.cigarettesAvoided }}</span>
-              <span class="detail-label">cigarettes avoided</span>
+          </ng-container>
+
+          <ng-container *ngIf="selectedDay.status === 'smoked' && selectedDay.smokedDay as smoked">
+            <div class="relapse-banner">
+              This day is marked as smoked and is excluded from your smoke-free total.
             </div>
-            <div class="detail-item">
-              <span class="detail-icon">💰</span>
-              <span class="detail-value">{{ formatDayMoney(selectedDay.moneySaved) }}</span>
-              <span class="detail-label">money saved</span>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-icon">🚬</span>
+                <span class="detail-value">{{ smoked.cigarettesSmoked }}</span>
+                <span class="detail-label">cigarettes smoked</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">{{ triggerIcon(smoked.trigger) }}</span>
+                <span class="detail-value">{{ triggerLabel(smoked.trigger) }}</span>
+                <span class="detail-label">trigger</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">💸</span>
+                <span class="detail-value">{{ formatDayMoney(smoked.moneySpent) }}</span>
+                <span class="detail-label">money spent</span>
+              </div>
             </div>
+            <p class="relapse-note" *ngIf="smoked.note">“{{ smoked.note }}”</p>
+          </ng-container>
+
+          <div class="day-actions">
+            <button class="btn btn-danger" (click)="openMarkDialog(selectedDay)">
+              {{ selectedDay.status === 'smoked' ? '✏️ Edit relapse' : '🚬 Mark as smoked' }}
+            </button>
+            <button
+              class="btn btn-ghost"
+              *ngIf="selectedDay.status === 'smoked'"
+              (click)="unmark(selectedDay)"
+              [disabled]="saving">
+              ↩️ Unmark this day
+            </button>
           </div>
 
           <div class="achievements-section" *ngIf="selectedDay.achievements.length > 0">
@@ -146,16 +231,16 @@ interface CalendarWeek {
               <span class="summary-label">Smoke-free days this month</span>
             </div>
             <div class="summary-item">
+              <span class="summary-value danger">{{ getSmokedThisMonth() }}</span>
+              <span class="summary-label">Smoked days this month</span>
+            </div>
+            <div class="summary-item">
               <span class="summary-value">{{ stats.daysSmokeFree }}</span>
               <span class="summary-label">Total days smoke-free</span>
             </div>
             <div class="summary-item">
-              <span class="summary-value">{{ formatTotalMoney() }}</span>
-              <span class="summary-label">Total money saved</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-value">{{ unlockedAchievements.length }}</span>
-              <span class="summary-label">Achievements earned</span>
+              <span class="summary-value">{{ stats.currentStreak }}</span>
+              <span class="summary-label">Current streak</span>
             </div>
           </div>
         </div>
@@ -170,6 +255,55 @@ interface CalendarWeek {
           <button class="btn btn-primary" routerLink="/setup">Get Started</button>
         </div>
       </div>
+
+      <!-- Mark-as-smoked dialog -->
+      <div class="modal-backdrop" *ngIf="markDialogDay" (click)="closeMarkDialog()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h3>🚬 Mark {{ markDialogDay.date | date:'MMM d, yyyy' }} as smoked</h3>
+          <p class="modal-hint">
+            Honesty keeps your numbers real - this day will be excluded from your smoke-free total.
+          </p>
+
+          <label class="field">
+            <span class="field-label">How many cigarettes?</span>
+            <input type="number" min="1" max="200" [(ngModel)]="form.cigarettesSmoked" class="field-input">
+          </label>
+
+          <div class="field">
+            <span class="field-label">What triggered it?</span>
+            <div class="trigger-grid">
+              <button
+                type="button"
+                class="trigger-chip"
+                *ngFor="let option of triggers"
+                [class.active]="form.trigger === option.value"
+                (click)="form.trigger = option.value">
+                <span class="trigger-icon">{{ option.icon }}</span>
+                <span>{{ option.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="field">
+            <span class="field-label">Note (optional)</span>
+            <textarea
+              rows="2"
+              maxlength="500"
+              class="field-input"
+              placeholder="What happened? What will you do differently?"
+              [(ngModel)]="form.note"></textarea>
+          </label>
+
+          <p class="modal-error" *ngIf="error">{{ error }}</p>
+
+          <div class="modal-actions">
+            <button class="btn btn-ghost" (click)="closeMarkDialog()" [disabled]="saving">Cancel</button>
+            <button class="btn btn-danger" (click)="saveMark()" [disabled]="saving">
+              {{ saving ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -181,7 +315,7 @@ interface CalendarWeek {
 
     .calendar-header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
 
       h1 {
         font-size: 2.5rem;
@@ -195,6 +329,14 @@ interface CalendarWeek {
         color: rgba(255, 255, 255, 0.7);
         font-size: 1.1rem;
       }
+    }
+
+    .quick-mark {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
     }
 
     .calendar-card {
@@ -282,7 +424,7 @@ interface CalendarWeek {
 
       &.other-month {
         opacity: 0.3;
-        
+
         .day-number {
           color: rgba(255, 255, 255, 0.4);
         }
@@ -293,9 +435,22 @@ interface CalendarWeek {
         box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
       }
 
+      &.selected {
+        outline: 2px solid rgba(255, 255, 255, 0.6);
+        outline-offset: 2px;
+      }
+
+      &.highlighted {
+        outline: 3px solid #fbbf24;
+        outline-offset: 3px;
+        position: relative;
+        z-index: 2;
+        animation: highlightPulse 1.4s ease-out 3;
+      }
+
       &.quit-day {
         background: linear-gradient(135deg, #10b981, #059669);
-        
+
         .day-number {
           font-weight: 700;
         }
@@ -310,6 +465,16 @@ interface CalendarWeek {
         }
       }
 
+      &.smoked {
+        background: rgba(239, 68, 68, 0.25);
+        border: 1px solid rgba(239, 68, 68, 0.45);
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.4);
+          transform: scale(1.05);
+        }
+      }
+
       &.before-quit {
         background: rgba(255, 255, 255, 0.02);
       }
@@ -317,6 +482,7 @@ interface CalendarWeek {
       &.future {
         background: rgba(255, 255, 255, 0.02);
         opacity: 0.5;
+        cursor: default;
       }
 
       .day-indicators {
@@ -333,6 +499,20 @@ interface CalendarWeek {
         font-weight: 600;
       }
 
+      .smoked-badge {
+        font-size: 0.58rem;
+        color: #fca5a5;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .smoked-count {
+        font-size: 0.58rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+
       .achievement-indicator {
         font-size: 0.8rem;
       }
@@ -343,6 +523,15 @@ interface CalendarWeek {
         right: 5px;
         font-size: 0.8rem;
       }
+
+      .smoked-mark {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 0.7rem;
+        color: #ef4444;
+        font-weight: 700;
+      }
     }
 
     .calendar-legend {
@@ -352,6 +541,7 @@ interface CalendarWeek {
       margin-top: 25px;
       padding-top: 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+      flex-wrap: wrap;
 
       .legend-item {
         display: flex;
@@ -374,6 +564,10 @@ interface CalendarWeek {
           background: rgba(16, 185, 129, 0.4);
         }
 
+        &.smoked {
+          background: rgba(239, 68, 68, 0.5);
+        }
+
         &.today {
           border: 2px solid #10b981;
           background: transparent;
@@ -385,20 +579,58 @@ interface CalendarWeek {
       }
     }
 
-    .day-details {
-      margin-top: 25px;
+    .modal.details-card {
+      position: relative;
+      max-width: 560px;
+      border-color: rgba(16, 185, 129, 0.35);
 
-      .details-card {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+      &.relapse {
+        border-color: rgba(239, 68, 68, 0.35);
 
         h3 {
-          text-align: center;
-          margin-bottom: 20px;
-          color: #10b981;
+          color: #fca5a5;
         }
+      }
+
+      h3 {
+        text-align: center;
+        margin: 0 30px 20px;
+        color: #10b981;
+        font-size: 1.15rem;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.18);
+          color: white;
+        }
+      }
+
+      .relapse-banner {
+        text-align: center;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.75);
+        margin-bottom: 18px;
+      }
+
+      .relapse-note {
+        margin-top: 15px;
+        text-align: center;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.7);
       }
 
       .details-grid {
@@ -435,7 +667,15 @@ interface CalendarWeek {
         }
       }
 
+      .day-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
       .achievements-section {
+        margin-top: 20px;
         padding-top: 20px;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
 
@@ -516,6 +756,10 @@ interface CalendarWeek {
           font-size: 1.5rem;
           font-weight: 700;
           color: #10b981;
+
+          &.danger {
+            color: #f87171;
+          }
         }
 
         .summary-label {
@@ -552,28 +796,169 @@ interface CalendarWeek {
       }
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal {
+      background: #111827;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 18px;
+      padding: 25px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+
+      h3 {
+        color: white;
+        margin-bottom: 8px;
+      }
+
+      .modal-hint {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+      }
+
+      .modal-error {
+        color: #f87171;
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+    }
+
+    .field {
+      display: block;
+      margin-bottom: 18px;
+
+      .field-label {
+        display: block;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+      }
+
+      .field-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 0.95rem;
+        font-family: inherit;
+
+        &:focus {
+          outline: none;
+          border-color: rgba(239, 68, 68, 0.6);
+        }
+      }
+    }
+
+    .trigger-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .trigger-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      .trigger-icon {
+        font-size: 1.2rem;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.09);
+      }
+
+      &.active {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.18);
+        color: white;
+      }
+    }
+
     .btn {
-      padding: 12px 30px;
+      padding: 12px 24px;
       border: none;
       border-radius: 25px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
       &.btn-primary {
         background: linear-gradient(135deg, #10b981, #059669);
         color: white;
 
-        &:hover {
+        &:hover:not(:disabled) {
           transform: translateY(-2px);
           box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+      }
+
+      &.btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+      }
+
+      &.btn-ghost {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.15);
         }
       }
     }
 
     .fade-in {
       animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes highlightPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.6); }
+      70%  { box-shadow: 0 0 0 16px rgba(251, 191, 36, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
     }
 
     @keyframes fadeIn {
@@ -603,7 +988,8 @@ interface CalendarWeek {
           font-size: 0.85rem;
         }
 
-        .streak-badge {
+        .streak-badge,
+        .smoked-count {
           display: none;
         }
       }
@@ -613,8 +999,9 @@ interface CalendarWeek {
         gap: 15px;
       }
 
-      .day-details .details-grid {
+      .details-card .details-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
       }
 
       .stats-summary .summary-grid {
@@ -633,9 +1020,33 @@ export class ProgressCalendarComponent implements OnInit {
   selectedDay: CalendarDay | null = null;
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  constructor(private apiService: ApiService) {}
+  // Smoked ("failed") days keyed by yyyy-MM-dd
+  smokedDays = new Map<string, SmokedDay>();
+
+  triggers = RELAPSE_TRIGGERS;
+  markDialogDay: CalendarDay | null = null;
+  /** Day requested via ?date= - highlighted in the grid so the user can see where it landed. */
+  highlightedKey: string | null = null;
+  private hasScrolledToHighlight = false;
+  form: { cigarettesSmoked: number; trigger: RelapseTrigger; note: string } = {
+    cigarettesSmoked: 1,
+    trigger: 'Unspecified',
+    note: ''
+  };
+  saving = false;
+  error = '';
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    // ?date=yyyy-MM-dd deep-links a specific day (the dashboard links the latest failed day here)
+    const requested = this.route.snapshot.queryParamMap.get('date');
+    if (requested && /^\d{4}-\d{2}-\d{2}$/.test(requested)) {
+      const [year, month, day] = requested.split('-').map(Number);
+      this.currentDate = new Date(year, month - 1, 1);
+      this.highlightedKey = this.toDateKey(new Date(year, month - 1, day));
+    }
+
     this.loadData();
   }
 
@@ -645,6 +1056,7 @@ export class ProgressCalendarComponent implements OnInit {
         this.progress = progress;
         this.loadStats();
         this.loadAchievements();
+        this.loadSmokedDays();
       },
       error: () => {
         this.progress = null;
@@ -666,6 +1078,15 @@ export class ProgressCalendarComponent implements OnInit {
       next: (achievements) => {
         this.achievements = achievements;
         this.unlockedAchievements = achievements.filter(a => a.isUnlocked);
+        this.generateCalendar();
+      }
+    });
+  }
+
+  loadSmokedDays(): void {
+    this.apiService.getSmokedDays().subscribe({
+      next: (days) => {
+        this.smokedDays = new Map(days.map(d => [d.date, d]));
         this.generateCalendar();
       }
     });
@@ -720,19 +1141,40 @@ export class ProgressCalendarComponent implements OnInit {
     }
 
     this.calendarWeeks = weeks;
+
+    // Bring a deep-linked day into view once the grid holding it has rendered
+    if (this.highlightedKey && !this.hasScrolledToHighlight) {
+      const target = weeks.flatMap(w => w.days)
+        .find(d => d.dateKey === this.highlightedKey && d.isCurrentMonth);
+
+      if (target) {
+        this.hasScrolledToHighlight = true;
+        this.scrollToHighlightedDay();
+      }
+    }
+
+    // Keep the details panel in sync with freshly rebuilt day objects
+    if (this.selectedDay) {
+      const key = this.selectedDay.dateKey;
+      this.selectedDay = weeks
+        .flatMap(w => w.days)
+        .find(d => d.dateKey === key && d.isCurrentMonth) ?? null;
+    }
   }
 
   createCalendarDay(date: Date, dayNumber: number, isCurrentMonth: boolean, quitDate: Date, today: Date): CalendarDay {
     const dateOnly = new Date(date);
     dateOnly.setHours(0, 0, 0, 0);
-    
+
     const quitDateOnly = new Date(quitDate);
     quitDateOnly.setHours(0, 0, 0, 0);
 
+    const dateKey = this.toDateKey(dateOnly);
     const isQuitDay = dateOnly.getTime() === quitDateOnly.getTime();
     const isToday = dateOnly.getTime() === today.getTime();
-    
-    let status: 'before-quit' | 'smoke-free' | 'future';
+    const smokedDay = this.smokedDays.get(dateKey) ?? null;
+
+    let status: DayStatus;
     let daysSinceQuit = 0;
 
     if (dateOnly < quitDateOnly) {
@@ -740,7 +1182,7 @@ export class ProgressCalendarComponent implements OnInit {
     } else if (dateOnly > today) {
       status = 'future';
     } else {
-      status = 'smoke-free';
+      status = smokedDay ? 'smoked' : 'smoke-free';
       daysSinceQuit = Math.floor((dateOnly.getTime() - quitDateOnly.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     }
 
@@ -749,44 +1191,196 @@ export class ProgressCalendarComponent implements OnInit {
       return a.requiredDays === daysSinceQuit - 1;
     });
 
-    // Calculate cumulative savings up to this day
+    // Cumulative savings up to this day, with the smoked days deducted
     const cigarettesPerDay = this.progress?.cigarettesPerDay || 0;
     const pricePerPack = this.progress?.pricePerPack || 0;
     const cigarettesPerPack = this.progress?.cigarettesPerPack || 20;
-    
-    const cigarettesAvoided = daysSinceQuit * cigarettesPerDay;
+
+    const smokeFreeDays = Math.max(0, daysSinceQuit - this.countSmokedUpTo(dateKey));
+    const cigarettesAvoided = smokeFreeDays * cigarettesPerDay;
     const moneySaved = (cigarettesAvoided / cigarettesPerPack) * pricePerPack;
 
     return {
       date: dateOnly,
+      dateKey,
       dayNumber,
       isCurrentMonth,
       isToday,
       isQuitDay,
-      daysSinceQuit: status === 'smoke-free' ? daysSinceQuit : 0,
+      daysSinceQuit: status === 'before-quit' || status === 'future' ? 0 : daysSinceQuit,
       status,
       achievements: achievementsForDay,
       moneySaved: status === 'smoke-free' ? moneySaved : 0,
-      cigarettesAvoided: status === 'smoke-free' ? cigarettesAvoided : 0
+      cigarettesAvoided: status === 'smoke-free' ? cigarettesAvoided : 0,
+      smokedDay
     };
+  }
+
+  /** Number of smoked days on or before the given day - used for cumulative savings. */
+  private countSmokedUpTo(dateKey: string): number {
+    let count = 0;
+    this.smokedDays.forEach((_, key) => {
+      if (key <= dateKey) count++;
+    });
+    return count;
   }
 
   previousMonth(): void {
     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
-    this.generateCalendar();
     this.selectedDay = null;
+    this.clearHighlight();
+    this.generateCalendar();
   }
 
   nextMonth(): void {
     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+    this.selectedDay = null;
+    this.clearHighlight();
     this.generateCalendar();
+  }
+
+  /** Clicking a tracked day opens the details popup. */
+  selectDay(day: CalendarDay): void {
+    this.clearHighlight();
+
+    if (day.isCurrentMonth && this.isTrackable(day)) {
+      this.selectedDay = day;
+    }
+  }
+
+  /** The deep-link highlight is an orientation cue, so any interaction retires it. */
+  private clearHighlight(): void {
+    this.highlightedKey = null;
+  }
+
+  private scrollToHighlightedDay(): void {
+    setTimeout(() => {
+      document.querySelector('.calendar-day.highlighted')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  closeDayDetails(): void {
     this.selectedDay = null;
   }
 
-  selectDay(day: CalendarDay): void {
-    if (day.isCurrentMonth && day.status === 'smoke-free') {
-      this.selectedDay = day;
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    // The mark dialog sits on top of the details popup, so it closes first
+    if (this.markDialogDay) {
+      this.closeMarkDialog();
+      return;
     }
+    this.closeDayDetails();
+  }
+
+  /** Native hover tooltip so a cell explains itself without needing a click. */
+  dayTooltip(day: CalendarDay): string | null {
+    if (!day.isCurrentMonth) return null;
+
+    if (day.status === 'smoked' && day.smokedDay) {
+      const count = day.smokedDay.cigarettesSmoked;
+      return `Smoked: ${count} cigarette${count === 1 ? '' : 's'} · ${this.triggerLabel(day.smokedDay.trigger)}`
+        + ' · excluded from your smoke-free total';
+    }
+
+    if (day.status === 'smoke-free') {
+      return `Day ${day.daysSinceQuit} of your journey · smoke-free`;
+    }
+
+    return null;
+  }
+
+  isTrackable(day: CalendarDay): boolean {
+    return day.status === 'smoke-free' || day.status === 'smoked';
+  }
+
+  openMarkDialog(day: CalendarDay): void {
+    this.error = '';
+    this.markDialogDay = day;
+    this.form = {
+      cigarettesSmoked: day.smokedDay?.cigarettesSmoked ?? 1,
+      trigger: day.smokedDay?.trigger ?? 'Unspecified',
+      note: day.smokedDay?.note ?? ''
+    };
+  }
+
+  openMarkDialogForToday(): void {
+    const todayKey = this.toDateKey(new Date());
+    const todayCell = this.calendarWeeks
+      .flatMap(w => w.days)
+      .find(d => d.dateKey === todayKey && d.isCurrentMonth);
+
+    if (todayCell) {
+      this.openMarkDialog(todayCell);
+      return;
+    }
+
+    // Today is outside the month being browsed - jump back to it first
+    this.currentDate = new Date();
+    this.generateCalendar();
+    this.openMarkDialogForToday();
+  }
+
+  closeMarkDialog(): void {
+    this.markDialogDay = null;
+    this.error = '';
+  }
+
+  saveMark(): void {
+    if (!this.markDialogDay) return;
+
+    const cigarettes = Number(this.form.cigarettesSmoked);
+    if (!Number.isFinite(cigarettes) || cigarettes < 1) {
+      this.error = 'Enter at least one cigarette.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+
+    this.apiService.markSmokedDay({
+      date: this.markDialogDay.dateKey,
+      cigarettesSmoked: Math.floor(cigarettes),
+      trigger: this.form.trigger,
+      note: this.form.note?.trim() || null
+    }).subscribe({
+      next: (saved) => {
+        this.smokedDays.set(saved.date, saved);
+        this.saving = false;
+        this.markDialogDay = null;
+        this.selectedDay = null; // saving finishes the job - back to the calendar
+        this.refreshAfterChange();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.error = err?.error?.message || 'Could not save this day. Please try again.';
+      }
+    });
+  }
+
+  unmark(day: CalendarDay): void {
+    this.saving = true;
+
+    this.apiService.unmarkSmokedDay(day.dateKey).subscribe({
+      next: () => {
+        this.smokedDays.delete(day.dateKey);
+        this.saving = false;
+        this.refreshAfterChange();
+      },
+      error: () => {
+        this.saving = false;
+      }
+    });
+  }
+
+  private refreshAfterChange(): void {
+    this.generateCalendar();
+    this.apiService.getStats().subscribe({
+      next: (stats) => {
+        this.stats = stats;
+      }
+    });
   }
 
   getSmokeFreeThisMonth(): number {
@@ -795,50 +1389,33 @@ export class ProgressCalendarComponent implements OnInit {
     }, 0);
   }
 
+  getSmokedThisMonth(): number {
+    return this.calendarWeeks.reduce((total, week) => {
+      return total + week.days.filter(d => d.isCurrentMonth && d.status === 'smoked').length;
+    }, 0);
+  }
+
+  triggerLabel(trigger: RelapseTrigger): string {
+    return this.triggers.find(t => t.value === trigger)?.label ?? trigger;
+  }
+
+  triggerIcon(trigger: RelapseTrigger): string {
+    return this.triggers.find(t => t.value === trigger)?.icon ?? '📌';
+  }
+
   formatDayMoney(amount: number): string {
     const currency = this.progress?.currency || 'USD';
     if (currency === 'VND') {
-      return `${amount.toLocaleString('vi-VN')} \u20ab`;
+      return `${amount.toLocaleString('vi-VN')} ₫`;
     }
     return `$${amount.toFixed(2)}`;
   }
 
-  formatTotalMoney(): string {
-    if (!this.stats?.moneySaved) return '$0';
-    const money = this.stats.moneySaved;
-    
-    let amount: number;
-    let currency: string;
-    
-    if (typeof money === 'number') {
-      amount = money;
-      currency = 'USD';
-    } else {
-      amount = money.amount;
-      currency = money.currency;
-    }
-    
-    // Format large numbers with abbreviations
-    if (currency === 'VND') {
-      if (amount >= 1000000) {
-        return `${(amount / 1000000).toFixed(1)}M \u20ab`;
-      }
-      if (amount >= 1000) {
-        return `${(amount / 1000).toFixed(0)}K \u20ab`;
-      }
-      return `${amount.toLocaleString('vi-VN')} \u20ab`;
-    }
-    
-    // USD formatting
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(2)}M`;
-    }
-    if (amount >= 10000) {
-      return `$${(amount / 1000).toFixed(1)}K`;
-    }
-    if (amount >= 1000) {
-      return `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-    }
-    return `$${amount.toFixed(2)}`;
+  /** Local yyyy-MM-dd, so the date the user clicked is the date the API receives. */
+  private toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

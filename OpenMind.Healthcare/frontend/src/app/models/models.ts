@@ -27,6 +27,121 @@ export interface ProgressStats {
   currentMilestone: string;
   nextMilestone: string;
   daysToNextMilestone: number;
+  totalDaysInJourney: number;
+  smokedDays: number;
+  cigarettesSmoked: number;
+  moneySpentOnRelapses: number;
+  currentStreak: number;
+  longestStreak: number;
+  smokeFreeRate: number;
+}
+
+// Smoked ("failed") days - days the user marked as a relapse
+export type RelapseTrigger =
+  | 'Unspecified'
+  | 'Stress'
+  | 'Social'
+  | 'Alcohol'
+  | 'Boredom'
+  | 'AfterMeal'
+  | 'Coffee'
+  | 'Emotional'
+  | 'WorkPressure'
+  | 'Habit'
+  | 'Other';
+
+export interface TriggerOption {
+  value: RelapseTrigger;
+  label: string;
+  icon: string;
+}
+
+export const RELAPSE_TRIGGERS: TriggerOption[] = [
+  { value: 'Unspecified', label: 'Not sure', icon: '❓' },
+  { value: 'Stress', label: 'Stress', icon: '😰' },
+  { value: 'Social', label: 'Social', icon: '👥' },
+  { value: 'Alcohol', label: 'Alcohol', icon: '🍻' },
+  { value: 'Boredom', label: 'Boredom', icon: '🥱' },
+  { value: 'AfterMeal', label: 'After a meal', icon: '🍽️' },
+  { value: 'Coffee', label: 'Coffee', icon: '☕' },
+  { value: 'Emotional', label: 'Emotional', icon: '😢' },
+  { value: 'WorkPressure', label: 'Work pressure', icon: '💼' },
+  { value: 'Habit', label: 'Habit', icon: '🔄' },
+  { value: 'Other', label: 'Other', icon: '📌' }
+];
+
+export interface SmokedDay {
+  id: string;
+  date: string;
+  cigarettesSmoked: number;
+  trigger: RelapseTrigger;
+  note?: string | null;
+  moneySpent: number;
+  currency: string;
+  recordedAt: string;
+}
+
+export interface MarkSmokedDayRequest {
+  date: string;
+  cigarettesSmoked: number;
+  trigger: RelapseTrigger;
+  note?: string | null;
+}
+
+export interface TriggerStat {
+  trigger: RelapseTrigger;
+  days: number;
+  cigarettes: number;
+  sharePercentage: number;
+}
+
+export interface WeekdayStat {
+  weekday: string;
+  smokedDays: number;
+  totalDays: number;
+  relapseRate: number;
+}
+
+export interface MonthlyStat {
+  year: number;
+  month: number;
+  label: string;
+  smokedDays: number;
+  smokeFreeDays: number;
+  totalDays: number;
+  cigarettes: number;
+  smokeFreeRate: number;
+}
+
+export type RelapseTrend = 'NotEnoughData' | 'Improving' | 'Stable' | 'Worsening';
+
+export interface RelapseAnalytics {
+  totalDaysInJourney: number;
+  smokeFreeDays: number;
+  smokedDays: number;
+  smokeFreeRate: number;
+  relapseRate: number;
+  totalCigarettesSmoked: number;
+  moneySpentOnRelapses: number;
+  moneySaved: number;
+  currency: string;
+  lifeLostMinutes: number;
+  lifeLostFormatted: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastRelapseDate?: string | null;
+  firstRelapseDate?: string | null;
+  daysSinceLastRelapse: number;
+  averageCigarettesPerRelapseDay: number;
+  averageDaysBetweenRelapses: number;
+  relapsesLast30Days: number;
+  relapsesPrevious30Days: number;
+  trend: RelapseTrend;
+  mostCommonTrigger?: RelapseTrigger | null;
+  riskiestWeekday?: string | null;
+  triggerBreakdown: TriggerStat[];
+  weekdayBreakdown: WeekdayStat[];
+  monthlyBreakdown: MonthlyStat[];
 }
 
 export interface Achievement {

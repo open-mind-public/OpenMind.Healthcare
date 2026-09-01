@@ -19,8 +19,11 @@ public class HealthMilestoneStatusService
                 milestone.Category.ToString());
         }
         
-        var minutesSinceQuit = (int)journey.GetTimeSinceQuit().TotalMinutes;
-        
+        // Healing is measured in smoke-free time, so days the user marked as smoked do not count
+        // towards a milestone - and they push the date it is reached back by the same amount.
+        var smokeFreeMinutes = journey.GetTimeSmokeFree().TotalMinutes;
+        var effectiveStart = journey.QuitDate.AddDays(journey.GetSmokedDayCount());
+
         return HealthMilestoneStatus.Create(
             milestone.Id,
             milestone.Title,
@@ -29,8 +32,8 @@ public class HealthMilestoneStatusService
             milestone.TimeDisplay,
             milestone.Icon,
             milestone.Category.ToString(),
-            minutesSinceQuit,
-            journey.QuitDate);
+            smokeFreeMinutes,
+            effectiveStart);
     }
     
     public IReadOnlyList<HealthMilestoneStatus> ComputeStatuses(
