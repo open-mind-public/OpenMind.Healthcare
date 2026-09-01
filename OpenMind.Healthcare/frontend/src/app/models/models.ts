@@ -39,7 +39,7 @@ export interface ProgressStats {
 
 // Smoked ("failed") days - days the user marked as a relapse
 export type RelapseTrigger =
-  | 'Unspecified'
+  | 'Bathroom'
   | 'Stress'
   | 'Social'
   | 'Alcohol'
@@ -58,7 +58,7 @@ export interface TriggerOption {
 }
 
 export const RELAPSE_TRIGGERS: TriggerOption[] = [
-  { value: 'Unspecified', label: 'Not sure', icon: '❓' },
+  { value: 'Bathroom', label: 'Bathroom', icon: '🚽' },
   { value: 'Stress', label: 'Stress', icon: '😰' },
   { value: 'Social', label: 'Social', icon: '👥' },
   { value: 'Alcohol', label: 'Alcohol', icon: '🍻' },

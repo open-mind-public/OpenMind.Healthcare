@@ -1030,7 +1030,7 @@ export class ProgressCalendarComponent implements OnInit {
   private hasScrolledToHighlight = false;
   form: { cigarettesSmoked: number; trigger: RelapseTrigger; note: string } = {
     cigarettesSmoked: 1,
-    trigger: 'Unspecified',
+    trigger: 'Bathroom',
     note: ''
   };
   saving = false;
@@ -1300,7 +1300,7 @@ export class ProgressCalendarComponent implements OnInit {
     this.markDialogDay = day;
     this.form = {
       cigarettesSmoked: day.smokedDay?.cigarettesSmoked ?? 1,
-      trigger: day.smokedDay?.trigger ?? 'Unspecified',
+      trigger: day.smokedDay?.trigger ?? 'Bathroom',
       note: day.smokedDay?.note ?? ''
     };
   }

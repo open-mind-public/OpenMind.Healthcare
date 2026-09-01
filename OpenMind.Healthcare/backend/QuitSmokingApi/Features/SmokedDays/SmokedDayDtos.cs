@@ -23,7 +23,7 @@ public record SmokedDayDto(
 public record MarkSmokedDayRequest(
     DateOnly Date,
     int CigarettesSmoked = 1,
-    RelapseTrigger Trigger = RelapseTrigger.Unspecified,
+    RelapseTrigger Trigger = RelapseTrigger.Bathroom,
     string? Note = null
 );
 

@@ -73,7 +73,7 @@ public class SmokedDay : Entity
 /// </summary>
 public enum RelapseTrigger
 {
-    Unspecified = 0,
+    Bathroom = 0,
     Stress,
     Social,
     Alcohol,

@@ -64,13 +64,13 @@ public sealed class JourneyBuilder
         return this;
     }
 
-    public JourneyBuilder SmokedDaysAgo(int daysAgo, int cigarettes = 5, RelapseTrigger trigger = RelapseTrigger.Unspecified, string? note = null)
+    public JourneyBuilder SmokedDaysAgo(int daysAgo, int cigarettes = 5, RelapseTrigger trigger = RelapseTrigger.Bathroom, string? note = null)
     {
         _smokedDays.Add((DaysAgo(daysAgo), cigarettes, trigger, note));
         return this;
     }
 
-    public JourneyBuilder SmokedOn(DateOnly date, int cigarettes = 5, RelapseTrigger trigger = RelapseTrigger.Unspecified, string? note = null)
+    public JourneyBuilder SmokedOn(DateOnly date, int cigarettes = 5, RelapseTrigger trigger = RelapseTrigger.Bathroom, string? note = null)
     {
         _smokedDays.Add((date, cigarettes, trigger, note));
         return this;

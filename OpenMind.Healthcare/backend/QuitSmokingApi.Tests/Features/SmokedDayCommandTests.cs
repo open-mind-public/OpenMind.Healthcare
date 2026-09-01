@@ -53,7 +53,7 @@ public class MarkDayAsSmokedHandlerTests
         var handler = new MarkDayAsSmokedHandler(FakeQuitJourneyRepository.Empty(), SignedInUser.WithId(Guid.NewGuid()));
 
         var handle = async () => await handler.Handle(
-            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Unspecified, null),
+            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Bathroom, null),
             CancellationToken.None);
 
         var exception = await handle.ShouldThrowAsync<DomainException>();
@@ -67,7 +67,7 @@ public class MarkDayAsSmokedHandlerTests
         var handler = new MarkDayAsSmokedHandler(FakeQuitJourneyRepository.Containing(journey), SignedInUser.Anonymous());
 
         var handle = async () => await handler.Handle(
-            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Unspecified, null),
+            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Bathroom, null),
             CancellationToken.None);
 
         await handle.ShouldThrowAsync<UnauthorizedAccessException>();
@@ -81,7 +81,7 @@ public class MarkDayAsSmokedHandlerTests
         var handler = new MarkDayAsSmokedHandler(repository, SignedInUser.WithId(Guid.NewGuid()));
 
         var handle = async () => await handler.Handle(
-            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Unspecified, null),
+            new MarkDayAsSmokedCommand(DateOnly.FromDateTime(DateTime.UtcNow), 1, RelapseTrigger.Bathroom, null),
             CancellationToken.None);
 
         await handle.ShouldThrowAsync<DomainException>();
@@ -97,7 +97,7 @@ public class MarkDayAsSmokedHandlerTests
         var handler = new MarkDayAsSmokedHandler(repository, SignedInUser.WithId(journey.UserId));
 
         var handle = async () => await handler.Handle(
-            new MarkDayAsSmokedCommand(builder.Today.AddDays(2), 1, RelapseTrigger.Unspecified, null),
+            new MarkDayAsSmokedCommand(builder.Today.AddDays(2), 1, RelapseTrigger.Bathroom, null),
             CancellationToken.None);
 
         await handle.ShouldThrowAsync<BusinessRuleValidationException>();

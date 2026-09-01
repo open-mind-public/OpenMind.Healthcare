@@ -42,8 +42,10 @@ interface TriggerSummary {
           <div class="hero-main">
           <div class="hero-left">
             <h1 class="hero-title">
-              <span class="days-count pulse">{{ stats.daysSmokeFree }}</span>
-              <span class="days-label">Days Smoke Free!</span>
+              <span class="days-headline">
+                <span class="days-count pulse">{{ stats.daysSmokeFree }}</span>
+                <span class="days-label">Days Smoke Free!</span>
+              </span>
               <span class="duration-breakdown" *ngIf="durationBreakdown">≈ {{ durationBreakdown }}</span>
             </h1>
             <p class="hero-subtitle">{{ stats.currentMilestone }} 🎉</p>
@@ -357,6 +359,13 @@ interface TriggerSummary {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .days-headline {
+      display: flex;
+      align-items: baseline;   /* a 100px numeral and a 28px label share a baseline */
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .days-count {
@@ -875,6 +884,11 @@ interface TriggerSummary {
         justify-content: center;
       }
       
+      .days-headline {
+        justify-content: center;
+        gap: 12px;
+      }
+
       .days-count {
         font-size: 60px;
       }

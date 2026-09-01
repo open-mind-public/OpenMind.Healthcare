@@ -114,14 +114,14 @@ public class RelapseAnalyticsTests
     }
 
     [Fact]
-    public void Days_marked_without_naming_a_trigger_are_grouped_under_unspecified()
+    public void Days_marked_without_naming_a_trigger_fall_under_the_default_trigger()
     {
         var builder = JourneyBuilder.AJourney().StartedDaysAgo(30).SmokedDaysAgo(3).SmokedDaysAgo(8);
 
         var analytics = builder.Build().GetRelapseAnalytics(builder.Clock);
 
         analytics.TriggerBreakdown.ShouldHaveSingleItem();
-        analytics.TriggerBreakdown[0].Trigger.ShouldBe(RelapseTrigger.Unspecified);
+        analytics.TriggerBreakdown[0].Trigger.ShouldBe(RelapseTrigger.Bathroom);
         analytics.TriggerBreakdown[0].Days.ShouldBe(2);
     }
 

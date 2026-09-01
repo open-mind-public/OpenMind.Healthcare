@@ -79,7 +79,7 @@ public class QuitJourney : AggregateRoot
     /// Marks a calendar day as smoked. Re-marking an already marked day amends it instead of
     /// creating a duplicate, which keeps one record per day as the aggregate invariant.
     /// </summary>
-    public SmokedDay MarkDayAsSmoked(DateOnly date, int cigarettesSmoked, RelapseTrigger trigger = RelapseTrigger.Unspecified, string? note = null, DateTime? asOf = null)
+    public SmokedDay MarkDayAsSmoked(DateOnly date, int cigarettesSmoked, RelapseTrigger trigger = RelapseTrigger.Bathroom, string? note = null, DateTime? asOf = null)
     {
         CheckRule(new SmokedDayCannotBeBeforeQuitDateRule(date, QuitDay));
         CheckRule(new SmokedDayCannotBeInFutureRule(date, Today(asOf)));

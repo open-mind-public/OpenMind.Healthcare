@@ -78,12 +78,18 @@ import { SmokedDay, UserProgress } from '../../models/models';
             <div class="form-group">
               <label for="pricePerPack">Price per pack ({{ getCurrencySymbol() }})</label>
               <input
-                type="number"
+                type="text"
                 id="pricePerPack"
-                formControlName="pricePerPack"
-                min="0.01"
-                step="0.01"
-                [placeholder]="getCurrencyPlaceholder()">
+                inputmode="decimal"
+                autocomplete="off"
+                [value]="priceDisplay"
+                [placeholder]="getCurrencyPlaceholder()"
+                (focus)="onPriceFocus()"
+                (input)="onPriceInput($event)"
+                (blur)="onPriceBlur()">
+              <span class="error-text" *ngIf="setupForm.get('pricePerPack')?.invalid && setupForm.get('pricePerPack')?.touched">
+                Enter a price greater than zero
+              </span>
             </div>
           </div>
 
@@ -353,6 +359,10 @@ export class SetupComponent implements OnInit {
   currentQuitDate: Date | null = null;
   submitError = '';
 
+  /** What the price field shows: grouped when idle, plain digits while being typed into. */
+  priceDisplay = '';
+  private priceFocused = false;
+
   private smokedDays: SmokedDay[] = [];
 
   constructor(
@@ -377,6 +387,11 @@ export class SetupComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.refreshPriceDisplay();
+
+    // Switching currency changes both the precision and the grouping
+    this.setupForm.get('currency')!.valueChanges.subscribe(() => this.normalisePriceForCurrency());
+
     this.apiService.getProgress().subscribe({
       next: (progress) => {
         this.currentProgress = progress;
@@ -389,6 +404,7 @@ export class SetupComponent implements OnInit {
           pricePerPack: progress.pricePerPack,
           cigarettesPerPack: progress.cigarettesPerPack
         });
+        this.normalisePriceForCurrency();
 
         this.loadSmokedDays();
       },
@@ -423,12 +439,68 @@ export class SetupComponent implements OnInit {
     return dropped.length > 0 ? SetupComponent.parseApiDate(dropped[0].date) : null;
   }
 
+  /** VND has no sub-unit, so a price in dong is always a whole number. */
+  private get currencyHasDecimals(): boolean {
+    return this.setupForm.get('currency')?.value !== 'VND';
+  }
+
+  private get priceValue(): number {
+    const value = Number(this.setupForm.get('pricePerPack')?.value);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  onPriceFocus(): void {
+    // Show the bare number while editing - grouping separators fight with the caret
+    this.priceFocused = true;
+    this.priceDisplay = this.priceValue ? `${this.priceValue}` : '';
+  }
+
+  onPriceInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    const allowed = this.currencyHasDecimals ? /[^0-9.]/g : /[^0-9]/g;
+    const cleaned = raw.replace(allowed, '');
+
+    this.priceDisplay = cleaned;
+    const parsed = Number.parseFloat(cleaned);
+    this.setupForm.get('pricePerPack')!.setValue(Number.isFinite(parsed) ? parsed : null);
+  }
+
+  onPriceBlur(): void {
+    this.priceFocused = false;
+    this.setupForm.get('pricePerPack')!.markAsTouched();
+    this.normalisePriceForCurrency();
+  }
+
+  /** Rounds a dong price to a whole number and re-renders the grouped display. */
+  private normalisePriceForCurrency(): void {
+    if (!this.currencyHasDecimals) {
+      const rounded = Math.round(this.priceValue);
+      if (rounded !== this.priceValue) {
+        this.setupForm.get('pricePerPack')!.setValue(rounded, { emitEvent: false });
+      }
+    }
+
+    this.refreshPriceDisplay();
+  }
+
+  private refreshPriceDisplay(): void {
+    if (this.priceFocused) return;
+
+    const value = this.priceValue;
+    this.priceDisplay = value > 0
+      ? value.toLocaleString('en-US', {
+          minimumFractionDigits: this.currencyHasDecimals ? 2 : 0,
+          maximumFractionDigits: this.currencyHasDecimals ? 2 : 0
+        })
+      : '';
+  }
+
   getCurrencySymbol(): string {
     return this.setupForm.get('currency')?.value === 'VND' ? '₫' : '$';
   }
 
   getCurrencyPlaceholder(): string {
-    return this.setupForm.get('currency')?.value === 'VND' ? 'e.g., 50000' : 'e.g., 10.00';
+    return this.currencyHasDecimals ? 'e.g., 10.00' : 'e.g., 30,000';
   }
 
   cancel(): void {
@@ -445,7 +517,7 @@ export class SetupComponent implements OnInit {
     const progress = {
       quitDate: new Date(formValue.quitDate).toISOString(),
       cigarettesPerDay: formValue.cigarettesPerDay,
-      pricePerPack: formValue.pricePerPack,
+      pricePerPack: this.currencyHasDecimals ? formValue.pricePerPack : Math.round(formValue.pricePerPack),
       cigarettesPerPack: formValue.cigarettesPerPack,
       currency: formValue.currency
     };
