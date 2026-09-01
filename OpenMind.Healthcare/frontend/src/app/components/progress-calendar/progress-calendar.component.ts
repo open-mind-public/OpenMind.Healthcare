@@ -31,6 +31,22 @@ interface CalendarWeek {
   days: CalendarDay[];
 }
 
+type CalendarViewMode = 'month' | 'year';
+
+interface MiniMonth {
+  name: string;
+  monthIndex: number;
+  /** Leading nulls pad the first week so weekday columns line up. */
+  cells: (CalendarDay | null)[];
+  smokeFreeDays: number;
+  smokedDays: number;
+}
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 @Component({
   selector: 'app-progress-calendar',
   standalone: false,
@@ -50,7 +66,22 @@ interface CalendarWeek {
         </button>
       </div>
 
-      <div class="calendar-card" *ngIf="progress">
+      <div class="view-toggle" *ngIf="progress">
+        <button
+          type="button"
+          [class.active]="viewMode === 'month'"
+          (click)="setViewMode('month')">
+          Month
+        </button>
+        <button
+          type="button"
+          [class.active]="viewMode === 'year'"
+          (click)="setViewMode('year')">
+          Year
+        </button>
+      </div>
+
+      <div class="calendar-card" *ngIf="progress && viewMode === 'month'">
         <!-- Month Navigation -->
         <div class="month-navigation">
           <button class="nav-btn" (click)="previousMonth()">
@@ -126,6 +157,75 @@ interface CalendarWeek {
           <div class="legend-item">
             <span class="legend-icon">🏆</span>
             <span>Achievement</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color today"></span>
+            <span>Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Year View -->
+      <div class="calendar-card year-card" *ngIf="progress && viewMode === 'year'">
+        <div class="month-navigation">
+          <button class="nav-btn" (click)="previousYear()">
+            <span>←</span>
+          </button>
+          <h2 class="current-month">{{ currentDate.getFullYear() }}</h2>
+          <button class="nav-btn" (click)="nextYear()">
+            <span>→</span>
+          </button>
+        </div>
+
+        <div class="year-grid">
+          <div class="mini-month" *ngFor="let m of yearMonths">
+            <div class="mini-month-header">
+              <span class="mini-month-name">{{ m.name }}</span>
+              <span class="mini-month-stats">
+                <span class="mm-free">{{ m.smokeFreeDays }}</span>
+                <span class="mm-smoked" *ngIf="m.smokedDays > 0">· {{ m.smokedDays }} 🚬</span>
+              </span>
+            </div>
+            <div class="mini-weekdays">
+              <span *ngFor="let w of weekDayInitials">{{ w }}</span>
+            </div>
+            <div class="mini-grid">
+              <ng-container *ngFor="let cell of m.cells">
+                <span class="mini-cell empty" *ngIf="!cell"></span>
+                <button
+                  type="button"
+                  *ngIf="cell as day"
+                  class="mini-cell"
+                  [class.smoke-free]="day.status === 'smoke-free'"
+                  [class.smoked]="day.status === 'smoked'"
+                  [class.before-quit]="day.status === 'before-quit'"
+                  [class.future]="day.status === 'future'"
+                  [class.quit-day]="day.isQuitDay"
+                  [class.today]="day.isToday"
+                  [class.highlighted]="highlightedKey === day.dateKey"
+                  [disabled]="!isTrackable(day)"
+                  [attr.title]="dayTooltip(day) || (day.date | date:'mediumDate')"
+                  (click)="selectDay(day)">
+                  {{ day.dayNumber }}
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="calendar-legend">
+          <div class="legend-item">
+            <span class="legend-color quit-day"></span>
+            <span>Quit Day</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color smoke-free"></span>
+            <span>Smoke-Free</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color smoked"></span>
+            <span>Smoked (excluded)</span>
           </div>
           <div class="legend-item">
             <span class="legend-color today"></span>
@@ -224,15 +324,15 @@ interface CalendarWeek {
       <!-- Stats Summary -->
       <div class="stats-summary" *ngIf="stats">
         <div class="summary-card">
-          <h3>📊 Monthly Summary</h3>
+          <h3>📊 {{ viewMode === 'year' ? 'Yearly' : 'Monthly' }} Summary</h3>
           <div class="summary-grid">
             <div class="summary-item">
-              <span class="summary-value">{{ getSmokeFreeThisMonth() }}</span>
-              <span class="summary-label">Smoke-free days this month</span>
+              <span class="summary-value">{{ viewMode === 'year' ? getSmokeFreeThisYear() : getSmokeFreeThisMonth() }}</span>
+              <span class="summary-label">Smoke-free days this {{ viewMode === 'year' ? 'year' : 'month' }}</span>
             </div>
             <div class="summary-item">
-              <span class="summary-value danger">{{ getSmokedThisMonth() }}</span>
-              <span class="summary-label">Smoked days this month</span>
+              <span class="summary-value danger">{{ viewMode === 'year' ? getSmokedThisYear() : getSmokedThisMonth() }}</span>
+              <span class="summary-label">Smoked days this {{ viewMode === 'year' ? 'year' : 'month' }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-value">{{ stats.daysSmokeFree }}</span>
@@ -337,6 +437,156 @@ interface CalendarWeek {
       gap: 12px;
       margin-bottom: 25px;
       flex-wrap: wrap;
+    }
+
+    .view-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 20px;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+
+      button {
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 8px 22px;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        &:hover {
+          color: white;
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+        }
+      }
+    }
+
+    .year-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .mini-month {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .mini-month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+
+      .mini-month-name {
+        font-weight: 600;
+        color: white;
+        font-size: 0.95rem;
+      }
+
+      .mini-month-stats {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.55);
+
+        .mm-free { color: #34d399; font-weight: 600; }
+        .mm-smoked { color: #f87171; margin-left: 3px; }
+      }
+    }
+
+    .mini-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 3px;
+
+      span {
+        text-align: center;
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .mini-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.03);
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.62rem;
+      font-family: inherit;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+
+      &.empty {
+        background: transparent;
+        cursor: default;
+      }
+
+      &:not(.empty):not(:disabled):hover {
+        transform: scale(1.15);
+        z-index: 1;
+      }
+
+      &:disabled {
+        cursor: default;
+      }
+
+      &.before-quit,
+      &.future {
+        color: rgba(255, 255, 255, 0.25);
+      }
+
+      &.smoke-free {
+        background: rgba(16, 185, 129, 0.28);
+        color: #d1fae5;
+      }
+
+      &.smoked {
+        background: rgba(239, 68, 68, 0.45);
+        color: #fee2e2;
+        font-weight: 700;
+      }
+
+      &.quit-day {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        font-weight: 700;
+      }
+
+      &.today {
+        outline: 2px solid #10b981;
+        outline-offset: 1px;
+      }
+
+      &.highlighted {
+        outline: 2px solid #fbbf24;
+        outline-offset: 2px;
+      }
     }
 
     .calendar-card {
@@ -1007,6 +1257,25 @@ interface CalendarWeek {
       .stats-summary .summary-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .year-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .mini-month {
+        padding: 8px;
+      }
+
+      .mini-month-header .mini-month-stats {
+        display: none;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .year-grid {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })
@@ -1019,6 +1288,10 @@ export class ProgressCalendarComponent implements OnInit {
   calendarWeeks: CalendarWeek[] = [];
   selectedDay: CalendarDay | null = null;
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  weekDayInitials = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  viewMode: CalendarViewMode = 'month';
+  yearMonths: MiniMonth[] = [];
 
   // Smoked ("failed") days keyed by yyyy-MM-dd
   smokedDays = new Map<string, SmokedDay>();
@@ -1141,6 +1414,7 @@ export class ProgressCalendarComponent implements OnInit {
     }
 
     this.calendarWeeks = weeks;
+    this.generateYear();
 
     // Bring a deep-linked day into view once the grid holding it has rendered
     if (this.highlightedKey && !this.hasScrolledToHighlight) {
@@ -1156,10 +1430,76 @@ export class ProgressCalendarComponent implements OnInit {
     // Keep the details panel in sync with freshly rebuilt day objects
     if (this.selectedDay) {
       const key = this.selectedDay.dateKey;
-      this.selectedDay = weeks
-        .flatMap(w => w.days)
-        .find(d => d.dateKey === key && d.isCurrentMonth) ?? null;
+      const fromMonth = weeks.flatMap(w => w.days).find(d => d.dateKey === key && d.isCurrentMonth);
+      const fromYear = this.yearMonths.flatMap(m => m.cells).find(c => c?.dateKey === key) ?? null;
+      this.selectedDay = fromMonth ?? fromYear ?? null;
     }
+  }
+
+  private generateYear(): void {
+    if (!this.progress) {
+      this.yearMonths = [];
+      return;
+    }
+
+    const year = this.currentDate.getFullYear();
+    const quitDate = new Date(this.progress.quitDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const months: MiniMonth[] = [];
+
+    for (let m = 0; m < 12; m++) {
+      const daysInMonth = new Date(year, m + 1, 0).getDate();
+      const leadingBlanks = new Date(year, m, 1).getDay();
+
+      const cells: (CalendarDay | null)[] = [];
+      for (let i = 0; i < leadingBlanks; i++) cells.push(null);
+
+      let smokeFreeDays = 0;
+      let smokedDays = 0;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = this.createCalendarDay(new Date(year, m, d), d, true, quitDate, today);
+        if (cell.status === 'smoke-free') smokeFreeDays++;
+        if (cell.status === 'smoked') smokedDays++;
+        cells.push(cell);
+      }
+
+      months.push({ name: MONTH_NAMES[m], monthIndex: m, cells, smokeFreeDays, smokedDays });
+    }
+
+    this.yearMonths = months;
+  }
+
+  setViewMode(mode: CalendarViewMode): void {
+    if (this.viewMode === mode) return;
+    this.viewMode = mode;
+    this.selectedDay = null;
+    this.clearHighlight();
+    this.generateCalendar();
+  }
+
+  previousYear(): void {
+    this.currentDate = new Date(this.currentDate.getFullYear() - 1, this.currentDate.getMonth(), 1);
+    this.selectedDay = null;
+    this.clearHighlight();
+    this.generateCalendar();
+  }
+
+  nextYear(): void {
+    this.currentDate = new Date(this.currentDate.getFullYear() + 1, this.currentDate.getMonth(), 1);
+    this.selectedDay = null;
+    this.clearHighlight();
+    this.generateCalendar();
+  }
+
+  getSmokeFreeThisYear(): number {
+    return this.yearMonths.reduce((total, m) => total + m.smokeFreeDays, 0);
+  }
+
+  getSmokedThisYear(): number {
+    return this.yearMonths.reduce((total, m) => total + m.smokedDays, 0);
   }
 
   createCalendarDay(date: Date, dayNumber: number, isCurrentMonth: boolean, quitDate: Date, today: Date): CalendarDay {
