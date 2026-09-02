@@ -11,8 +11,6 @@
 
 ![Image](https://images.openai.com/static-rsc-4/ugiuglylExPCASsgbev3dHvvWysGPbcHynCRZ3VEdo0rSbgL9Rq3xW-uh6UiZ2MvgGKdusub6Snsin8VtRs0ikNLP80XBFdXb_Gc3n3Q5H7y56zm120D5JfEu8unBb81PvVZ9mqyUxYCVcmzcSorrhcMzW6BNksbVl_q_MMKlUsOFym7Y3EfvG2krRcoitMp?purpose=fullsize)
 
-![Image](https://images.openai.com/static-rsc-4/2wrGoHXJ7RdlR4YdWZOedEXLTLKf3sll4923JbfwtON-Lpz2aTYI7JG61L2hwahLp6PH2UShODBKiZQ04UHkLEpwRaGP60UpKN2ig-nqkk0FtHFKOR7QgG6QF1Zo-QLIzAE-FeDSrWXPFsrvdoiivAyGLNahgw3A3D1NzGGyAsfV-juj__3HceXIeb0XY1Hk?purpose=fullsize)
-
 ### The basic idea
 
 Traditional AI development often looks like:
