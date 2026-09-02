@@ -112,3 +112,40 @@ later corrected.
   than a behavioural one. SC-004 sets the bar it has to clear.
 
 **Status**: All 16 items pass. Ready for `/speckit-plan`.
+
+### Validation iteration 3 — 2026-09-02 (post-`/speckit-analyze` remediation)
+
+Cross-artifact analysis after `/speckit-tasks` found three HIGH and four MEDIUM issues. All were
+applied except the task-ordering finding, which the feature owner reviewed and elected to keep.
+The specification changed as follows; all 16 checklist items still pass.
+
+**Requirements added** (44 → 46, sequential, no gaps):
+
+- **FR-045** — conflicting writes to the same logged day are detected and refused, not merged. The
+  spec's concurrent-edits edge case had no coverage anywhere in the plan, data model, or tasks, and
+  two design choices had quietly made it a live risk: `LoggedDay` being its own aggregate (R-004)
+  and each day storing its own totals (R-010) together mean a last-write-wins update can persist one
+  session's totals over another's entries.
+- **FR-046** — a plan's last remaining weight reading cannot be deleted. FR-017 makes the newest
+  reading the current weight for target suggestions, and nothing had stopped a member deleting the
+  only one, which would have left the suggestion path with no input.
+
+Both carry acceptance scenarios (US2 scenario 13, US4 scenario 7) so they are testable rather than
+merely asserted.
+
+**Requirements clarified**:
+
+- **FR-025** now states what happens when a *member* edits an entry, as distinct from a background
+  library correction: values are re-read and re-snapshotted. The accepted consequence — a
+  quantity-only edit also picks up a corrected nutrition value — is recorded in research.md R-005.
+- **SC-004** now names a fixed judging corpus. "85% of searches return a usable match" was
+  unfalsifiable without one.
+
+**Success criteria reclassified**: SC-002 and SC-013, plus the adoption half of SC-003 (now
+**SC-014**), moved to a new *Post-Launch Outcome Measures* section. All three need usage
+instrumentation this release does not build, so presenting them among the release gates overstated
+what the feature verifies. SC-003 keeps its verifiable half — the 20-second timing.
+
+**Not changed, deliberately**: task ordering places domain tests after the code they cover, which
+differs from the tasks template's test-first rule and from `/speckit-implement`'s stated behaviour.
+Raised in analysis, reviewed, and kept at the feature owner's direction.

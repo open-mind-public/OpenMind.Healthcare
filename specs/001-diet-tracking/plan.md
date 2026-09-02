@@ -47,11 +47,14 @@ end, orchestrated by Docker Compose.
 years of daily history (SC-006). Food search under 1 second (SC-004). Day totals update without a
 manual refresh (SC-005).
 
-**Constraints**: Calories as `int`, macro grams as `decimal` never aggregated in SQL (R-010). All
-instants UTC; calendar days as `DateOnly`. Every time-dependent domain method takes
+**Constraints**: Calories as `int`, macro grams as `decimal` never aggregated in SQL (R-010).
+`LoggedDay` carries a `Guid` concurrency token; conflicting writes are refused with 409, never merged
+(R-015). A plan always holds at least one weight reading, so current weight is never null (R-016).
+All instants UTC; calendar days as `DateOnly`. Every time-dependent domain method takes
 `DateTime? asOf = null`. Metric storage, display units client-side (R-012).
 
-**Scale/Scope**: 6 user stories, 44 functional requirements, 13 success criteria. Roughly 7 feature
+**Scale/Scope**: 6 user stories, 46 functional requirements, 11 release-gating success criteria plus
+3 post-launch outcome measures that this release does not instrument. Roughly 7 feature
 slices, 3 member-owned aggregates plus 3 reference aggregates, ~20 endpoints, a 150-200 item seeded
 food library, and 7 new Angular components.
 
@@ -92,11 +95,18 @@ Re-evaluated against [data-model.md](./data-model.md) and [contracts/](./contrac
 | Principle | Verdict | Note |
 |--------|--------|--------|
 | I | PASS | No design artifact introduces a cross-context read or foreign key. |
-| II | PASS | Data model places all 11 business rules inside aggregates; the contract's error responses are the domain exceptions surfacing, not handler-computed results. |
+| II | PASS | Data model places all 12 business rules inside aggregates; the contract's error responses are the domain exceptions surfacing, not handler-computed results. |
 | III | PASS | Contract groups map one-to-one onto feature folders in the source tree below. |
 | IV | PASS | Every derived value in the data model — day state, streaks, trend, achievement eligibility — takes `asOf`. |
 | V | PASS | Test layout enumerated in the source tree; quickstart runs it. |
 | VI | PASS | Seed set and idempotency guards specified in the data model. |
+
+**Recorded after cross-artifact analysis**: `LoggedDay`'s concurrency token (R-015) and the
+last-weight-reading rule (R-016) were added when analysis found the specification's concurrent-edits
+edge case had no coverage and that deleting a lone weight reading would leave FR-017 with no source.
+Neither changes the architecture; both close holes the design had left open. The three decisions in
+R-004, R-007, and R-010 outlive this feature and are additionally recorded as ADRs under
+`OpenMind.Healthcare/adrs/`, per the constitution's Development Workflow section.
 
 **One deviation to record**: the aggregate split in R-004 departs from the `QuitJourney`
 precedent. It violates no principle — Principle II asks that rules live in the domain, not that a

@@ -18,6 +18,7 @@ DietPlan (aggregate root)                    one per member, keyed by UserId
 LoggedDay (aggregate root)                   one per (DietPlanId, Date)
 ├── NutritionTargets             owned VO      snapshot taken when the day was created
 ├── NutritionValues              owned VO      persisted totals, recomputed on every change
+├── Version                      concurrency token, reassigned on every mutation
 └── FoodEntry[]                  owned entity  many per day
     └── NutritionValues          owned VO      snapshot taken when the entry was logged
 
@@ -62,8 +63,8 @@ foreign key constraint across the aggregate boundary). `FoodEntry` keeps `FoodLi
 | `UpdatePlan(goal, startDate, bodyMetrics, activityLevel, targetWeightKg, asOf)` | Changes everything except targets. Leaves `Targets` untouched (FR-009). |
 | `SetTargets(targets, source)` | The only way targets change. Records the source. Emits `TargetsChangedEvent`. |
 | `RecordWeight(date, weightKg, asOf)` | Replaces any reading on that date (FR-012). Returns the reading. |
-| `RemoveWeightReading(date)` | Returns `bool`. |
-| `CurrentWeightKg(asOf)` | The most recent reading at or before `asOf`, else `BodyMetrics` has no weight — falls back to the weight supplied at setup, held as the first reading (R-001, FR-017). |
+| `RemoveWeightReading(date)` | Checks `CannotRemoveLastWeightReadingRule` first. Returns `bool` — `false` when no reading exists on that date, throws when it is the only one the plan holds (FR-046). |
+| `CurrentWeightKg(asOf)` | The most recent reading at or before `asOf`. Never null: setup stores the supplied weight as the first reading and `RemoveWeightReading` refuses to delete the last one, so a plan always holds at least one (FR-017, FR-046, R-016). |
 | `WeightTrend(from, to, asOf)` | Returns `WeightTrend`: ordered readings, change since `StartDate`, remaining to target, `GoalReached` (FR-015, FR-016). |
 | `Unlock(achievementId, earnedOn)` | No-op if already unlocked — never revokes, never duplicates (FR-039). |
 
@@ -94,6 +95,7 @@ Created lazily — the first entry for a date creates the day; deleting the last
 | `TargetSnapshot` | `NutritionTargets` | Owned. Captured at creation, never updated (R-006, FR-004). |
 | `Totals` | `NutritionValues` | Owned. Recomputed on every entry change (R-010). |
 | `Entries` | `IReadOnlyCollection<FoodEntry>` | Owned, private backing field. |
+| `Version` | `Guid` | Concurrency token, reassigned on every mutation. A stale write fails with `DbUpdateConcurrencyException`, which the endpoint turns into 409 (FR-045, R-015). |
 
 **Methods**
 
@@ -154,6 +156,7 @@ Created lazily — the first entry for a date creates the day; deleting the last
 |--------|--------|--------|
 | `WeightDateCannotBeInFutureRule` | `date > DateOnly.FromDateTime(asOf)` | FR-014 |
 | `WeightMustBePlausibleRule` | outside 20-500 kg | FR-014 |
+| `CannotRemoveLastWeightReadingRule` | the plan holds exactly one reading and it is the one being removed | FR-046 |
 
 ---
 
@@ -246,6 +249,12 @@ checking the height and age rules. Weight is deliberately *not* here — it live
 `Date`, `ConsumedCalories` `int`, `TargetCalories` `int`, `RemainingCalories` `int` (negative when
 over), `State` `DayState`, `OverageCalories` `int`. Derived, not stored.
 
+`DayState` has exactly the three members FR-032 names. A day falling outside the plan is **not** a
+fourth state — it is a property of the range being queried rather than of the day, and no `LoggedDay`
+can exist outside its own plan. Range responses therefore carry a separate `withinPlan` boolean
+alongside `state`; the single-day response has no such field because that endpoint rejects
+out-of-range dates outright (contracts/rest-api.md).
+
 ### DietStatistics
 
 `CurrentStreakDays`, `LongestStreakDays`, `TotalDaysLogged`, `AverageDailyCalories`,
@@ -310,6 +319,9 @@ when met, calls `plan.Unlock(...)`. Locked entries carry the remaining count (FR
   `LoggedDays(UserId, Date)` for range reads; `WeightReadings(DietPlanId, Date)` unique;
   `UnlockedAchievements(DietPlanId, DietAchievementId)` unique;
   `FoodLibraryItems(SearchName)`.
+- `LoggedDay.Version` is configured with `.IsConcurrencyToken()`. SQLite has no native row version, so
+  the aggregate reassigns a fresh `Guid` on every mutation and EF Core includes the previous value in
+  the `WHERE` clause of each `UPDATE`; a zero-row result raises `DbUpdateConcurrencyException` (R-015).
 - Decimal columns use `HasPrecision(...)` as `Money` does. Calorie columns are `int` and are the
   only nutrition values SQL ever aggregates (R-010).
 
@@ -325,3 +337,4 @@ when met, calls `plan.Unlock(...)`. Locked entries carry the remaining count (FR
 | FR-034 to FR-037 (history) | `StreakCalculator`, `DietStatistics`, range queries on `LoggedDays` |
 | FR-038 to FR-041 (recognition, guidance) | `DietAchievement`, `UnlockedAchievement`, `DietAchievementStatusService`, `EatingTip` |
 | FR-042 to FR-044 (access, separation) | `UserService`, `.RequireAuthorization()`, own `DietDbContext` and database |
+| FR-045, FR-046 (data consistency) | `LoggedDay.Version` concurrency token, `CannotRemoveLastWeightReadingRule` |

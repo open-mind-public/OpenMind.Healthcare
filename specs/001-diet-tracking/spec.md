@@ -56,6 +56,7 @@ Throughout the day a member records what they ate. For each item they search the
 10. **Given** a member selecting a date in the future, **When** they attempt to log an entry, **Then** the entry is rejected with a message explaining future dates cannot be logged.
 11. **Given** a member selecting a date before their plan's start date, **When** they attempt to log an entry, **Then** the entry is rejected with a message explaining the date precedes the plan.
 12. **Given** a member attempting to view or modify a food entry belonging to another member, **When** the request is made, **Then** access is refused.
+13. **Given** the same day open on two devices, **When** the second device saves a change based on a copy of the day the first device has already changed, **Then** the second save is refused with a message asking the member to reload, and no entry from either device is lost.
 
 ---
 
@@ -94,8 +95,9 @@ A member steps on the scales every so often and records what it says. The system
 4. **Given** a member with a target weight who reaches it, **When** they view their trend, **Then** the goal is shown as reached.
 5. **Given** a member recording a reading dated in the future, **When** they attempt to save, **Then** it is rejected with an explanatory message.
 6. **Given** a member recording a weight outside the plausible human range, **When** they attempt to save, **Then** it is rejected with an explanatory message.
-7. **Given** a member with no readings at all, **When** they view their trend, **Then** an empty state is shown rather than an error.
-8. **Given** a member who records a new current weight, **When** a target suggestion is next refreshed, **Then** the refreshed suggestion uses that newest reading.
+7. **Given** a member whose plan holds exactly one weight reading, **When** they attempt to delete it, **Then** the deletion is refused with a message explaining they can correct the reading instead.
+8. **Given** a member with no readings within the period they are viewing, **When** they view their trend, **Then** an empty state for that period is shown rather than an error.
+9. **Given** a member who records a new current weight, **When** a target suggestion is next refreshed, **Then** the refreshed suggestion uses that newest reading.
 
 ---
 
@@ -146,12 +148,13 @@ A member who is struggling — over target, or facing a craving — opens a guid
 - **Dates outside the plan**: Days before the plan start and days in the future are neither successes nor misses and must not be counted in totals, streaks, or averages.
 - **Implausible values**: A single entry claiming an extreme calorie count, a negative quantity, or a quantity of zero must be rejected rather than silently distorting statistics. The same applies to weight readings outside the plausible human range.
 - **Two weight readings on one date**: The later reading replaces the earlier one; a date never carries two.
+- **Deleting the only weight reading**: Refused under FR-046, because the plan's target suggestion depends on a current weight. Correcting a mistyped reading is an edit, not a delete followed by a re-entry.
 - **Unsafe self-set target**: A member is allowed to set a target below the recommended floor, but must be warned, and the warning must not be suppressible into silence.
 - **Very long histories**: A member with several years of daily entries must still be able to open a calendar, trend, or statistics view without noticeable delay.
 - **Abandoning and restarting**: A member who stops logging for months and then returns must resume against their existing plan without losing historical achievements or weight history.
 - **Repeated foods**: Logging the same food three times in one day must count three times, not be collapsed into one entry.
 - **Leap days and month lengths**: February 29 and 30-day months must render and count correctly in both the month and year views.
-- **Concurrent edits**: The same day edited from two devices at once must not lose entries or produce a total inconsistent with the entries shown.
+- **Concurrent edits**: The same day edited from two devices at once must not lose entries or produce a total inconsistent with the entries shown. Resolved by FR-045 — the losing write is refused and the member reloads, rather than the two writes being merged.
 
 ## Requirements *(mandatory)*
 
@@ -192,7 +195,7 @@ A member who is struggling — over target, or facing a craving — opens a guid
 
 - **FR-023**: System MUST allow a member to record food entries against a calendar date, each referencing a food library item, a serving size, a quantity, and a meal type of breakfast, lunch, dinner, or snack.
 - **FR-024**: System MUST derive an entry's nutritional contribution from the library item's values for the chosen serving size multiplied by the quantity, and MUST support fractional quantities.
-- **FR-025**: System MUST preserve the nutrition values that were in force when an entry was logged, so that later corrections to the food library do not retroactively alter assessed history.
+- **FR-025**: System MUST preserve the nutrition values that were in force when an entry was logged, so that later corrections to the food library do not retroactively alter assessed history. When a member edits an entry themselves, System MUST re-read the values from the library for the serving then in force and re-snapshot them, because a member's own edit is a deliberate act rather than a background correction.
 - **FR-026**: System MUST reject food entries dated in the future and entries dated before the plan's start date.
 - **FR-027**: System MUST reject food entries whose quantity is zero or negative, and entries whose calorie contribution exceeds a plausible single-entry ceiling.
 - **FR-028**: Members MUST be able to edit and delete their own food entries, and totals MUST reflect the change immediately.
@@ -225,6 +228,11 @@ A member who is struggling — over target, or facing a craving — opens a guid
 - **FR-043**: System MUST derive the acting member's identity from their authenticated session and MUST NOT accept a member identity supplied in a request.
 - **FR-044**: System MUST keep diet information separate from the smoking-cessation area, such that neither area reads the other's stored data and neither becomes unavailable when the other does.
 
+**Data consistency**
+
+- **FR-045**: System MUST detect when a logged day has been changed by another session since it was read, and MUST refuse the conflicting write with a message telling the member to reload — rather than silently discarding entries or leaving a day's recorded total inconsistent with the entries it holds.
+- **FR-046**: System MUST NOT allow a member to delete their only remaining weight reading, because the plan's target suggestion depends on a current weight. A member correcting a mistaken reading edits it instead.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Diet Plan**: A member's standing intent — goal type, start date, body details, activity level, optional target weight, and the daily nutrition targets they are measured against, along with whether those targets were suggested or member-set. One active plan per member; owns the days logged beneath it.
@@ -241,9 +249,8 @@ A member who is struggling — over target, or facing a craving — opens a guid
 ### Measurable Outcomes
 
 - **SC-001**: A new member can go from opening the diet area to having a saved plan with daily targets in under 2 minutes, including entering their body details.
-- **SC-002**: 70% of members accept the suggested daily target rather than replacing it, indicating the suggestion is credible.
-- **SC-003**: A member can record a single food entry, from starting the search to seeing the updated day total, in under 20 seconds, and 90% of members complete their first entry without abandoning the flow.
-- **SC-004**: Food search returns matches in under 1 second, and 85% of searches for a common everyday food return a usable match in the first five results.
+- **SC-003**: A member can record a single food entry, from starting the search to seeing the updated day total, in under 20 seconds.
+- **SC-004**: Food search returns matches in under 1 second, and 85% of searches return a usable match in the first five results when measured against a fixed corpus of everyday foods defined and checked in with the feature.
 - **SC-005**: After any entry is added, edited, or removed, the day's totals shown to the member reflect the change immediately, with no manual refresh.
 - **SC-006**: Opening the calendar, weight trend, or statistics view returns results in under 1 second for a member with 3 years of daily history.
 - **SC-007**: 100% of days shown in the calendar carry a state matching the entries recorded for that date, verified across on-target, over-target, unlogged, pre-plan, and future days.
@@ -252,7 +259,16 @@ A member who is struggling — over target, or facing a craving — opens a guid
 - **SC-010**: No target below the safe minimum is ever suggested, and 100% of member overrides below that floor produce a warning before saving.
 - **SC-011**: Restarting the application leaves exactly one copy of every curated food, tip, and achievement definition.
 - **SC-012**: No diet request succeeds without a valid signed-in session, and no member can retrieve another member's plan, entries, weight readings, or statistics.
+
+### Post-Launch Outcome Measures
+
+These describe adoption once the feature is live. Each needs usage instrumentation that this release
+does not build, so they are **not release gates** and no implementation task is expected to verify
+them. They are recorded here so they are not mistaken for acceptance criteria.
+
+- **SC-002**: 70% of members accept the suggested daily target rather than replacing it, indicating the suggestion is credible.
 - **SC-013**: 60% of members who log a first day return to log a second day within 7 days.
+- **SC-014**: 90% of members complete their first food entry without abandoning the flow.
 
 ## Assumptions
 
@@ -266,6 +282,7 @@ A member who is struggling — over target, or facing a craving — opens a guid
 - Nutrition is tracked in calories plus the three macronutrients — protein, carbohydrate, and fat. A member may leave macronutrient targets unset and still use the feature; calorie targets are mandatory.
 - Weights and heights are stored in a single consistent unit system, with the display unit (kilograms or pounds, centimetres or feet and inches) a member preference that does not affect stored values.
 - The food library is curated and maintained with the application. Adding foods is a maintenance activity between releases, not something members can do — a deliberate first-release limitation accepted in exchange for trustworthy nutrition data.
+- A plan always carries at least one weight reading, because setup requires a current weight and the last remaining reading cannot be deleted. Current weight therefore always has a source.
 - A member has one active plan at a time. Keeping several plans in parallel, and sharing a plan with a coach or clinician, are out of scope for this release.
 - Photo capture of meals, barcode scanning, wearable or fitness-tracker import, recipe and meal-plan building, member-defined foods, and water-intake tracking are all out of scope for this release.
 - Curated reference content — foods, tips, and achievement definitions — is seeded on first run in the same manner as the curated content that already exists.

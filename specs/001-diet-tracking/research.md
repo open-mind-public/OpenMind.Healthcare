@@ -3,8 +3,8 @@
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-09-02
 
 Every unknown carried into planning is resolved here. Items R-001 to R-003 close assumptions the
-specification deliberately deferred. Items R-004 to R-013 are construction decisions raised by
-reading the existing code.
+specification deliberately deferred. Items R-004 to R-016 are construction decisions raised by
+reading the existing code or by the cross-artifact analysis that followed planning.
 
 ---
 
@@ -143,9 +143,17 @@ recomputes from the live library would silently rewrite history the moment a typ
 is fixed. It also makes a `LoggedDay` self-contained — it can compute its own totals with no join
 to the library, which is what lets the day aggregate stand alone under R-004.
 
+**On editing an entry**: a member's own edit re-reads the serving's values from the library and
+re-snapshots them. The snapshot protects history from *background* corrections, not from the member
+deliberately touching the entry — and re-reading keeps an edited entry consistent with the serving
+it now names. The consequence, accepted knowingly: editing only the quantity of an entry logged
+before a library correction also picks up the corrected nutrition.
+
 **Alternatives considered**:
 
 - *Recompute from the library on read*: smaller storage, but breaks FR-025 outright.
+- *Freeze values across edits too*: an entry whose serving was changed would then carry the old
+  serving's nutrition under the new serving's label, which is worse than the accepted consequence.
 - *Version the library items and reference a version*: correct, and considerably more machinery
   than a feature with a curated, rarely-corrected catalogue needs.
 
@@ -243,6 +251,11 @@ The 150-200 figure is what it takes to give SC-004's "85% of common foods found"
 chance. If seeding proves thin during implementation, the honest response is to widen the seed, not
 to relax SC-004.
 
+**Judging corpus**: SC-004 is only falsifiable against a fixed list, so a corpus of roughly 40
+everyday foods is checked in beside the seed and asserted against it. Without the list, "85%" is a
+number nobody can fail. The corpus is chosen independently of the seed — picking it *from* the seed
+would guarantee a 100% pass and measure nothing.
+
 **Alternatives considered**:
 
 - *SQLite FTS5*: warranted at thousands of rows; unnecessary machinery at 200.
@@ -336,6 +349,63 @@ switch to a `dotnet`-based probe is settled during implementation; the endpoint 
 feature owes. The same gap in the two existing services is pre-existing and out of scope.
 
 **Traceability**: Constitution, Architecture & Technology Constraints, item 6.
+
+---
+
+## R-015: Concurrent edits to the same day
+
+**Decision**: `LoggedDay` carries a `Guid Version` concurrency token, reassigned by the aggregate on
+every mutation and configured with `.IsConcurrencyToken()`. A write built on a stale copy fails with
+`DbUpdateConcurrencyException`, which the endpoint translates into **409 Conflict** telling the
+member to reload. Writes are not merged.
+
+**Rationale**: The specification's concurrent-edits edge case requires that two devices editing one
+day neither lose entries nor produce a total inconsistent with the entries shown. Two design choices
+made that a live risk rather than a theoretical one: R-004 makes `LoggedDay` its own aggregate, so
+two requests can load and save the same day independently, and R-010 stores each day's totals
+alongside its entries. A last-write-wins update would therefore persist one device's `Totals` over
+the other's `Entries` — leaving exactly the inconsistency the invariant test in the data model
+asserts against. Detection is the minimum honest answer.
+
+SQLite has no native row version, so the token is a `Guid` the domain reassigns rather than
+something the database maintains. EF Core still puts the previous value in the `UPDATE ... WHERE`
+clause, so a zero-row result is a reliable conflict signal.
+
+**Alternatives considered**:
+
+- *Last write wins*: what the code would do by default, and the specific outcome the edge case
+  forbids. Rejected.
+- *Merge the two edit sets*: entries are independent rows, so a union is superficially attractive,
+  but it silently resurrects an entry the member deleted on the other device. Worse than refusing.
+- *Scope the edge case out*: defensible for a single-member app, and it was the cheaper option. It
+  was rejected because a member with a phone and a laptop is the ordinary case, not an exotic one,
+  and a lost breakfast is invisible until the statistics look wrong.
+
+**Traceability**: FR-045, spec edge case "Concurrent edits".
+
+---
+
+## R-016: Deleting the last weight reading
+
+**Decision**: `RemoveWeightReading` refuses to delete a plan's only remaining reading, via
+`CannotRemoveLastWeightReadingRule`. A member correcting a mistyped weight edits the reading instead.
+
+**Rationale**: FR-017 makes the most recent weight reading the current weight used for target
+suggestions, and setup stores the supplied weight as the first reading — so a plan begins with
+exactly one. Nothing previously stopped a member deleting it, which would leave `CurrentWeightKg`
+with no source and the refreshed-suggestion path (FR-009) with nothing to compute from. Forbidding
+the deletion keeps the "a plan always has a current weight" invariant true by construction, so no
+downstream code needs a null branch.
+
+**Alternatives considered**:
+
+- *Make `CurrentWeightKg` nullable and disable suggestions when absent*: more permissive, but it
+  pushes a null check into the suggestion service, the update handler, and the UI, to support a state
+  no member actually wants to be in.
+- *Fall back to the setup weight*: the fallback the data model originally implied. It is circular —
+  the setup weight **is** the first reading, so once deleted there is nothing to fall back to.
+
+**Traceability**: FR-046, FR-017.
 
 ---
 

@@ -119,9 +119,14 @@ Each proves one user story end to end. Run them in order — later ones need ear
 7. Search for something absent, e.g. "kohlrabi gratin". You are told it is unavailable; nothing is
    created.
 8. Try to log against tomorrow, then against a date before plan start. Both rejected.
+9. Open the same day in two browser tabs. Add an entry in tab A, then add one in tab B without
+   reloading. Tab B is refused with **409** and a reload message — and **tab A's entry is still
+   there**. Reload tab B and reapply; both entries now exist.
+10. Run the SC-004 search corpus from T053 against the seeded library and record what fraction
+    returns a usable match in the first five results. The bar is 85%.
 
-**Passes when**: step 6 returns `NotLogged` and step 7 creates nothing. *FR-019 to FR-033, SC-003,
-SC-004, SC-005*
+**Passes when**: step 6 returns `NotLogged`, step 7 creates nothing, step 9 loses no entry from
+either tab, and step 10 clears 85%. *FR-019 to FR-033, FR-045, SC-003, SC-004, SC-005*
 
 ### V3 — History and streaks (US3)
 
@@ -146,10 +151,13 @@ SC-004, SC-005*
    start and distance to target.
 4. Try a future date, then 900 kg. Both rejected.
 5. Delete a reading. It disappears from the trend.
-6. Update your plan's body details. The refreshed suggestion uses your newest weight, and your
+6. Delete readings until one remains, then try to delete that one. It is refused with a message
+   saying you can correct it instead — current weight must always have a source.
+7. Update your plan's body details. The refreshed suggestion uses your newest weight, and your
    target in force is **unchanged** until you confirm.
 
-**Passes when**: step 2 replaces and step 6 does not silently overwrite. *FR-009, FR-012 to FR-018*
+**Passes when**: step 2 replaces, step 6 refuses, and step 7 does not silently overwrite.
+*FR-009, FR-012 to FR-018, FR-046*
 
 ### V5 — Achievements (US5)
 
@@ -199,6 +207,7 @@ The constitution's gates, all of which must hold:
 - [ ] `npm run build` in `frontend/` — succeeds
 - [ ] Every new endpoint appears in Scalar and requires authorization
 - [ ] A migration exists for every model change; an empty database yields a working seeded schema
-- [ ] V1 to V8 above all pass
+- [ ] V1 to V8 above all pass, including the 409 conflict check (V2 step 9) and the search corpus (V2 step 10)
+- [ ] Three ADRs exist under `OpenMind.Healthcare/adrs/` for R-004, R-007, and R-010 (T124)
 - [ ] Constitution compliance re-checked; any deviation is in the plan's Complexity Tracking or
       removed

@@ -88,11 +88,14 @@ The only way targets change. Request: `{ "targets", "targetSource" }`. Returns t
 ### `GET /api/food-log/{date}`
 
 One day, whether or not it has been logged. A date with no entries returns `state: "NotLogged"`
-with zero totals and an empty list — not a 404 (R-008).
+with zero totals and an empty list — not a 404 (R-008). A date **before the plan start or in the
+future** is refused with **400**; the three-member `DayState` never has to describe a day outside
+the plan (FR-032). `version` is the day's concurrency token and must be echoed back on any write
+(FR-045).
 
 ```json
 {
-  "date": "2026-09-02", "state": "OverTarget",
+  "date": "2026-09-02", "state": "OverTarget", "version": "8f2c…",
   "targets": { "calories": 2100, … },
   "totals": { "calories": 2340, "proteinG": 120.5, "carbsG": 250.0, "fatG": 88.0 },
   "remainingCalories": -240, "overageCalories": 240,
@@ -111,11 +114,15 @@ with zero totals and an empty list — not a 404 (R-008).
 
 Day summaries for a range — the calendar's data source. Returns one small row per day, never the
 entries, which is what keeps a three-year history under a second (R-010). Days outside the plan
-carry `state: "OutsidePlan"` so they render as neither success nor miss (FR-036).
+carry `withinPlan: false` and no `state`, so the calendar renders them as neither success nor miss
+without inventing a fourth `DayState` (FR-036).
 
 ```json
-{ "from": "2026-09-01", "to": "2026-09-30", "planStartDate": "2026-09-01",
-  "days": [ { "date": "2026-09-01", "state": "OnTarget", "consumedCalories": 1980, "targetCalories": 2100 } ] }
+{ "from": "2026-08-28", "to": "2026-09-30", "planStartDate": "2026-09-01",
+  "days": [
+    { "date": "2026-08-28", "withinPlan": false },
+    { "date": "2026-09-01", "withinPlan": true, "state": "OnTarget",
+      "consumedCalories": 1980, "targetCalories": 2100 } ] }
 ```
 
 *US3 · FR-034, FR-036*
@@ -126,25 +133,30 @@ Adds an entry. Creates the day if this is its first entry, snapshotting the plan
 onto it (R-006). Nutrition is read from the library item's chosen serving, multiplied by quantity,
 and snapshotted onto the entry (R-005).
 
-Request: `{ "foodLibraryItemId", "servingSizeId", "quantity", "mealType" }`
+Request: `{ "foodLibraryItemId", "servingSizeId", "quantity", "mealType", "version" }` — `version`
+is omitted when the date has no day yet, and required otherwise.
 
-Returns the full day, so the client shows updated totals from one round trip (SC-005). **400** on a
-future date, a date before plan start, a non-positive quantity, or an entry over the calorie
-ceiling. **404** if the food or serving does not exist.
+Returns the full day with a new `version`, so the client shows updated totals from one round trip
+(SC-005). **400** on a future date, a date before plan start, a non-positive quantity, or an entry
+over the calorie ceiling. **404** if the food or serving does not exist. **409** if `version` is
+stale — another session changed the day first (FR-045).
 
 *US2 · FR-023 to FR-027, FR-030*
 
 ### `PUT /api/food-log/entries/{entryId}`
 
-Request: `{ "servingSizeId", "quantity", "mealType" }`. Re-reads nutrition from the library for the
-new serving and re-snapshots it. Returns the full day. **404** if the entry is not the caller's.
+Request: `{ "servingSizeId", "quantity", "mealType", "version" }`. Re-reads nutrition from the
+library for the serving now named and re-snapshots it — a member's own edit is deliberate, unlike a
+background library correction (FR-025, R-005). Returns the full day with a new `version`. **404** if
+the entry is not the caller's. **409** on a stale `version`.
 
 *US2 · FR-028*
 
 ### `DELETE /api/food-log/entries/{entryId}`
 
-Removes the entry and recomputes totals. If it was the day's last entry, the day is deleted and the
-date returns to `NotLogged` (R-008). Returns the day, or **204** when the day no longer exists.
+Takes `?version=` as a query parameter. Removes the entry and recomputes totals. If it was the day's
+last entry, the day is deleted and the date returns to `NotLogged` (R-008). Returns the day with a
+new `version`, or **204** when the day no longer exists. **409** on a stale `version`.
 
 *US2 · FR-028, FR-032*
 
@@ -173,7 +185,9 @@ one (FR-012). Request: `{ "weightKg" }`. **400** on a future date or an implausi
 
 ### `DELETE /api/weight/{date}`
 
-**204** on success, **404** if no reading exists for that date.
+**204** on success, **404** if no reading exists for that date, and **400** when it is the plan's
+only remaining reading — current weight must always have a source, so a mistyped reading is
+corrected with `PUT`, not deleted (FR-046, R-016).
 
 *US4 · FR-013*
 

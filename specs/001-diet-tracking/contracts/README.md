@@ -50,6 +50,7 @@ of the API makes cross-member access unrepresentable rather than merely forbidde
 | 400 | `DomainException` — a broken business rule. Body: `{ "message": "..." }` |
 | 401 | Missing or invalid token (framework-issued) |
 | 404 | The member has no plan, or the addressed resource does not exist |
+| 409 | The logged day was changed by another session since it was read (FR-045). Body: `{ "message": "..." }`. The client reloads the day and reapplies the change |
 
 Endpoint delegates translate `DomainException` into `Results.BadRequest(new { message = ex.Message })`
 and a missing resource into `Results.NotFound()`, and contain no other logic. Rule violations
@@ -78,6 +79,14 @@ never "no data yet".
 Adding the first entry for a date creates the day; deleting the last entry destroys it and the date
 returns to `NotLogged` (R-008).
 
+**Concurrent writes are refused, not merged**: every mutating food-log response carries the day's
+`version`, and every mutating request echoes it back. A mismatch means another session changed the
+day first, and the write is refused with 409 rather than overwriting it (FR-045, R-015).
+
+**`DayState` has three members, not four**: `NotLogged`, `OnTarget`, `OverTarget`. A day outside the
+plan is not a fourth state — the range response marks it with a separate `withinPlan` flag, and the
+single-day endpoint rejects an out-of-range date outright.
+
 **Snapshots**: an entry's nutrition and a day's target are captured at write time. A later
 correction to the food library, or a later change to the plan's target, does not alter what a past
 day returns (R-005, R-006).
@@ -98,3 +107,4 @@ to expect rather than discovering them at runtime.
 | Entry quantity | greater than zero |
 | Entry calories | at most 10,000 kcal |
 | Search results | capped at 20 |
+| Weight readings | the last remaining reading cannot be deleted (FR-046) |
