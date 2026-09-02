@@ -43,6 +43,10 @@
         <span *ngFor="let weekday of weekdays">{{ weekday }}</span>
       </div>
 
+      <div class="weekdays" *ngIf="view === 'year'">
+        <span *ngFor="let initial of weekdayInitials; trackBy: trackByIndex">{{ initial }}</span>
+      </div>
+
       <div class="grid">
         <span class="blank" *ngFor="let blank of month.leadingBlanks"></span>
         <button

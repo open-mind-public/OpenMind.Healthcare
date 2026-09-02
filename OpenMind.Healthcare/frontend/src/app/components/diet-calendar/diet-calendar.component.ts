@@ -30,6 +30,14 @@ export class DietCalendarComponent implements OnInit {
 
   readonly weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  /** The year view has ~21px columns, so the headers shrink to initials. */
+  readonly weekdayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  /** Initials repeat (T, S), so the repeater must track by position, not value. */
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   constructor(private dietService: DietService, private router: Router) {}
 
   ngOnInit(): void {

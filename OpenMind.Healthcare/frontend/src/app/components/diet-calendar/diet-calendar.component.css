@@ -102,8 +102,9 @@
 
 .months.year-view {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
 .month {
@@ -112,6 +113,11 @@
   border-radius: var(--r-lg);
   padding: 16px;
   margin-bottom: 14px;
+}
+
+.year-view .month {
+  margin-bottom: 0;
+  padding: 12px;
 }
 
 .month h2 {
@@ -137,6 +143,10 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
+}
+
+.blank {
+  aspect-ratio: 1;
 }
 
 .day {
@@ -165,18 +175,34 @@
 }
 
 .day.not-logged {
-  background: var(--border);
-  color: var(--text-muted);
+  background: var(--border-strong);
+  color: var(--text-secondary);
 }
 
 .day.outside {
-  background: transparent;
-  color: var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.year-view .grid,
+.year-view .weekdays {
+  gap: 3px;
+}
+
+.year-view .weekdays span {
+  font-size: 0.58rem;
 }
 
 .year-view .day {
-  font-size: 0;
+  font-size: 0.62rem;
   border-radius: 3px;
+  line-height: 1;
+}
+
+/* Out-of-plan dates stay legible but clearly recede. */
+.year-view .day.outside {
+  opacity: 0.55;
 }
 
 .legend {
@@ -212,12 +238,12 @@
 }
 
 .swatch.not-logged {
-  background: var(--border);
+  background: var(--border-strong);
 }
 
 .swatch.outside {
-  background: transparent;
-  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  opacity: 0.5;
 }
 
 .alert.error {

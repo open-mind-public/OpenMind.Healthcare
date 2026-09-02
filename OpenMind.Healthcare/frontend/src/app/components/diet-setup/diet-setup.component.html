@@ -1,13 +1,32 @@
 <div class="diet-setup">
   <header class="setup-header">
-    <h1>Set up your diet plan</h1>
-    <p class="lead">
+    <h1>{{ mode === 'edit' ? 'Diet plan & targets' : 'Set up your diet plan' }}</h1>
+    <p class="lead" *ngIf="mode === 'create'">
       Tell us what you are aiming for and a little about you. We will suggest a daily target you
       can keep or change.
     </p>
+    <p class="lead" *ngIf="mode === 'edit'">
+      Change your goal, your details or your daily target. Days you have already logged keep the
+      target that was in force when you logged them.
+    </p>
   </header>
 
-  <form *ngIf="form" [formGroup]="form" class="setup-form" (ngSubmit)="save()">
+  <p class="loading" *ngIf="loading">Loading...</p>
+
+  <form *ngIf="form && !loading" [formGroup]="form" class="setup-form" (ngSubmit)="save()">
+    <!-- What the plan is currently set to, so the settings screen states the facts first. -->
+    <section class="panel current" *ngIf="mode === 'edit' && existingPlan">
+      <h2>In force now</h2>
+      <p class="current-target">
+        {{ existingPlan.targets.calories }} <span>calories a day</span>
+      </p>
+      <span class="badge" [class.badge-accent]="existingPlan.targetSource === 'Suggested'"
+            [class.badge-neutral]="existingPlan.targetSource === 'MemberSet'">
+        {{ existingPlan.targetSource === 'Suggested' ? 'Suggested for you' : 'You set this' }}
+      </span>
+      <p class="hint">Started {{ existingPlan.startDate }} · now {{ existingPlan.currentWeightKg }} kg</p>
+    </section>
+
     <section class="panel">
       <h2>Your goal</h2>
 
@@ -66,10 +85,13 @@
           <option *ngFor="let level of activityLevels" [value]="level.value">{{ level.label }}</option>
         </select>
       </label>
+      <small class="hint" *ngIf="mode === 'edit'">
+        Recording a weight on the Weight page also updates the figure used here.
+      </small>
     </section>
 
     <section class="panel suggestion" *ngIf="suggestion">
-      <h2>Your suggested daily target</h2>
+      <h2>{{ mode === 'edit' ? 'Suggested for these details' : 'Your suggested daily target' }}</h2>
 
       <p class="target-number">
         {{ suggestion.suggestedTargets.calories }} <span>calories a day</span>
@@ -99,21 +121,27 @@
 
       <p class="disclaimer">{{ suggestion.disclaimer }}</p>
 
-      <div class="suggestion-actions" *ngIf="!overriding">
+      <!-- On an existing plan the suggestion is an offer, never applied on your behalf. -->
+      <div class="suggestion-actions" *ngIf="mode === 'edit' && targetDiffersFromSuggestion">
+        <button type="button" class="link" (click)="acceptSuggestion()">
+          Use {{ suggestion.suggestedTargets.calories }} instead of my current target
+        </button>
+      </div>
+
+      <div class="suggestion-actions" *ngIf="mode === 'create' && !overriding">
         <button type="button" class="link" (click)="startOverriding()">
           I would rather set my own number
         </button>
       </div>
+    </section>
 
-      <div class="override" *ngIf="overriding">
-        <label class="field">
-          <span>Your daily calorie target</span>
-          <input type="number" formControlName="calories" />
-        </label>
-        <button type="button" class="link" (click)="acceptSuggestion()">
-          Use the suggested {{ suggestion.suggestedTargets.calories }} instead
-        </button>
-      </div>
+    <section class="panel">
+      <h2>Your daily target</h2>
+      <label class="field">
+        <span>Calories a day</span>
+        <input type="number" formControlName="calories" (focus)="startOverriding()" />
+        <small class="hint">You can always set your own number.</small>
+      </label>
     </section>
 
     <p class="prompt" *ngIf="!suggestion">
@@ -122,9 +150,15 @@
 
     <div class="alert error" *ngIf="error">{{ error }}</div>
     <div class="alert warning" *ngIf="floorWarning">{{ floorWarning }}</div>
+    <div class="alert success" *ngIf="saved && !floorWarning">Your plan has been updated.</div>
 
-    <button type="submit" class="primary" [disabled]="saving || !suggestion">
-      {{ saving ? 'Saving...' : 'Save my plan' }}
-    </button>
+    <div class="actions">
+      <button type="submit" class="primary" [disabled]="saving || !suggestion">
+        {{ saving ? 'Saving...' : (mode === 'edit' ? 'Save changes' : 'Save my plan') }}
+      </button>
+      <button type="button" class="secondary" *ngIf="mode === 'edit'" (click)="backToToday()">
+        Back to today
+      </button>
+    </div>
   </form>
 </div>
