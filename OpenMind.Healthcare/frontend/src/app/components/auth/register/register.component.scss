@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg);
   padding: 20px;
 }
 
@@ -11,7 +11,7 @@
   background: white;
   border-radius: 10px;
   padding: 40px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px var(--shadow-md);
   width: 100%;
   max-width: 450px;
   text-align: center;
@@ -22,13 +22,13 @@
 }
 
 .brand h1 {
-  color: #333;
+  color: var(--text);
   margin-bottom: 10px;
   font-size: 2rem;
 }
 
 .brand p {
-  color: #666;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -40,42 +40,42 @@
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  color: #333;
+  color: var(--text);
   font-weight: 500;
 }
 
 .form-group input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
   font-size: 16px;
-  color: #333;
-  background-color: #fff;
+  color: var(--text);
+  background-color: var(--surface);
   transition: border-color 0.3s ease;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--accent);
 }
 
 .form-group input::placeholder {
-  color: #999;
+  color: var(--text-muted);
   opacity: 1;
 }
 
 .form-group input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px white inset !important;
-  -webkit-text-fill-color: #333 !important;
+  -webkit-text-fill-color: var(--text) !important;
 }
 
 .form-group input.error {
-  border-color: #e74c3c;
+  border-color: var(--danger);
 }
 
 .error-message {
-  color: #e74c3c;
+  color: var(--danger);
   font-size: 14px;
   margin-top: 5px;
   text-align: center;
@@ -83,8 +83,8 @@
 
 .register-btn {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--bg);
+  color: var(--text-on-accent);
   border: none;
   padding: 12px;
   border-radius: 5px;
@@ -104,13 +104,13 @@
 
 .login-link {
   margin-top: 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .link-btn {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--accent);
   cursor: pointer;
   text-decoration: underline;
 }

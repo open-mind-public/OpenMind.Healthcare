@@ -321,13 +321,11 @@ interface TriggerSummary {
       h1 {
         font-size: 32px;
         margin-bottom: 20px;
-        background: linear-gradient(135deg, #10b981, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text);
       }
       
       p {
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         font-size: 18px;
         line-height: 1.6;
         margin-bottom: 30px;
@@ -343,11 +341,11 @@ interface TriggerSummary {
       display: flex;
       flex-direction: column;
       gap: 35px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2));
+      background: var(--accent-subtle);
       border-radius: 30px;
       padding: 50px;
       margin-bottom: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
     }
 
     .hero-main {
@@ -362,7 +360,7 @@ interface TriggerSummary {
       grid-template-columns: repeat(4, 1fr);
       gap: 15px;
       padding-top: 30px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 1px solid var(--border);
     }
 
     .hero-stat {
@@ -371,13 +369,13 @@ interface TriggerSummary {
       gap: 14px;
       padding: 16px 18px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-3px);
-        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+        background: var(--surface-sunken);
       }
 
       .stat-icon {
@@ -396,18 +394,18 @@ interface TriggerSummary {
         font-size: 22px;
         font-weight: 700;
         line-height: 1.15;
-        color: white;
+        color: var(--text);
       }
 
       .stat-label {
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
       }
 
-      &.primary .stat-value { color: #34d399; }
-      &.gold .stat-value    { color: #fbbf24; }
-      &.blue .stat-value    { color: #60a5fa; }
-      &.pink .stat-value    { color: #f472b6; }
+      &.primary .stat-value { color: var(--accent); }
+      &.gold .stat-value    { color: var(--warning); }
+      &.blue .stat-value    { color: var(--info); }
+      &.pink .stat-value    { color: var(--info); }
     }
 
     .hero-title {
@@ -432,9 +430,7 @@ interface TriggerSummary {
     .days-count {
       font-size: 64px;
       font-weight: 800;
-      background: linear-gradient(135deg, #10b981, #34d399);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
       line-height: 1;
     }
 
@@ -445,17 +441,17 @@ interface TriggerSummary {
 
     .hero-subtitle {
       font-size: 20px;
-      color: #34d399;
+      color: var(--accent);
       margin-top: 10px;
     }
 
     .next-milestone {
       margin-top: 15px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       font-size: 16px;
       
       .days-remaining {
-        color: #f59e0b;
+        color: var(--warning);
         margin-left: 5px;
       }
     }
@@ -470,7 +466,7 @@ interface TriggerSummary {
 
       &:hover,
       &:focus-visible {
-        background: rgba(255, 255, 255, 0.07);
+        background: var(--surface-sunken);
         outline: none;
       }
     }
@@ -478,8 +474,7 @@ interface TriggerSummary {
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      background: var(--overlay);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -489,8 +484,8 @@ interface TriggerSummary {
 
     .modal {
       position: relative;
-      background: #111827;
-      border: 1px solid rgba(251, 191, 36, 0.3);
+      background: var(--text);
+      border: 1px solid var(--warning-border);
       border-radius: 18px;
       padding: 25px;
       width: 100%;
@@ -500,7 +495,7 @@ interface TriggerSummary {
 
       h3 {
         text-align: center;
-        color: #fbbf24;
+        color: var(--warning);
         font-size: 20px;
         margin: 0 30px 4px;
       }
@@ -508,13 +503,13 @@ interface TriggerSummary {
       .modal-sub {
         text-align: center;
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         margin-bottom: 20px;
       }
 
       .modal-state {
         text-align: center;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         font-size: 14px;
         padding: 20px 0;
       }
@@ -528,15 +523,15 @@ interface TriggerSummary {
       height: 30px;
       border-radius: 50%;
       border: none;
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.7);
+      background: var(--surface-sunken);
+      color: var(--text-secondary);
       font-size: 13px;
       cursor: pointer;
       transition: all 0.2s ease;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.18);
-        color: white;
+        background: var(--border);
+        color: var(--text);
       }
     }
 
@@ -551,8 +546,8 @@ interface TriggerSummary {
       align-items: center;
       gap: 14px;
       padding: 12px 14px;
-      background: rgba(251, 191, 36, 0.08);
-      border: 1px solid rgba(251, 191, 36, 0.2);
+      background: var(--warning-subtle);
+      border: 1px solid var(--warning-subtle);
       border-radius: 12px;
 
       .milestone-icon {
@@ -571,23 +566,23 @@ interface TriggerSummary {
       .milestone-name {
         font-size: 15px;
         font-weight: 600;
-        color: white;
+        color: var(--text);
       }
 
       .milestone-desc {
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
       }
 
       .milestone-when {
         font-size: 11px;
-        color: #fbbf24;
+        color: var(--warning);
       }
 
       .milestone-days {
         font-size: 13px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
         white-space: nowrap;
       }
     }
@@ -605,9 +600,9 @@ interface TriggerSummary {
       margin-top: 15px;
       padding: 9px 16px;
       border-radius: 25px;
-      background: rgba(251, 191, 36, 0.15);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      color: rgba(255, 255, 255, 0.85);
+      background: var(--warning-subtle);
+      border: 1px solid var(--warning-border);
+      color: var(--text);
       font-size: 15px;
 
       .complete-icon {
@@ -616,7 +611,7 @@ interface TriggerSummary {
       }
 
       strong {
-        color: #fbbf24;
+        color: var(--warning);
       }
     }
 
@@ -633,7 +628,7 @@ interface TriggerSummary {
       
       .progress-bg {
         fill: none;
-        stroke: rgba(255, 255, 255, 0.1);
+        stroke: var(--surface-sunken);
         stroke-width: 8;
       }
       
@@ -657,12 +652,12 @@ interface TriggerSummary {
         display: block;
         font-size: 36px;
         font-weight: 700;
-        color: #10b981;
+        color: var(--accent);
       }
       
       .to-year {
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
       }
     }
 
@@ -675,14 +670,14 @@ interface TriggerSummary {
       font-size: 13px;
 
       .quit-date-label {
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.06em;
         font-size: 11px;
       }
 
       .quit-date-value {
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--text);
         font-weight: 600;
       }
     }
@@ -692,12 +687,12 @@ interface TriggerSummary {
     }
 
     .failed-card {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(248, 113, 113, 0.05));
-      border: 1px solid rgba(239, 68, 68, 0.28);
+      background: var(--danger-subtle);
+      border: 1px solid var(--danger-border);
 
       &.clean {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.05));
-        border-color: rgba(16, 185, 129, 0.28);
+        background: var(--accent-subtle);
+        border-color: var(--accent-border);
       }
     }
 
@@ -720,7 +715,7 @@ interface TriggerSummary {
 
       h2 {
         font-size: 22px;
-        color: white;
+        color: var(--text);
       }
 
       .failed-count-badge {
@@ -730,8 +725,8 @@ interface TriggerSummary {
         min-width: 74px;
         padding: 10px 14px;
         border-radius: 14px;
-        background: rgba(239, 68, 68, 0.18);
-        color: #f87171;
+        background: var(--danger-subtle);
+        color: var(--danger);
         font-size: 30px;
         font-weight: 700;
         line-height: 1;
@@ -741,15 +736,15 @@ interface TriggerSummary {
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.06em;
-          color: rgba(255, 255, 255, 0.55);
+          color: var(--text-muted);
           margin-top: 5px;
         }
       }
     }
 
     .failed-card.clean .failed-count-badge {
-      background: rgba(16, 185, 129, 0.18);
-      color: #34d399;
+      background: var(--accent-subtle);
+      color: var(--accent);
     }
 
     .failed-figures {
@@ -764,19 +759,19 @@ interface TriggerSummary {
         align-items: center;
         text-align: center;
         padding: 14px 10px;
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--surface-sunken);
         border-radius: 12px;
       }
 
       .figure-value {
         font-size: 20px;
         font-weight: 700;
-        color: white;
+        color: var(--text);
       }
 
       .figure-label {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         margin-top: 5px;
       }
     }
@@ -784,7 +779,7 @@ interface TriggerSummary {
     .trigger-breakdown {
       margin-top: 20px;
       padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border);
 
       .breakdown-title {
         display: block;
@@ -792,7 +787,7 @@ interface TriggerSummary {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
       }
     }
 
@@ -812,7 +807,7 @@ interface TriggerSummary {
         align-items: center;
         gap: 8px;
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -825,7 +820,7 @@ interface TriggerSummary {
       .trigger-track {
         display: block;
         height: 10px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--surface-sunken);
         border-radius: 4px;
         overflow: hidden;
       }
@@ -835,14 +830,14 @@ interface TriggerSummary {
         height: 100%;
         min-width: 3px;
         border-radius: 0 4px 4px 0;
-        background: #ef4444;
+        background: var(--danger);
         transition: width 0.4s ease;
       }
 
       .trigger-count {
         font-size: 13px;
         font-weight: 600;
-        color: white;
+        color: var(--text);
         text-align: right;
         white-space: nowrap;
       }
@@ -850,7 +845,7 @@ interface TriggerSummary {
       .unit {
         font-size: 11px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
       }
     }
 
@@ -862,7 +857,7 @@ interface TriggerSummary {
       flex-wrap: wrap;
       margin-top: 20px;
       padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border);
 
       .latest-info {
         display: flex;
@@ -874,18 +869,18 @@ interface TriggerSummary {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
       }
 
       .latest-date {
         font-size: 17px;
         font-weight: 600;
-        color: white;
+        color: var(--text);
       }
 
       .latest-detail {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--text-secondary);
 
         .dot {
           margin: 0 6px;
@@ -896,7 +891,7 @@ interface TriggerSummary {
       .latest-note {
         font-size: 13px;
         font-style: italic;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
         margin-top: 2px;
       }
     }
@@ -911,10 +906,10 @@ interface TriggerSummary {
       gap: 8px;
       padding: 11px 20px;
       border-radius: 25px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.08);
-      color: white;
-      font-family: 'Poppins', sans-serif;
+      border: 1px solid var(--border);
+      background: var(--surface-sunken);
+      color: var(--text);
+      font-family: var(--font);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -926,8 +921,8 @@ interface TriggerSummary {
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.16);
-        transform: translateY(-2px);
+        background: var(--border);
+        transform: translateY(-1px);
 
         .arrow {
           transform: translateX(3px);
@@ -940,8 +935,8 @@ interface TriggerSummary {
     }
 
     .encouragement-card {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(236, 72, 153, 0.1));
-      border-color: rgba(245, 158, 11, 0.2);
+      background: var(--warning-subtle);
+      border-color: var(--warning-border);
       
       .message-header {
         display: flex;
@@ -955,22 +950,20 @@ interface TriggerSummary {
         
         h2 {
           font-size: 24px;
-          background: linear-gradient(135deg, #f59e0b, #ec4899);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: var(--text);
         }
       }
       
       .main-message {
         font-size: 18px;
         line-height: 1.8;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text);
       }
       
       .special-message {
         margin-top: 20px;
         padding: 15px 20px;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.2));
+        background: var(--accent-border);
         border-radius: 12px;
         font-weight: 600;
         font-size: 16px;
@@ -979,18 +972,18 @@ interface TriggerSummary {
       .quote-section {
         margin-top: 25px;
         padding-top: 25px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--border);
         
         blockquote {
           font-style: italic;
           font-size: 16px;
-          color: rgba(255, 255, 255, 0.8);
+          color: var(--text-secondary);
           
           cite {
             display: block;
             margin-top: 10px;
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
             font-style: normal;
           }
         }
@@ -1008,46 +1001,56 @@ interface TriggerSummary {
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      padding: 25px;
-      border-radius: 16px;
-      border: none;
+      padding: 20px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
       cursor: pointer;
       transition: all 0.3s ease;
-      font-family: 'Poppins', sans-serif;
+      font-family: var(--font);
       font-weight: 600;
-      color: white;
+      color: var(--text);
       
       .action-icon {
         font-size: 36px;
       }
       
       &:hover {
-        transform: translateY(-5px);
+        transform: translateY(-1px);
       }
       
       &.health {
-        background: linear-gradient(135deg, #ec4899, #f472b6);
-        &:hover { box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
+        background: var(--info-subtle);
+        border-color: var(--info-border);
+        .action-icon { color: var(--info); }
+        &:hover { border-color: var(--info); }
       }
       
       &.achievements {
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        &:hover { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4); }
+        background: var(--warning-subtle);
+        border-color: var(--warning-border);
+        .action-icon { color: var(--warning); }
+        &:hover { border-color: var(--warning); }
       }
       
       &.motivation {
-        background: linear-gradient(135deg, #3b82f6, #60a5fa);
-        &:hover { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+        background: var(--info-subtle);
+        border-color: var(--info-border);
+        .action-icon { color: var(--info); }
+        &:hover { border-color: var(--info); }
       }
       
       &.analytics {
-        background: linear-gradient(135deg, #6366f1, #818cf8);
-        &:hover { box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+        background: var(--info-subtle);
+        border-color: var(--info-border);
+        .action-icon { color: var(--info); }
+        &:hover { border-color: var(--info); }
       }
 
       &.craving {
-        background: linear-gradient(135deg, #ef4444, #f87171);
-        &:hover { box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4); }
+        background: var(--danger-subtle);
+        border-color: var(--danger-border);
+        .action-icon { color: var(--danger); }
+        &:hover { border-color: var(--danger); }
       }
     }
 
@@ -1283,7 +1286,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   viewFailedDayOnCalendar(day: SmokedDay): void {
-    this.router.navigate(['/calendar'], { queryParams: { date: day.date } });
+    this.router.navigate(['/quit-smoking/calendar'], { queryParams: { date: day.date } });
   }
 
   triggerLabel(trigger: RelapseTrigger): string {
@@ -1342,7 +1345,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   goToSetup(): void {
-    this.router.navigate(['/setup']);
+    this.router.navigate(['/quit-smoking/setup']);
   }
 
   navigate(path: string): void {

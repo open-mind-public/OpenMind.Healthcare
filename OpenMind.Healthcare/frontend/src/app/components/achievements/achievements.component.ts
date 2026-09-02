@@ -72,13 +72,11 @@ import { Achievement } from '../../models/models';
       h1 {
         font-size: 36px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--warning);
       }
       
       p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-size: 18px;
       }
     }
@@ -90,7 +88,7 @@ import { Achievement } from '../../models/models';
       gap: 40px;
       margin-bottom: 40px;
       padding: 30px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 20px;
       
       .stat-item {
@@ -100,19 +98,19 @@ import { Achievement } from '../../models/models';
           display: block;
           font-size: 48px;
           font-weight: 700;
-          color: #f59e0b;
+          color: var(--warning);
         }
         
         .stat-label {
           font-size: 16px;
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
         }
       }
       
       .stat-divider {
         width: 2px;
         height: 60px;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--border);
       }
     }
 
@@ -124,7 +122,7 @@ import { Achievement } from '../../models/models';
     }
 
     .achievement-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 20px;
       padding: 25px;
       display: flex;
@@ -133,12 +131,12 @@ import { Achievement } from '../../models/models';
       transition: all 0.3s ease;
       
       &.unlocked {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.1));
-        border-color: rgba(245, 158, 11, 0.3);
+        background: var(--warning-subtle);
+        border-color: var(--warning-border);
         
         &:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 15px 40px rgba(245, 158, 11, 0.2);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
       
@@ -175,12 +173,12 @@ import { Achievement } from '../../models/models';
       h3 {
         font-size: 18px;
         margin-bottom: 8px;
-        color: #f59e0b;
+        color: var(--warning);
       }
       
       p {
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         line-height: 1.5;
         margin-bottom: 12px;
       }
@@ -193,18 +191,18 @@ import { Achievement } from '../../models/models';
       font-size: 12px;
       
       .days-required {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         padding: 4px 10px;
         border-radius: 12px;
       }
       
       .unlocked-date {
-        color: #10b981;
+        color: var(--accent);
         font-weight: 600;
       }
       
       .locked-status {
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
       }
     }
 
@@ -213,9 +211,9 @@ import { Achievement } from '../../models/models';
       align-items: center;
       gap: 20px;
       padding: 30px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+      background: var(--info-subtle);
       border-radius: 20px;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+      border: 1px solid var(--info-border);
       
       .banner-icon {
         font-size: 48px;
@@ -226,18 +224,18 @@ import { Achievement } from '../../models/models';
         h3 {
           font-size: 20px;
           margin-bottom: 5px;
-          color: #60a5fa;
+          color: var(--info);
         }
         
         p {
-          color: rgba(255, 255, 255, 0.7);
+          color: var(--text-secondary);
         }
       }
     }
 
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+      50% { transform: translateY(-1px); }
     }
   `]
 })

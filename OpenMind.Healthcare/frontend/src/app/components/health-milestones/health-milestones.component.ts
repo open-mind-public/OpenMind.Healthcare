@@ -109,13 +109,11 @@ import { HealthMilestone } from '../../models/models';
       h1 {
         font-size: 36px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #ec4899, #f472b6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text);
       }
       
       p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-size: 18px;
       }
     }
@@ -145,22 +143,22 @@ import { HealthMilestone } from '../../models/models';
         
         .label {
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
           margin-top: 5px;
         }
         
         &.achieved {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
-          border: 1px solid rgba(16, 185, 129, 0.3);
+          background: var(--accent-subtle);
+          border: 1px solid var(--accent-border);
           
-          .count { color: #10b981; }
+          .count { color: var(--accent); }
         }
         
         &.upcoming {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(96, 165, 250, 0.1));
-          border: 1px solid rgba(59, 130, 246, 0.3);
+          background: var(--info-subtle);
+          border: 1px solid var(--info-border);
           
-          .count { color: #3b82f6; }
+          .count { color: var(--info); }
         }
       }
     }
@@ -178,12 +176,12 @@ import { HealthMilestone } from '../../models/models';
       
       &.achieved {
         .timeline-content {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.05));
-          border-color: rgba(16, 185, 129, 0.3);
+          background: var(--accent-subtle);
+          border-color: var(--accent-border);
         }
         
         .timeline-line {
-          background: linear-gradient(to bottom, #10b981, rgba(16, 185, 129, 0.3));
+          background: var(--accent);
         }
       }
       
@@ -207,7 +205,7 @@ import { HealthMilestone } from '../../models/models';
     .marker-icon {
       width: 60px;
       height: 60px;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -216,7 +214,7 @@ import { HealthMilestone } from '../../models/models';
       
       &.pulse {
         animation: pulse 2s infinite;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.2));
+        background: var(--accent-border);
       }
     }
 
@@ -228,17 +226,17 @@ import { HealthMilestone } from '../../models/models';
     .timeline-line {
       width: 3px;
       flex: 1;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
       margin-top: 10px;
       min-height: 50px;
     }
 
     .timeline-content {
       flex: 1;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 16px;
       padding: 20px 25px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
       transition: all 0.3s ease;
       
       &:hover {
@@ -254,11 +252,11 @@ import { HealthMilestone } from '../../models/models';
       
       h3 {
         font-size: 18px;
-        color: #ec4899;
+        color: var(--info);
       }
       
       .time-badge {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 12px;
@@ -267,7 +265,7 @@ import { HealthMilestone } from '../../models/models';
     }
 
     .timeline-content p {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       font-size: 14px;
       line-height: 1.6;
     }
@@ -277,14 +275,14 @@ import { HealthMilestone } from '../../models/models';
       
       .progress-bar {
         height: 8px;
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         border-radius: 4px;
         overflow: hidden;
         margin-bottom: 8px;
         
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #3b82f6, #60a5fa);
+          background: var(--info);
           border-radius: 4px;
           transition: width 1s ease;
         }
@@ -292,7 +290,7 @@ import { HealthMilestone } from '../../models/models';
       
       .progress-text {
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
       }
     }
 
@@ -300,7 +298,8 @@ import { HealthMilestone } from '../../models/models';
       margin-top: 15px;
       
       span {
-        background: linear-gradient(135deg, #10b981, #34d399);
+        background: var(--accent);
+        color: var(--text-on-accent);
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 13px;
@@ -312,9 +311,7 @@ import { HealthMilestone } from '../../models/models';
       h2 {
         margin-bottom: 25px;
         font-size: 22px;
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--warning);
       }
       
       ul {
@@ -324,13 +321,13 @@ import { HealthMilestone } from '../../models/models';
           display: flex;
           gap: 15px;
           padding: 15px;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--surface-sunken);
           border-radius: 12px;
           margin-bottom: 12px;
           transition: all 0.3s ease;
           
           &:hover {
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--surface-sunken);
             transform: translateX(5px);
           }
           
@@ -342,12 +339,12 @@ import { HealthMilestone } from '../../models/models';
           strong {
             display: block;
             margin-bottom: 5px;
-            color: #f59e0b;
+            color: var(--warning);
           }
           
           p {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
             margin: 0;
           }
         }

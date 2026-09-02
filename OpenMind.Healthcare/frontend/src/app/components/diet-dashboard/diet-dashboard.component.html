@@ -4,15 +4,6 @@
     <input type="date" [value]="date" (change)="changeDate($any($event.target).value)" />
   </header>
 
-  <nav class="diet-nav">
-    <a routerLink="/diet" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Today</a>
-    <a routerLink="/diet/calendar" routerLinkActive="active">History</a>
-    <a routerLink="/diet/weight" routerLinkActive="active">Weight</a>
-    <a routerLink="/diet/achievements" routerLinkActive="active">Achievements</a>
-    <a routerLink="/diet/guidance" routerLinkActive="active">Guidance</a>
-    <a routerLink="/diet/setup" routerLinkActive="active">Plan</a>
-  </nav>
-
   <p class="loading" *ngIf="loading">Loading...</p>
 
   <div class="alert error" *ngIf="error">

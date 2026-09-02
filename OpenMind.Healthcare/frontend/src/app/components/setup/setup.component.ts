@@ -185,13 +185,11 @@ import { SmokedDay, UserProgress } from '../../models/models';
       h1 {
         font-size: 28px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #10b981, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text);
       }
 
       p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
     }
 
@@ -202,21 +200,21 @@ import { SmokedDay, UserProgress } from '../../models/models';
       gap: 4px;
       padding: 14px;
       margin-bottom: 30px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
       border-radius: 12px;
 
       .current-label {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
       }
 
       .current-value {
         font-size: 15px;
         font-weight: 600;
-        color: #34d399;
+        color: var(--accent);
       }
     }
 
@@ -225,8 +223,8 @@ import { SmokedDay, UserProgress } from '../../models/models';
       gap: 12px;
       padding: 16px;
       margin-bottom: 25px;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: var(--danger-subtle);
+      border: 1px solid var(--danger-border);
       border-radius: 12px;
 
       .warning-icon {
@@ -236,14 +234,14 @@ import { SmokedDay, UserProgress } from '../../models/models';
 
       strong {
         display: block;
-        color: #fca5a5;
+        color: var(--danger);
         font-size: 14px;
         margin-bottom: 4px;
       }
 
       p {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         line-height: 1.5;
       }
     }
@@ -255,7 +253,7 @@ import { SmokedDay, UserProgress } from '../../models/models';
         display: block;
         margin-bottom: 8px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text);
       }
 
       input, select {
@@ -265,9 +263,9 @@ import { SmokedDay, UserProgress } from '../../models/models';
       }
 
       select {
-        background-color: #1a1a2e;
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
         border-radius: 8px;
         cursor: pointer;
       }
@@ -276,14 +274,14 @@ import { SmokedDay, UserProgress } from '../../models/models';
         display: block;
         margin-top: 5px;
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
       }
 
       .error-text {
         display: block;
         margin-top: 5px;
         font-size: 12px;
-        color: #f87171;
+        color: var(--danger);
       }
     }
 
@@ -303,15 +301,15 @@ import { SmokedDay, UserProgress } from '../../models/models';
       flex: 0 0 auto;
       width: 52px;
       border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      background: var(--surface-sunken);
       font-size: 20px;
       line-height: 1;
       cursor: pointer;
       transition: all 0.3s ease;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.16);
+        background: var(--border);
       }
     }
 
@@ -338,13 +336,13 @@ import { SmokedDay, UserProgress } from '../../models/models';
     .motivation-section {
       margin: 30px 0;
       padding: 25px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+      background: var(--accent-subtle);
       border-radius: 16px;
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--accent-subtle);
 
       h3 {
         margin-bottom: 15px;
-        color: #10b981;
+        color: var(--accent);
       }
     }
 
@@ -356,7 +354,7 @@ import { SmokedDay, UserProgress } from '../../models/models';
 
       li {
         padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--surface-sunken);
         border-radius: 8px;
         font-size: 14px;
       }
@@ -366,9 +364,9 @@ import { SmokedDay, UserProgress } from '../../models/models';
       margin-top: 20px;
       padding: 12px 16px;
       border-radius: 10px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: var(--danger-subtle);
+      border: 1px solid var(--danger-border);
+      color: var(--danger);
       font-size: 14px;
     }
 
@@ -394,14 +392,14 @@ import { SmokedDay, UserProgress } from '../../models/models';
       font-size: 16px;
       font-weight: 600;
       border-radius: 25px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.08);
-      color: white;
+      border: 1px solid var(--border);
+      background: var(--surface-sunken);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.3s ease;
 
       &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.16);
+        background: var(--border);
       }
 
       &:disabled {
@@ -650,7 +648,7 @@ export class SetupComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/quit-smoking/dashboard']);
   }
 
   onSubmit(): void {
@@ -678,7 +676,7 @@ export class SetupComponent implements OnInit {
     this.apiService.saveProgress(progress).subscribe({
       next: () => {
         this.apiService.refreshStats();
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/quit-smoking/dashboard']);
       },
       error: (err) => {
         this.isSubmitting = false;

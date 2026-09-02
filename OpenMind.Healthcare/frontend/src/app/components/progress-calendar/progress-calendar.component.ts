@@ -61,7 +61,7 @@ const MONTH_NAMES = [
         <button class="btn btn-danger" (click)="openMarkDialogForToday()">
           🚬 I smoked today
         </button>
-        <button class="btn btn-ghost" routerLink="/analytics">
+        <button class="btn btn-ghost" routerLink="/quit-smoking/analytics">
           📈 Relapse analytics
         </button>
       </div>
@@ -352,7 +352,7 @@ const MONTH_NAMES = [
           <span class="empty-icon">📅</span>
           <h2>Start Your Journey</h2>
           <p>Set up your quit date to start tracking your progress on the calendar.</p>
-          <button class="btn btn-primary" routerLink="/setup">Get Started</button>
+          <button class="btn btn-primary" routerLink="/quit-smoking/setup">Get Started</button>
         </div>
       </div>
 
@@ -420,13 +420,11 @@ const MONTH_NAMES = [
       h1 {
         font-size: 2.5rem;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #10b981, #34d399);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--accent);
       }
 
       .subtitle {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-size: 1.1rem;
       }
     }
@@ -445,8 +443,8 @@ const MONTH_NAMES = [
       gap: 4px;
       margin-bottom: 20px;
       padding: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       border-radius: 999px;
       width: fit-content;
       margin-left: auto;
@@ -455,7 +453,7 @@ const MONTH_NAMES = [
       button {
         border: none;
         background: transparent;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         padding: 8px 22px;
         border-radius: 999px;
         font-size: 0.9rem;
@@ -464,12 +462,12 @@ const MONTH_NAMES = [
         transition: all 0.25s ease;
 
         &:hover {
-          color: white;
+          color: var(--text);
         }
 
         &.active {
-          background: linear-gradient(135deg, #10b981, #059669);
-          color: white;
+          background: var(--accent);
+          color: var(--text-on-accent);
         }
       }
     }
@@ -481,8 +479,8 @@ const MONTH_NAMES = [
     }
 
     .mini-month {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px;
     }
@@ -495,16 +493,16 @@ const MONTH_NAMES = [
 
       .mini-month-name {
         font-weight: 600;
-        color: white;
+        color: var(--text);
         font-size: 0.95rem;
       }
 
       .mini-month-stats {
         font-size: 0.72rem;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
 
-        .mm-free { color: #34d399; font-weight: 600; }
-        .mm-smoked { color: #f87171; margin-left: 3px; }
+        .mm-free { color: var(--accent); font-weight: 600; }
+        .mm-smoked { color: var(--danger); margin-left: 3px; }
       }
     }
 
@@ -517,7 +515,7 @@ const MONTH_NAMES = [
       span {
         text-align: center;
         font-size: 0.6rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
       }
     }
 
@@ -534,8 +532,8 @@ const MONTH_NAMES = [
       justify-content: center;
       border: none;
       border-radius: 5px;
-      background: rgba(255, 255, 255, 0.03);
-      color: rgba(255, 255, 255, 0.55);
+      background: var(--surface-sunken);
+      color: var(--text-muted);
       font-size: 0.62rem;
       font-family: inherit;
       padding: 0;
@@ -558,42 +556,44 @@ const MONTH_NAMES = [
 
       &.before-quit,
       &.future {
-        color: rgba(255, 255, 255, 0.25);
+        color: var(--border-strong);
       }
 
       &.smoke-free {
-        background: rgba(16, 185, 129, 0.28);
-        color: #d1fae5;
+        background: var(--accent-subtle);
+        color: var(--accent);
+        border: 1px solid var(--accent-border);
       }
 
       &.smoked {
-        background: rgba(239, 68, 68, 0.45);
-        color: #fee2e2;
-        font-weight: 700;
+        background: var(--danger-subtle);
+        color: var(--danger);
+        border: 1px solid var(--danger-border);
+        font-weight: 600;
       }
 
       &.quit-day {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: var(--accent);
+        color: var(--text-on-accent);
         font-weight: 700;
       }
 
       &.today {
-        outline: 2px solid #10b981;
+        outline: 2px solid var(--accent);
         outline-offset: 1px;
       }
 
       &.highlighted {
-        outline: 2px solid #fbbf24;
+        outline: 2px solid var(--warning);
         outline-offset: 2px;
       }
     }
 
     .calendar-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 20px;
       padding: 25px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
     }
 
     .month-navigation {
@@ -603,18 +603,18 @@ const MONTH_NAMES = [
       margin-bottom: 25px;
 
       .nav-btn {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         border: none;
         width: 40px;
         height: 40px;
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
-        color: white;
+        color: var(--text);
         font-size: 1.2rem;
 
         &:hover {
-          background: rgba(16, 185, 129, 0.3);
+          background: var(--accent-border);
           transform: scale(1.1);
         }
       }
@@ -622,7 +622,7 @@ const MONTH_NAMES = [
       .current-month {
         font-size: 1.5rem;
         font-weight: 600;
-        color: white;
+        color: var(--text);
       }
     }
 
@@ -636,7 +636,7 @@ const MONTH_NAMES = [
         text-align: center;
         padding: 10px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         font-size: 0.85rem;
       }
     }
@@ -663,35 +663,35 @@ const MONTH_NAMES = [
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--surface-sunken);
       min-height: 70px;
 
       .day-number {
         font-size: 1rem;
         font-weight: 500;
-        color: white;
+        color: var(--text);
       }
 
       &.other-month {
         opacity: 0.3;
 
         .day-number {
-          color: rgba(255, 255, 255, 0.4);
+          color: var(--text-muted);
         }
       }
 
       &.today {
-        border: 2px solid #10b981;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        border: 2px solid var(--accent);
+        box-shadow: 0 0 15px var(--accent-border);
       }
 
       &.selected {
-        outline: 2px solid rgba(255, 255, 255, 0.6);
+        outline: 2px solid var(--text-muted);
         outline-offset: 2px;
       }
 
       &.highlighted {
-        outline: 3px solid #fbbf24;
+        outline: 3px solid var(--warning);
         outline-offset: 3px;
         position: relative;
         z-index: 2;
@@ -699,7 +699,7 @@ const MONTH_NAMES = [
       }
 
       &.quit-day {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: var(--accent);
 
         .day-number {
           font-weight: 700;
@@ -707,30 +707,30 @@ const MONTH_NAMES = [
       }
 
       &.smoke-free {
-        background: rgba(16, 185, 129, 0.2);
+        background: var(--accent-subtle);
 
         &:hover {
-          background: rgba(16, 185, 129, 0.4);
-          transform: scale(1.05);
+          background: var(--accent-border);
+          transform: none;
         }
       }
 
       &.smoked {
-        background: rgba(239, 68, 68, 0.25);
-        border: 1px solid rgba(239, 68, 68, 0.45);
+        background: var(--danger-border);
+        border: 1px solid var(--danger-border);
 
         &:hover {
-          background: rgba(239, 68, 68, 0.4);
-          transform: scale(1.05);
+          background: var(--danger-border);
+          transform: none;
         }
       }
 
       &.before-quit {
-        background: rgba(255, 255, 255, 0.02);
+        background: var(--surface-sunken);
       }
 
       &.future {
-        background: rgba(255, 255, 255, 0.02);
+        background: var(--surface-sunken);
         opacity: 0.5;
         cursor: default;
       }
@@ -745,13 +745,13 @@ const MONTH_NAMES = [
 
       .streak-badge {
         font-size: 0.6rem;
-        color: #10b981;
+        color: var(--accent);
         font-weight: 600;
       }
 
       .smoked-badge {
         font-size: 0.58rem;
-        color: #fca5a5;
+        color: var(--danger);
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -759,7 +759,7 @@ const MONTH_NAMES = [
 
       .smoked-count {
         font-size: 0.58rem;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         font-weight: 500;
       }
 
@@ -779,7 +779,7 @@ const MONTH_NAMES = [
         top: 4px;
         right: 6px;
         font-size: 0.7rem;
-        color: #ef4444;
+        color: var(--danger);
         font-weight: 700;
       }
     }
@@ -790,7 +790,7 @@ const MONTH_NAMES = [
       gap: 25px;
       margin-top: 25px;
       padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border);
       flex-wrap: wrap;
 
       .legend-item {
@@ -798,7 +798,7 @@ const MONTH_NAMES = [
         align-items: center;
         gap: 8px;
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
 
       .legend-color {
@@ -807,19 +807,19 @@ const MONTH_NAMES = [
         border-radius: 4px;
 
         &.quit-day {
-          background: linear-gradient(135deg, #10b981, #059669);
+          background: var(--accent);
         }
 
         &.smoke-free {
-          background: rgba(16, 185, 129, 0.4);
+          background: var(--accent-border);
         }
 
         &.smoked {
-          background: rgba(239, 68, 68, 0.5);
+          background: var(--danger-border);
         }
 
         &.today {
-          border: 2px solid #10b981;
+          border: 2px solid var(--accent);
           background: transparent;
         }
       }
@@ -832,20 +832,20 @@ const MONTH_NAMES = [
     .modal.details-card {
       position: relative;
       max-width: 560px;
-      border-color: rgba(16, 185, 129, 0.35);
+      border-color: var(--accent-border);
 
       &.relapse {
-        border-color: rgba(239, 68, 68, 0.35);
+        border-color: var(--danger-border);
 
         h3 {
-          color: #fca5a5;
+          color: var(--danger);
         }
       }
 
       h3 {
         text-align: center;
         margin: 0 30px 20px;
-        color: #10b981;
+        color: var(--accent);
         font-size: 1.15rem;
       }
 
@@ -857,22 +857,22 @@ const MONTH_NAMES = [
         height: 30px;
         border-radius: 50%;
         border: none;
-        background: rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.7);
+        background: var(--surface-sunken);
+        color: var(--text-secondary);
         font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.2s ease;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.18);
-          color: white;
+          background: var(--border);
+          color: var(--text);
         }
       }
 
       .relapse-banner {
         text-align: center;
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.75);
+        color: var(--text-secondary);
         margin-bottom: 18px;
       }
 
@@ -880,7 +880,7 @@ const MONTH_NAMES = [
         margin-top: 15px;
         text-align: center;
         font-style: italic;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
 
       .details-grid {
@@ -896,7 +896,7 @@ const MONTH_NAMES = [
         align-items: center;
         text-align: center;
         padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--surface-sunken);
         border-radius: 12px;
 
         .detail-icon {
@@ -907,12 +907,12 @@ const MONTH_NAMES = [
         .detail-value {
           font-size: 1.3rem;
           font-weight: 700;
-          color: white;
+          color: var(--text);
         }
 
         .detail-label {
           font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
           margin-top: 4px;
         }
       }
@@ -927,11 +927,11 @@ const MONTH_NAMES = [
       .achievements-section {
         margin-top: 20px;
         padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--border);
 
         h4 {
           margin-bottom: 15px;
-          color: #fbbf24;
+          color: var(--warning);
         }
       }
 
@@ -946,9 +946,9 @@ const MONTH_NAMES = [
         align-items: center;
         gap: 15px;
         padding: 12px;
-        background: rgba(251, 191, 36, 0.1);
+        background: var(--warning-subtle);
         border-radius: 10px;
-        border: 1px solid rgba(251, 191, 36, 0.2);
+        border: 1px solid var(--warning-subtle);
 
         .achievement-icon {
           font-size: 2rem;
@@ -960,12 +960,12 @@ const MONTH_NAMES = [
 
           .achievement-name {
             font-weight: 600;
-            color: white;
+            color: var(--text);
           }
 
           .achievement-desc {
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
           }
         }
       }
@@ -975,15 +975,15 @@ const MONTH_NAMES = [
       margin-top: 25px;
 
       .summary-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--surface-sunken);
         border-radius: 16px;
         padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border);
 
         h3 {
           text-align: center;
           margin-bottom: 20px;
-          color: white;
+          color: var(--text);
         }
       }
 
@@ -999,22 +999,22 @@ const MONTH_NAMES = [
         align-items: center;
         text-align: center;
         padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--surface-sunken);
         border-radius: 12px;
 
         .summary-value {
           font-size: 1.5rem;
           font-weight: 700;
-          color: #10b981;
+          color: var(--accent);
 
           &.danger {
-            color: #f87171;
+            color: var(--danger);
           }
         }
 
         .summary-label {
           font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
           margin-top: 5px;
         }
       }
@@ -1024,9 +1024,9 @@ const MONTH_NAMES = [
       .empty-state {
         text-align: center;
         padding: 60px 20px;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--surface-sunken);
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border);
 
         .empty-icon {
           font-size: 4rem;
@@ -1036,11 +1036,11 @@ const MONTH_NAMES = [
 
         h2 {
           margin-bottom: 10px;
-          color: white;
+          color: var(--text);
         }
 
         p {
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
           margin-bottom: 25px;
         }
       }
@@ -1049,8 +1049,7 @@ const MONTH_NAMES = [
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      background: var(--overlay);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1059,8 +1058,8 @@ const MONTH_NAMES = [
     }
 
     .modal {
-      background: #111827;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: var(--text);
+      border: 1px solid var(--danger-border);
       border-radius: 18px;
       padding: 25px;
       width: 100%;
@@ -1069,18 +1068,18 @@ const MONTH_NAMES = [
       overflow-y: auto;
 
       h3 {
-        color: white;
+        color: var(--text);
         margin-bottom: 8px;
       }
 
       .modal-hint {
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         font-size: 0.85rem;
         margin-bottom: 20px;
       }
 
       .modal-error {
-        color: #f87171;
+        color: var(--danger);
         font-size: 0.85rem;
         margin-bottom: 12px;
       }
@@ -1100,7 +1099,7 @@ const MONTH_NAMES = [
       .field-label {
         display: block;
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         margin-bottom: 8px;
       }
 
@@ -1108,15 +1107,15 @@ const MONTH_NAMES = [
         width: 100%;
         padding: 10px 12px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
+        border: 1px solid var(--border);
+        background: var(--surface-sunken);
+        color: var(--text);
         font-size: 0.95rem;
         font-family: inherit;
 
         &:focus {
           outline: none;
-          border-color: rgba(239, 68, 68, 0.6);
+          border-color: var(--danger-border);
         }
       }
     }
@@ -1134,9 +1133,9 @@ const MONTH_NAMES = [
       gap: 4px;
       padding: 10px 6px;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.04);
-      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--border);
+      background: var(--surface-sunken);
+      color: var(--text-secondary);
       font-size: 0.72rem;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -1146,13 +1145,13 @@ const MONTH_NAMES = [
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.09);
+        background: var(--surface-sunken);
       }
 
       &.active {
-        border-color: #ef4444;
-        background: rgba(239, 68, 68, 0.18);
-        color: white;
+        border-color: var(--danger);
+        background: var(--danger-subtle);
+        color: var(--text);
       }
     }
 
@@ -1171,32 +1170,32 @@ const MONTH_NAMES = [
       }
 
       &.btn-primary {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: var(--accent);
+        color: var(--text-on-accent);
 
         &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
 
       &.btn-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
+        background: var(--danger);
+        color: var(--text-on-accent);
 
         &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
 
       &.btn-ghost {
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: var(--surface-sunken);
+        color: var(--text);
+        border: 1px solid var(--border);
 
         &:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.15);
+          background: var(--border);
         }
       }
     }
@@ -1206,9 +1205,9 @@ const MONTH_NAMES = [
     }
 
     @keyframes highlightPulse {
-      0%   { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.6); }
-      70%  { box-shadow: 0 0 0 16px rgba(251, 191, 36, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+      0%   { box-shadow: 0 0 0 0 var(--warning-border); }
+      70%  { box-shadow: 0 0 0 16px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
     }
 
     @keyframes fadeIn {

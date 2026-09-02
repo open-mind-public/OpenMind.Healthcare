@@ -1,0 +1,31 @@
+<div class="home page">
+  <header class="hub-header">
+    <h1>{{ greeting() }}</h1>
+    <p class="lead">Your health programmes. Pick one to continue, or start something new.</p>
+  </header>
+
+  <div class="program-grid">
+    <button
+      type="button"
+      class="program-card"
+      *ngFor="let program of programs"
+      [style.--accent]="program.accent"
+      (click)="enter(program)">
+      <span class="card-mark"><app-icon [name]="program.icon" [size]="20"></app-icon></span>
+
+      <span class="card-body">
+        <span class="card-head">
+          <strong class="card-name">{{ program.name }}</strong>
+          <span class="badge" *ngIf="status[program.id] as s"
+                [class.badge-accent]="s.enrolled"
+                [class.badge-neutral]="!s.enrolled">{{ s.line }}</span>
+        </span>
+        <span class="card-tagline">{{ program.tagline }}</span>
+      </span>
+
+      <app-icon class="card-go" name="arrow-right" [size]="17"></app-icon>
+    </button>
+  </div>
+
+  <p class="footnote">More programmes will appear here as they are added.</p>
+</div>

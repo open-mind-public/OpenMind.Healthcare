@@ -1,20 +1,20 @@
 .diet-guidance {
   max-width: 720px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
-  color: var(--text-light);
+  padding: 0 0 48px;
+  color: var(--text);
 }
 
 h1 {
   font-size: 1.6rem;
   margin: 0 0 16px;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .encouragement {
-  background: rgba(16, 185, 129, 0.14);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  border-radius: 16px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-lg);
   padding: 20px;
   margin-bottom: 18px;
 }
@@ -22,7 +22,7 @@ h1 {
 .encouragement .message {
   margin: 0;
   font-size: 1.05rem;
-  color: var(--primary-light);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -34,10 +34,10 @@ h1 {
 }
 
 .filters button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.75);
-  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border-radius: var(--r-full);
   padding: 8px 15px;
   font-size: 0.86rem;
   cursor: pointer;
@@ -46,23 +46,23 @@ h1 {
 }
 
 .filters button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-light);
+  background: var(--border);
+  color: var(--text);
 }
 
 .filters button.active {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--text-on-accent);
 }
 
 .tip {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 15px 17px;
   margin-bottom: 10px;
 }
@@ -75,31 +75,31 @@ h1 {
 .tip strong {
   display: block;
   margin-bottom: 3px;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .tip p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--text-secondary);
   font-size: 0.92rem;
 }
 
 .disclaimer {
   margin-top: 24px;
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.55);
-  border-left: 3px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-muted);
+  border-left: 3px solid var(--border);
   padding-left: 10px;
 }
 
 .alert.error {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  border-radius: 12px;
+  background: var(--danger-subtle);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  border-radius: var(--r-md);
   padding: 12px 14px;
 }
 
 .loading {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
 }

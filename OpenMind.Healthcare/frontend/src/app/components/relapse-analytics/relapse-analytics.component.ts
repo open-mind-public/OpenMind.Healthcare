@@ -25,7 +25,7 @@ import {
           <span class="empty-icon">📈</span>
           <h2>Nothing to analyse yet</h2>
           <p>Set your quit date first, then any day you mark as smoked will show up here.</p>
-          <button class="btn btn-primary" routerLink="/setup">Get Started</button>
+          <button class="btn btn-primary" routerLink="/quit-smoking/setup">Get Started</button>
         </div>
 
         <ng-container *ngIf="hasJourney">
@@ -86,7 +86,7 @@ import {
               If you do slip, mark the day on the calendar - the numbers stay honest and the analytics
               here will show you the pattern behind it.
             </p>
-            <button class="btn btn-ghost" routerLink="/calendar">Open the calendar</button>
+            <button class="btn btn-ghost" routerLink="/quit-smoking/calendar">Open the calendar</button>
           </div>
 
           <ng-container *ngIf="a.smokedDays > 0">
@@ -239,8 +239,8 @@ import {
             </div>
 
             <div class="cta">
-              <button class="btn btn-ghost" routerLink="/calendar">📅 Back to calendar</button>
-              <button class="btn btn-primary" routerLink="/craving-help">🆘 Get craving help</button>
+              <button class="btn btn-ghost" routerLink="/quit-smoking/calendar">📅 Back to calendar</button>
+              <button class="btn btn-primary" routerLink="/quit-smoking/craving-help">🆘 Get craving help</button>
             </div>
           </ng-container>
         </ng-container>
@@ -263,20 +263,18 @@ import {
       h1 {
         font-size: 2.5rem;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #10b981, #34d399);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--accent);
       }
 
       .subtitle {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-size: 1.1rem;
       }
     }
 
     .loading {
       text-align: center;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-muted);
       padding: 40px;
     }
 
@@ -284,8 +282,8 @@ import {
     .hero-card,
     .clean-card,
     .empty-state {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 25px;
     }
@@ -298,7 +296,7 @@ import {
       margin-bottom: 18px;
 
       h3 {
-        color: white;
+        color: var(--text);
         font-size: 1.1rem;
         font-weight: 600;
       }
@@ -307,14 +305,14 @@ import {
     .card-note {
       margin-top: 16px;
       font-size: 0.88rem;
-      color: rgba(255, 255, 255, 0.65);
+      color: var(--text-secondary);
       line-height: 1.5;
     }
 
     .link-btn {
       background: none;
       border: none;
-      color: #34d399;
+      color: var(--accent);
       font-size: 0.85rem;
       cursor: pointer;
       font-family: inherit;
@@ -342,16 +340,16 @@ import {
       font-size: 3.6rem;
       font-weight: 700;
       line-height: 1;
-      color: #10b981;
+      color: var(--accent);
     }
 
     .hero-label {
-      color: white;
+      color: var(--text);
       font-size: 1.05rem;
     }
 
     .hero-sub {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-muted);
       font-size: 0.85rem;
 
       .dot {
@@ -385,11 +383,11 @@ import {
     }
 
     .smoke-free {
-      background: #10b981;
+      background: var(--accent);
     }
 
     .smoked {
-      background: #ef4444;
+      background: var(--danger);
     }
 
     .legend {
@@ -404,7 +402,7 @@ import {
         align-items: center;
         gap: 7px;
         font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
 
       .swatch {
@@ -422,8 +420,8 @@ import {
     }
 
     .tile {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 20px 15px;
       display: flex;
@@ -439,20 +437,20 @@ import {
       .tile-value {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #10b981;
+        color: var(--accent);
       }
 
       .tile-label {
         font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
       }
 
       &.danger {
-        border-color: rgba(239, 68, 68, 0.25);
-        background: rgba(239, 68, 68, 0.07);
+        border-color: var(--danger-border);
+        background: var(--danger-subtle);
 
         .tile-value {
-          color: #f87171;
+          color: var(--danger);
         }
       }
     }
@@ -468,12 +466,12 @@ import {
       }
 
       h2 {
-        color: white;
+        color: var(--text);
         margin-bottom: 10px;
       }
 
       p {
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--text-secondary);
         max-width: 520px;
         margin: 0 auto 20px;
         line-height: 1.6;
@@ -489,18 +487,18 @@ import {
       white-space: nowrap;
 
       &.good {
-        background: rgba(16, 185, 129, 0.18);
-        color: #34d399;
+        background: var(--accent-subtle);
+        color: var(--accent);
       }
 
       &.bad {
-        background: rgba(239, 68, 68, 0.18);
-        color: #f87171;
+        background: var(--danger-subtle);
+        color: var(--danger);
       }
 
       &.neutral {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.75);
+        background: var(--surface-sunken);
+        color: var(--text-secondary);
       }
     }
 
@@ -517,24 +515,24 @@ import {
         gap: 4px;
         min-width: 110px;
         padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--surface-sunken);
         border-radius: 12px;
       }
 
       .trend-value {
         font-size: 1.8rem;
         font-weight: 700;
-        color: white;
+        color: var(--text);
       }
 
       .trend-label {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
       }
 
       .trend-arrow {
         font-size: 1.4rem;
-        color: rgba(255, 255, 255, 0.35);
+        color: var(--text-muted);
       }
     }
 
@@ -553,7 +551,7 @@ import {
 
       .bar-name {
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         display: flex;
         align-items: center;
         gap: 7px;
@@ -569,7 +567,7 @@ import {
       .bar-track {
         display: block;
         height: 12px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--surface-sunken);
         border-radius: 4px;
         overflow: hidden;
       }
@@ -585,13 +583,13 @@ import {
       .bar-value {
         font-size: 0.85rem;
         font-weight: 600;
-        color: white;
+        color: var(--text);
         text-align: right;
       }
 
       .bar-unit {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
         margin-left: 1px;
       }
     }
@@ -616,10 +614,10 @@ import {
       .column-value {
         font-size: 0.78rem;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--text);
 
         &.muted {
-          color: rgba(255, 255, 255, 0.3);
+          color: var(--border-strong);
         }
       }
 
@@ -630,7 +628,7 @@ import {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--surface-sunken);
         border-radius: 4px;
 
         &.stacked {
@@ -641,29 +639,29 @@ import {
       .column-fill {
         display: block;
         width: 100%;
-        background: rgba(239, 68, 68, 0.45);
+        background: var(--danger-border);
         border-radius: 4px 4px 0 0;
         min-height: 2px;
         transition: height 0.4s ease;
 
         &.riskiest {
-          background: #ef4444;
+          background: var(--danger);
         }
 
         &.smoked {
-          background: #ef4444;
+          background: var(--danger);
           border-radius: 4px 4px 0 0;
         }
 
         &.smoke-free {
-          background: #10b981;
+          background: var(--accent);
           border-radius: 0 0 4px 4px;
         }
       }
 
       .column-label {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -688,17 +686,17 @@ import {
       th, td {
         padding: 10px 12px;
         text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--border);
       }
 
       th {
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         font-weight: 600;
         font-size: 0.78rem;
       }
 
       td {
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--text);
       }
     }
 
@@ -715,11 +713,11 @@ import {
 
       h2 {
         margin-bottom: 10px;
-        color: white;
+        color: var(--text);
       }
 
       p {
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         margin-bottom: 25px;
       }
     }
@@ -741,22 +739,22 @@ import {
       transition: all 0.3s ease;
 
       &.btn-primary {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: var(--accent);
+        color: var(--text-on-accent);
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
 
       &.btn-ghost {
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: var(--surface-sunken);
+        color: var(--text);
+        border: 1px solid var(--border);
 
         &:hover {
-          background: rgba(255, 255, 255, 0.15);
+          background: var(--border);
         }
       }
     }

@@ -1,30 +1,28 @@
-/* Glass-on-dark, matching the app shell: translucent panels over the body gradient,
-   light text, emerald accents. Every text colour is explicit - inheriting it is what
-   made these labels invisible in the first place. */
+/* Diet setup. Colours come from the token system in styles.scss - never raw hex here,
+   and never an inherited text colour: that is what made these labels invisible before. */
 
 .diet-setup {
   max-width: 720px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
-  color: var(--text-light);
+  padding: 0 0 48px;
+  color: var(--text);
 }
 
 .setup-header h1 {
   margin: 0 0 8px;
   font-size: 1.75rem;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .lead {
   margin: 0 0 24px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-secondary);
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 22px;
   margin-bottom: 16px;
 }
@@ -32,7 +30,7 @@
 .panel h2 {
   margin: 0 0 4px;
   font-size: 1.05rem;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .field {
@@ -45,16 +43,16 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text);
 }
 
 .field em {
   font-weight: 400;
   font-style: normal;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
-/* Inputs keep the global glass styling; only layout is set here. */
+/* Inputs inherit the global field styling; only layout is set here. */
 .field input,
 .field select {
   width: 100%;
@@ -63,8 +61,8 @@
 }
 
 .field select option {
-  background: #16213e;
-  color: var(--text-light);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .field-row {
@@ -77,26 +75,26 @@
 }
 
 .hint {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 0.82rem;
 }
 
 .suggestion {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.12);
+  border-color: var(--accent-border);
+  background: var(--accent-subtle);
 }
 
 .target-number {
   font-size: 2.4rem;
   font-weight: 700;
   margin: 12px 0 4px;
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .target-number span {
   font-size: 0.95rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   display: block;
 }
 
@@ -107,11 +105,11 @@
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
 }
 
 .macros strong {
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .workings {
@@ -121,28 +119,28 @@
 .workings summary {
   cursor: pointer;
   font-size: 0.9rem;
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .workings ul {
   margin: 10px 0 0;
   padding-left: 18px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .workings strong {
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .workings .clamped {
-  color: var(--accent-color);
+  color: var(--warning);
 }
 
 .disclaimer {
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.6);
-  border-left: 3px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-muted);
+  border-left: 3px solid var(--border);
   padding-left: 10px;
   margin: 12px 0;
 }
@@ -150,7 +148,7 @@
 .link {
   background: none;
   border: none;
-  color: var(--primary-light);
+  color: var(--accent);
   cursor: pointer;
   padding: 0;
   font-size: 0.9rem;
@@ -159,19 +157,19 @@
 }
 
 .override {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid var(--border);
   padding-top: 8px;
   margin-top: 8px;
 }
 
 .prompt {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   text-align: center;
   margin: 20px 0;
 }
 
 .alert {
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 12px 14px;
   margin-bottom: 14px;
   font-size: 0.92rem;
@@ -179,39 +177,38 @@
 }
 
 .alert.error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: var(--danger-subtle);
+  border-color: var(--danger-border);
+  color: var(--danger);
 }
 
 .alert.warning {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #fcd34d;
+  background: var(--warning-subtle);
+  border-color: var(--warning-border);
+  color: var(--warning);
 }
 
 .primary {
   width: 100%;
   padding: 14px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.3s ease;
+  transition: background-color 0.15s ease;
 }
 
 .primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+  background: var(--accent-hover);
 }
 
 .primary:disabled {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.4);
+  background: var(--border);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 

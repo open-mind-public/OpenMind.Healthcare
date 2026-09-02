@@ -1,8 +1,8 @@
 .diet-dashboard {
   max-width: 720px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
-  color: var(--text-light);
+  padding: 0 0 48px;
+  color: var(--text);
 }
 
 .day-header {
@@ -16,50 +16,22 @@
 .day-header h1 {
   margin: 0;
   font-size: 1.6rem;
-  color: var(--text-light);
-}
-
-.diet-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-
-.diet-nav a {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-  font-size: 0.86rem;
-  transition: all 0.2s ease;
-}
-
-.diet-nav a:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-light);
-}
-
-.diet-nav a.active {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  border-color: transparent;
-  color: #fff;
+  color: var(--text);
 }
 
 .totals {
   display: flex;
   gap: 12px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: 16px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-lg);
   padding: 20px;
   margin-bottom: 8px;
 }
 
 .totals.over {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.4);
+  background: var(--warning-subtle);
+  border-color: var(--warning-border);
 }
 
 .figure {
@@ -71,22 +43,22 @@
   display: block;
   font-size: 1.9rem;
   font-weight: 700;
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .totals.over .over-figure .value {
-  color: #fcd34d;
+  color: var(--warning);
 }
 
 .figure .label {
   font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .state-line {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-secondary);
   margin: 0 0 18px;
   font-size: 0.92rem;
 }
@@ -97,12 +69,12 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .meal-calories {
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -110,9 +82,9 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
@@ -121,7 +93,7 @@
   align-items: center;
   gap: 10px;
   padding: 11px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border);
 }
 
 .entries li:last-child {
@@ -136,19 +108,19 @@
 .entry-name {
   display: block;
   font-weight: 500;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .entry-serving {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
 }
 
 .entry-calories {
   font-weight: 600;
   min-width: 52px;
   text-align: right;
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .entry-actions {
@@ -166,7 +138,7 @@
 .remove {
   background: none;
   border: none;
-  color: #fca5a5;
+  color: var(--danger);
   font-size: 1.3rem;
   cursor: pointer;
   line-height: 1;
@@ -174,11 +146,11 @@
 }
 
 .remove:hover {
-  color: var(--danger-color);
+  background: var(--danger-subtle);
 }
 
 .alert {
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 12px 14px;
   margin-bottom: 14px;
   font-size: 0.92rem;
@@ -186,15 +158,15 @@
 }
 
 .alert.error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: var(--danger-subtle);
+  border-color: var(--danger-border);
+  color: var(--danger);
 }
 
 .link {
   background: none;
   border: none;
-  color: var(--primary-light);
+  color: var(--accent);
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.9rem;
@@ -203,5 +175,5 @@
 }
 
 .loading {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
 }

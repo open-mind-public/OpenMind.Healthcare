@@ -29,7 +29,7 @@ export class RegisterComponent {
 
     // Redirect if already logged in
     if (this.apiService.isLoggedIn) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/home']);
     }
   }
 
@@ -55,7 +55,7 @@ export class RegisterComponent {
       this.apiService.register(userData).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.router.navigate(['/setup']); // Go to setup after registration
+          this.router.navigate(['/home']); // the hub - let them choose a programme
         },
         error: (error) => {
           this.isLoading = false;

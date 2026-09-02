@@ -1,19 +1,164 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ============================================================================
+   OpenMind Health - design tokens and base styles
+
+   A light, neutral product surface with one restrained accent. Colour carries
+   meaning here rather than decoration: teal marks the interactive and the
+   on-track, amber and red are reserved for states the member needs to notice.
+
+   Components should reference tokens, never raw hex. Adding a colour to this
+   file is a design decision; adding one in a component is a bug waiting to be
+   inconsistent.
+   ============================================================================ */
 
 :root {
-  --primary-color: #10b981;
-  --primary-dark: #059669;
-  --primary-light: #34d399;
-  --secondary-color: #3b82f6;
-  --accent-color: #f59e0b;
-  --danger-color: #ef4444;
-  --success-color: #22c55e;
-  --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-light: #ffffff;
+  /* --- surfaces ------------------------------------------------------- */
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-hover: #fafafa;
+  --surface-sunken: #f4f4f5;
+  --overlay: rgba(24, 24, 27, 0.45);
+
+  /* --- borders -------------------------------------------------------- */
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+
+  /* --- text ----------------------------------------------------------- */
+  --text: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+  --text-on-accent: #ffffff;
+
+  /* --- accent --------------------------------------------------------- */
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
+  --accent-active: #115e59;
+  --accent-subtle: #f0fdfa;
+  --accent-border: #99f6e4;
+
+  /* --- semantic ------------------------------------------------------- */
+  --success: #059669;
+  --success-subtle: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  --warning: #b45309;
+  --warning-subtle: #fffbeb;
+  --warning-border: #fde68a;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-subtle: #fef2f2;
+  --danger-border: #fecaca;
+
+  --info: #2563eb;
+  --info-subtle: #eff6ff;
+  --info-border: #bfdbfe;
+
+  /* --- radii ---------------------------------------------------------- */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-full: 999px;
+
+  /* --- elevation ------------------------------------------------------ */
+  --shadow-xs: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --shadow-sm: 0 1px 3px rgba(24, 24, 27, 0.08), 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.08), 0 2px 4px rgba(24, 24, 27, 0.04);
+  --shadow-lg: 0 12px 32px rgba(24, 24, 27, 0.12), 0 4px 8px rgba(24, 24, 27, 0.04);
+
+  /* --- type ----------------------------------------------------------- */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+
+  /* --- layout --------------------------------------------------------- */
+  --page-max: 1120px;
+  --header-h: 56px;
+
+  color-scheme: light;
+
+  /* ---------------------------------------------------------------------
+     Aliases for the names the original theme used. Kept so component CSS
+     that has not been converted yet still resolves to sensible values.
+     --------------------------------------------------------------------- */
+  --primary-color: var(--accent);
+  --primary-dark: var(--accent-hover);
+  --primary-light: var(--accent);
+  --secondary-color: var(--info);
+  --accent-color: var(--warning);
+  --danger-color: var(--danger);
+  --success-color: var(--success);
+  --text-primary: var(--text);
+  --text-light: var(--text);
+  --background-gradient: var(--bg);
+  --card-shadow: var(--shadow-sm);
 }
+
+/* ============================================================================
+   Dark theme
+
+   Every token is redefined, so no component needs to know a dark mode exists.
+   Two selectors on purpose:
+     - the media query covers "system", which is the default (no data-theme set),
+       and is guarded so an explicit light choice still wins;
+     - the attribute selector covers an explicit dark choice, in either OS mode.
+
+   Accent inverts direction: teal-600 is too dark to read on near-black, so dark
+   mode uses teal-400 - and therefore --text-on-accent flips to a dark ink.
+   ============================================================================ */
+
+@mixin dark-tokens {
+  --bg: #09090b;
+  --surface: #18181b;
+  --surface-hover: #1f1f23;
+  --surface-sunken: #232327;
+  --overlay: rgba(0, 0, 0, 0.65);
+
+  --border: #27272a;
+  --border-strong: #3f3f46;
+
+  --text: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-on-accent: #042f2e;
+
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-active: #99f6e4;
+  --accent-subtle: #0c2b28;
+  --accent-border: #155e56;
+
+  --success: #34d399;
+  --success-subtle: #0c2a1f;
+  --success-border: #14532d;
+
+  --warning: #fbbf24;
+  --warning-subtle: #2b1f08;
+  --warning-border: #713f12;
+
+  --danger: #f87171;
+  --danger-hover: #fca5a5;
+  --danger-subtle: #2b1315;
+  --danger-border: #7f1d1d;
+
+  --info: #60a5fa;
+  --info-subtle: #111f38;
+  --info-border: #1e3a8a;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.35);
+
+  color-scheme: dark;
+}
+
+/* "System": no explicit choice recorded, so follow the OS - unless light was chosen. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { @include dark-tokens; }
+}
+
+/* An explicit dark choice wins regardless of what the OS is doing. */
+:root[data-theme='dark'] { @include dark-tokens; }
 
 * {
   margin: 0;
@@ -21,170 +166,248 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  min-height: 100vh;
-  color: var(--text-light);
-}
-
-html, body {
+html {
   height: 100%;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+body {
+  /* min-height, not height: a fixed body box pins the scroll container and
+     stops position:sticky from having anything to stick within. */
+  min-height: 100%;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// Animations
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes celebrate {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(-5deg); }
-  50% { transform: scale(1.2) rotate(5deg); }
-  75% { transform: scale(1.1) rotate(-5deg); }
-  100% { transform: scale(1) rotate(0deg); }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.pulse {
-  animation: pulse 2s infinite;
-}
-
-.float {
-  animation: float 3s ease-in-out infinite;
-}
-
-// Cards
-.card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: var(--card-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-  }
-}
-
-// Buttons
-.btn {
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: none;
+h1,
+h2,
+h3,
+h4 {
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
-  
-  &-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
-    }
-  }
-  
-  &-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-  }
-  
-  &-danger {
-    background: linear-gradient(135deg, var(--danger-color), #dc2626);
-    color: white;
-    
-    &:hover {
-      box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
-    }
-  }
+  letter-spacing: -0.014em;
+  color: var(--text);
+  line-height: 1.25;
 }
 
-// Progress bars
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.125rem; }
+h3 { font-size: 1rem; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+/* Figures line up column-wise wherever numbers are compared. */
+.num,
+.stat-value,
+.metric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.container,
+.page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.muted { color: var(--text-secondary); }
+.subtle { color: var(--text-muted); }
+
+/* --- card ------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-xs);
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* --- buttons ---------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover:not(:disabled) { background: var(--surface-sunken); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--text-on-accent);
+}
+
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+
+/* --- forms ------------------------------------------------------------ */
+
+input,
+select,
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.92rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+label {
+  color: var(--text);
+}
+
+/* --- badges ----------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.badge-accent  { background: var(--accent-subtle);  color: var(--accent);  border-color: var(--accent-border); }
+.badge-success { background: var(--success-subtle); color: var(--success); border-color: var(--success-border); }
+.badge-warning { background: var(--warning-subtle); color: var(--warning); border-color: var(--warning-border); }
+.badge-danger  { background: var(--danger-subtle);  color: var(--danger);  border-color: var(--danger-border); }
+.badge-neutral { background: var(--surface-sunken); color: var(--text-secondary); border-color: var(--border); }
+
+/* --- alerts ----------------------------------------------------------- */
+
+.alert {
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  font-size: 0.9rem;
+}
+
+.alert.error,
+.alert-danger  { background: var(--danger-subtle);  border-color: var(--danger-border);  color: #991b1b; }
+.alert.warning,
+.alert-warning { background: var(--warning-subtle); border-color: var(--warning-border); color: #92400e; }
+.alert-success { background: var(--success-subtle); border-color: var(--success-border); color: #065f46; }
+.alert-info    { background: var(--info-subtle);    border-color: var(--info-border);    color: #1e40af; }
+
+/* --- progress --------------------------------------------------------- */
+
 .progress-bar {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  height: 12px;
+  background: var(--surface-sunken);
+  border-radius: var(--r-full);
+  height: 6px;
   overflow: hidden;
-  
+
   .progress-fill {
     height: 100%;
-    border-radius: 10px;
-    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
-    transition: width 1s ease;
+    border-radius: var(--r-full);
+    background: var(--accent);
+    transition: width 0.4s ease;
   }
 }
 
-// Forms
-input, select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 12px 16px;
-  color: white;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+/* --- motion ----------------------------------------------------------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fadeIn 0.2s ease-out; }
+
+/* The original theme animated aggressively. Kept as no-ops so existing
+   markup does not break, but a professional surface should sit still. */
+.pulse,
+.float { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
 }
 
-// Scrollbar
-::-webkit-scrollbar {
-  width: 8px;
-}
+/* --- scrollbar -------------------------------------------------------- */
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: var(--border-strong);
+  border-radius: var(--r-full);
+  border: 2px solid var(--bg);
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

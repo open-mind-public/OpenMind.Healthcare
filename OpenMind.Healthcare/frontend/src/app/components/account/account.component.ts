@@ -122,38 +122,36 @@ import { User } from '../../models/models';
       h1 {
         font-size: 2.2rem;
         margin-bottom: 8px;
-        background: linear-gradient(135deg, #10b981, #34d399);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--accent);
       }
 
       .subtitle {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 25px;
 
       h2 {
         font-size: 1.15rem;
-        color: white;
+        color: var(--text);
         margin-bottom: 4px;
       }
 
       .section-hint {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-muted);
         margin-bottom: 20px;
       }
     }
 
     .danger-card {
-      border-color: rgba(239, 68, 68, 0.25);
-      background: rgba(239, 68, 68, 0.07);
+      border-color: var(--danger-border);
+      background: var(--danger-subtle);
     }
 
     .identity {
@@ -168,8 +166,8 @@ import { User } from '../../models/models';
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: var(--accent);
+        color: var(--text-on-accent);
         font-size: 20px;
         font-weight: 700;
       }
@@ -183,12 +181,12 @@ import { User } from '../../models/models';
       .identity-name {
         font-size: 18px;
         font-weight: 600;
-        color: white;
+        color: var(--text);
       }
 
       .identity-email {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
       }
     }
 
@@ -198,9 +196,9 @@ import { User } from '../../models/models';
       gap: 18px;
       margin-top: 18px;
       padding-top: 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--border);
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-muted);
     }
 
     .form-group {
@@ -211,7 +209,7 @@ import { User } from '../../models/models';
         margin-bottom: 8px;
         font-weight: 500;
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text);
       }
 
       input {
@@ -224,7 +222,7 @@ import { User } from '../../models/models';
         display: block;
         margin-top: 6px;
         font-size: 12px;
-        color: #f87171;
+        color: var(--danger);
       }
     }
 
@@ -241,15 +239,15 @@ import { User } from '../../models/models';
       font-size: 13px;
 
       &.error {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        color: #fca5a5;
+        background: var(--danger-subtle);
+        border: 1px solid var(--danger-border);
+        color: var(--danger);
       }
 
       &.success {
-        background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: #34d399;
+        background: var(--accent-subtle);
+        border: 1px solid var(--accent-border);
+        color: var(--accent);
       }
     }
 
@@ -257,7 +255,7 @@ import { User } from '../../models/models';
       padding: 13px 26px;
       border: none;
       border-radius: 25px;
-      font-family: 'Poppins', sans-serif;
+      font-family: var(--font);
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
@@ -269,22 +267,22 @@ import { User } from '../../models/models';
       }
 
       &.btn-primary {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        background: var(--accent);
+        color: var(--text-on-accent);
 
         &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
 
       &.btn-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
+        background: var(--danger);
+        color: var(--text-on-accent);
 
         &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
       }
     }

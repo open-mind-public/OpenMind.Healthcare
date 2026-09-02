@@ -120,13 +120,11 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       h1 {
         font-size: 36px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text);
       }
       
       p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-size: 18px;
       }
     }
@@ -135,8 +133,8 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       text-align: center;
       padding: 50px;
       margin-bottom: 30px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
-      border-color: rgba(59, 130, 246, 0.3);
+      background: var(--info-subtle);
+      border-color: var(--info-border);
       
       .quote-icon {
         font-size: 48px;
@@ -148,7 +146,7 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
         font-size: 24px;
         font-style: italic;
         line-height: 1.6;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text);
         margin-bottom: 25px;
         
         cite {
@@ -156,7 +154,7 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
           margin-top: 15px;
           font-size: 16px;
           font-style: normal;
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
         }
       }
     }
@@ -168,7 +166,7 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       h2 {
         font-size: 24px;
         margin-bottom: 25px;
-        color: #10b981;
+        color: var(--accent);
       }
     }
 
@@ -180,8 +178,8 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
     }
 
     .reminder-stat {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
       border-radius: 20px;
       padding: 30px 40px;
       text-align: center;
@@ -191,26 +189,26 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
         display: block;
         font-size: 42px;
         font-weight: 700;
-        color: #10b981;
+        color: var(--accent);
         line-height: 1.2;
       }
       
       .stat-text {
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         margin-top: 5px;
       }
       
       &.gold {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
-        border-color: rgba(245, 158, 11, 0.3);
-        .big-number { color: #f59e0b; }
+        background: var(--warning-subtle);
+        border-color: var(--warning-border);
+        .big-number { color: var(--warning); }
       }
       
       &.blue {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(96, 165, 250, 0.1));
-        border-color: rgba(59, 130, 246, 0.3);
-        .big-number { color: #3b82f6; }
+        background: var(--info-subtle);
+        border-color: var(--info-border);
+        .big-number { color: var(--info); }
       }
     }
 
@@ -231,15 +229,15 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
     }
 
     .reason-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 16px;
       padding: 25px;
       text-align: center;
       transition: all 0.3s ease;
       
       &:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-1px);
+        background: var(--surface-sunken);
       }
       
       .reason-icon {
@@ -251,12 +249,12 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       h4 {
         font-size: 18px;
         margin-bottom: 10px;
-        color: #60a5fa;
+        color: var(--info);
       }
       
       p {
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         line-height: 1.5;
       }
     }
@@ -281,18 +279,18 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       align-items: center;
       gap: 15px;
       padding: 18px 25px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 12px;
       font-size: 16px;
       transition: all 0.3s ease;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--surface-sunken);
         transform: translateX(10px);
       }
       
       .check {
-        color: #10b981;
+        color: var(--accent);
         font-weight: bold;
         font-size: 20px;
       }
@@ -316,7 +314,7 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
       align-items: center;
       gap: 20px;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 12px;
       
       .milestone-icon {
@@ -328,12 +326,12 @@ import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/model
           display: block;
           font-size: 16px;
           margin-bottom: 4px;
-          color: #f59e0b;
+          color: var(--warning);
         }
         
         span {
           font-size: 13px;
-          color: rgba(255, 255, 255, 0.5);
+          color: var(--text-muted);
         }
       }
     }

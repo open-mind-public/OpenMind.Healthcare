@@ -2,11 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Quit Smoking Tracker - Your Journey to Freedom</title>
+  <meta name="color-scheme" content="light dark">
+  <title>OpenMind Health</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ef4444' stroke='white' stroke-width='3'/><rect x='20' y='42' width='35' height='16' rx='3' fill='%23f5f5f5'/><rect x='55' y='42' width='8' height='16' fill='%23ff9800'/><line x1='20' y1='80' x2='80' y2='20' stroke='white' stroke-width='8' stroke-linecap='round'/></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Applied before first paint. Without this the light tokens render for a frame
+    // and a dark-mode member sees a white flash on every load.
+    (function () {
+      try {
+        var t = localStorage.getItem('openmind.theme');
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (e) { /* blocked site data - fall back to the system preference */ }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

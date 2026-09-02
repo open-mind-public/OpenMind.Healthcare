@@ -1,8 +1,8 @@
 .diet-calendar {
   max-width: 860px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
-  color: var(--text-light);
+  padding: 0 0 48px;
+  color: var(--text);
 }
 
 .cal-header {
@@ -16,13 +16,13 @@
 .cal-header h1 {
   margin: 0;
   font-size: 1.6rem;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .view-toggle button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
   padding: 8px 15px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -30,18 +30,18 @@
 }
 
 .view-toggle button:first-child {
-  border-radius: 10px 0 0 10px;
+  border-radius: var(--r-md) 0 0 var(--r-md);
 }
 
 .view-toggle button:last-child {
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 var(--r-md) var(--r-md) 0;
   border-left: none;
 }
 
 .view-toggle button.active {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--text-on-accent);
 }
 
 .stats {
@@ -54,9 +54,9 @@
 .stat {
   flex: 1;
   min-width: 130px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 15px;
   text-align: center;
 }
@@ -65,12 +65,12 @@
   display: block;
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .stat .label {
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -82,14 +82,14 @@
   gap: 18px;
   margin-bottom: 14px;
   font-weight: 600;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .period button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-light);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text);
+  border-radius: var(--r-md);
   width: 36px;
   height: 36px;
   cursor: pointer;
@@ -97,7 +97,7 @@
 }
 
 .period button:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--surface-sunken);
 }
 
 .months.year-view {
@@ -107,9 +107,9 @@
 }
 
 .month {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 16px;
   margin-bottom: 14px;
 }
@@ -117,7 +117,7 @@
 .month h2 {
   font-size: 0.9rem;
   margin: 0 0 8px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
 }
 
 .weekdays {
@@ -130,7 +130,7 @@
 .weekdays span {
   text-align: center;
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--text-muted);
 }
 
 .grid {
@@ -142,11 +142,11 @@
 .day {
   aspect-ratio: 1;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   font-size: 0.78rem;
   cursor: pointer;
   font-family: inherit;
-  color: #0f3460;
+  color: var(--text);
 }
 
 .day:disabled {
@@ -155,23 +155,23 @@
 
 /* One marking scale, used identically by the month and year views. */
 .day.on-target {
-  background: var(--primary-color);
-  color: #06301f;
+  background: var(--accent);
+  color: var(--text-on-accent);
 }
 
 .day.over-target {
-  background: var(--accent-color);
-  color: #3d2600;
+  background: var(--warning);
+  color: var(--text-on-accent);
 }
 
 .day.not-logged {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.5);
+  background: var(--border);
+  color: var(--text-muted);
 }
 
 .day.outside {
   background: transparent;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--border-strong);
 }
 
 .year-view .day {
@@ -187,7 +187,7 @@
   padding: 0;
   margin-top: 18px;
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-secondary);
 }
 
 .legend li {
@@ -204,30 +204,30 @@
 }
 
 .swatch.on-target {
-  background: var(--primary-color);
+  background: var(--accent);
 }
 
 .swatch.over-target {
-  background: var(--accent-color);
+  background: var(--warning);
 }
 
 .swatch.not-logged {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border);
 }
 
 .swatch.outside {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--border);
 }
 
 .alert.error {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  border-radius: 12px;
+  background: var(--danger-subtle);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  border-radius: var(--r-md);
   padding: 12px 14px;
 }
 
 .loading {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
 }

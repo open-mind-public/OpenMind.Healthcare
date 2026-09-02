@@ -24,31 +24,55 @@ import { DietCalendarComponent } from './components/diet-calendar/diet-calendar.
 import { WeightTrackerComponent } from './components/weight-tracker/weight-tracker.component';
 import { DietAchievementsComponent } from './components/diet-achievements/diet-achievements.component';
 import { DietGuidanceComponent } from './components/diet-guidance/diet-guidance.component';
+import { HomeComponent } from './components/home/home.component';
+import { IconComponent } from './components/icon/icon.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+
+  // Platform-level
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'setup', component: SetupComponent, canActivate: [AuthGuard] },
-  { path: 'achievements', component: AchievementsComponent, canActivate: [AuthGuard] },
-  { path: 'health', component: HealthMilestonesComponent, canActivate: [AuthGuard] },
-  { path: 'motivation', component: MotivationComponent, canActivate: [AuthGuard] },
-  { path: 'craving-help', component: CravingHelpComponent, canActivate: [AuthGuard] },
-  { path: 'calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] },
-  { path: 'analytics', component: RelapseAnalyticsComponent, canActivate: [AuthGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'account', component: AccountComponent, canActivate: [AuthGuard] },
+
+  // Programme: Quit Smoking
+  { path: 'quit-smoking', redirectTo: '/quit-smoking/dashboard', pathMatch: 'full' },
+  { path: 'quit-smoking/dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/setup', component: SetupComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/analytics', component: RelapseAnalyticsComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/health', component: HealthMilestonesComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/achievements', component: AchievementsComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/motivation', component: MotivationComponent, canActivate: [AuthGuard] },
+  { path: 'quit-smoking/craving-help', component: CravingHelpComponent, canActivate: [AuthGuard] },
+
+  // Programme: Diet
+  { path: 'diet', redirectTo: '/diet/today', pathMatch: 'full' },
+  { path: 'diet/today', component: DietDashboardComponent, canActivate: [AuthGuard] },
   { path: 'diet/setup', component: DietSetupComponent, canActivate: [AuthGuard] },
-  { path: 'diet', component: DietDashboardComponent, canActivate: [AuthGuard] },
   { path: 'diet/log/:date', component: DietDashboardComponent, canActivate: [AuthGuard] },
   { path: 'diet/calendar', component: DietCalendarComponent, canActivate: [AuthGuard] },
   { path: 'diet/weight', component: WeightTrackerComponent, canActivate: [AuthGuard] },
   { path: 'diet/achievements', component: DietAchievementsComponent, canActivate: [AuthGuard] },
-  { path: 'diet/guidance', component: DietGuidanceComponent, canActivate: [AuthGuard] }
+  { path: 'diet/guidance', component: DietGuidanceComponent, canActivate: [AuthGuard] },
+
+  // Paths from before programmes were namespaced. Kept so existing links and bookmarks survive.
+  { path: 'dashboard', redirectTo: '/quit-smoking/dashboard' },
+  { path: 'setup', redirectTo: '/quit-smoking/setup' },
+  { path: 'calendar', redirectTo: '/quit-smoking/calendar' },
+  { path: 'analytics', redirectTo: '/quit-smoking/analytics' },
+  { path: 'health', redirectTo: '/quit-smoking/health' },
+  { path: 'achievements', redirectTo: '/quit-smoking/achievements' },
+  { path: 'motivation', redirectTo: '/quit-smoking/motivation' },
+  { path: 'craving-help', redirectTo: '/quit-smoking/craving-help' },
+
+  { path: '**', redirectTo: '/home' }
 ];
 
 @NgModule({
@@ -73,7 +97,10 @@ const routes: Routes = [
     DietCalendarComponent,
     WeightTrackerComponent,
     DietAchievementsComponent,
-    DietGuidanceComponent
+    DietGuidanceComponent,
+    HomeComponent,
+    IconComponent,
+    SidebarComponent
   ],
   imports: [
     BrowserModule,

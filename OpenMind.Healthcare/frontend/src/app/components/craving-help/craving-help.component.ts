@@ -117,21 +117,19 @@ import { CravingTip } from '../../models/models';
       text-align: center;
       margin-bottom: 40px;
       padding: 30px;
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1));
+      background: var(--danger-subtle);
       border-radius: 20px;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border: 1px solid var(--danger-border);
       
       h1 {
         font-size: 42px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, #ef4444, #f87171);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--danger);
       }
       
       p {
         font-size: 18px;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
       }
     }
 
@@ -141,11 +139,11 @@ import { CravingTip } from '../../models/models';
       
       h2 {
         margin-bottom: 15px;
-        color: #60a5fa;
+        color: var(--info);
       }
       
       > p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         margin-bottom: 30px;
       }
     }
@@ -164,26 +162,26 @@ import { CravingTip } from '../../models/models';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(59, 130, 246, 0.1);
-      border: 3px solid rgba(59, 130, 246, 0.3);
+      background: var(--info-subtle);
+      border: 3px solid var(--info-border);
       transition: all 1s ease;
       
       &.inhale {
         transform: scale(1.2);
-        background: rgba(16, 185, 129, 0.2);
-        border-color: rgba(16, 185, 129, 0.5);
+        background: var(--accent-subtle);
+        border-color: var(--accent-border);
       }
       
       &.hold {
         transform: scale(1.2);
-        background: rgba(245, 158, 11, 0.2);
-        border-color: rgba(245, 158, 11, 0.5);
+        background: var(--warning-subtle);
+        border-color: var(--warning-border);
       }
       
       &.exhale {
         transform: scale(1);
-        background: rgba(139, 92, 246, 0.2);
-        border-color: rgba(139, 92, 246, 0.5);
+        background: var(--info-subtle);
+        border-color: var(--info-border);
       }
       
       .breath-text {
@@ -195,7 +193,7 @@ import { CravingTip } from '../../models/models';
       .breath-timer {
         font-size: 36px;
         font-weight: 700;
-        color: #60a5fa;
+        color: var(--info);
       }
     }
 
@@ -215,7 +213,7 @@ import { CravingTip } from '../../models/models';
     }
 
     .tip-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 16px;
       padding: 20px;
       text-align: center;
@@ -224,9 +222,9 @@ import { CravingTip } from '../../models/models';
       border: 1px solid transparent;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-5px);
-        border-color: rgba(16, 185, 129, 0.3);
+        background: var(--surface-sunken);
+        transform: translateY(-1px);
+        border-color: var(--accent-border);
       }
       
       .tip-icon {
@@ -238,12 +236,12 @@ import { CravingTip } from '../../models/models';
       h3 {
         font-size: 16px;
         margin-bottom: 8px;
-        color: #10b981;
+        color: var(--accent);
       }
       
       p {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted);
         line-height: 1.4;
       }
     }
@@ -252,8 +250,8 @@ import { CravingTip } from '../../models/models';
       position: relative;
       text-align: center;
       margin-bottom: 30px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
-      border-color: rgba(16, 185, 129, 0.3);
+      background: var(--accent-subtle);
+      border-color: var(--accent-border);
       
       .close-btn {
         position: absolute;
@@ -261,7 +259,7 @@ import { CravingTip } from '../../models/models';
         right: 15px;
         background: none;
         border: none;
-        color: white;
+        color: var(--text);
         font-size: 28px;
         cursor: pointer;
         opacity: 0.7;
@@ -280,25 +278,25 @@ import { CravingTip } from '../../models/models';
       h2 {
         font-size: 28px;
         margin-bottom: 15px;
-        color: #10b981;
+        color: var(--accent);
       }
       
       p {
         font-size: 18px;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         line-height: 1.6;
       }
       
       .tip-action {
         margin-top: 25px;
         padding: 15px 20px;
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         border-radius: 12px;
         
         p {
           font-size: 14px;
           margin: 0;
-          color: rgba(255, 255, 255, 0.7);
+          color: var(--text-secondary);
         }
       }
     }
@@ -309,11 +307,11 @@ import { CravingTip } from '../../models/models';
       
       h2 {
         margin-bottom: 10px;
-        color: #f59e0b;
+        color: var(--warning);
       }
       
       > p {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         margin-bottom: 25px;
       }
     }
@@ -324,9 +322,7 @@ import { CravingTip } from '../../models/models';
       .countdown-number {
         font-size: 72px;
         font-weight: 700;
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--warning);
       }
     }
 
@@ -336,17 +332,17 @@ import { CravingTip } from '../../models/models';
 
     .countdown-message {
       padding: 20px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
+      background: var(--accent-subtle);
       border-radius: 12px;
       font-size: 18px;
       font-weight: 600;
-      color: #10b981;
+      color: var(--accent);
       animation: celebrate 0.5s ease;
     }
 
     @keyframes celebrate {
       0% { transform: scale(0.8); opacity: 0; }
-      50% { transform: scale(1.05); }
+      50% { transform: none; }
       100% { transform: scale(1); opacity: 1; }
     }
 
@@ -370,12 +366,12 @@ import { CravingTip } from '../../models/models';
       align-items: center;
       gap: 12px;
       padding: 15px 20px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-sunken);
       border-radius: 12px;
       transition: all 0.3s ease;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--surface-sunken);
         transform: translateX(5px);
       }
       
@@ -385,12 +381,12 @@ import { CravingTip } from '../../models/models';
     }
 
     .reminder-section {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(167, 139, 250, 0.1));
-      border-color: rgba(139, 92, 246, 0.3);
+      background: var(--info-subtle);
+      border-color: var(--info-border);
       
       h2 {
         margin-bottom: 20px;
-        color: #a78bfa;
+        color: var(--info);
       }
     }
 
@@ -401,7 +397,7 @@ import { CravingTip } from '../../models/models';
         padding: 12px 0;
         padding-left: 30px;
         position: relative;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
         line-height: 1.5;
         
         &:before {
@@ -411,7 +407,7 @@ import { CravingTip } from '../../models/models';
         }
         
         &:not(:last-child) {
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid var(--border);
         }
       }
     }

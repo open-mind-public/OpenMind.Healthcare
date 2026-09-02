@@ -1,54 +1,89 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { ApiService } from './services/api.service';
+import { programForUrl } from './programs/programs';
+import { LayoutService } from './services/layout.service';
+import { ThemeService } from './services/theme.service';
 
+/**
+ * The application shell: a full-width top bar, then a left rail and the content beside it.
+ *
+ * The rail appears only inside a programme. The hub, account and auth pages get the full width,
+ * because there is no programme navigation to show there.
+ */
 @Component({
   selector: 'app-root',
   standalone: false,
   template: `
-    <app-navbar *ngIf="showNavbar"></app-navbar>
-    <main class="main-content" [class.full-height]="!showNavbar">
-      <router-outlet></router-outlet>
-    </main>
+    <app-navbar *ngIf="showChrome"></app-navbar>
+
+    <div class="shell-body" [class.chromeless]="!showChrome">
+      <app-sidebar *ngIf="showChrome && inProgram && !sidebarHidden"></app-sidebar>
+
+      <main class="main-content" [class.full-height]="!showChrome">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
   `,
   styles: [`
-    .main-content {
-      padding: 20px;
-      min-height: calc(100vh - 80px);
-      transition: min-height 0.3s ease;
+    .shell-body {
+      display: flex;
+      align-items: flex-start;
+      min-height: calc(100vh - var(--header-h));
     }
-    
+
+    .shell-body.chromeless { display: block; }
+
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      padding: 24px;
+    }
+
     .main-content.full-height {
       min-height: 100vh;
       padding: 0;
     }
+
+    @media (max-width: 640px) {
+      .shell-body { display: block; }
+      .main-content { padding: 16px; }
+    }
   `]
 })
 export class AppComponent implements OnInit {
-  title = 'Quit Smoking Tracker';
-  showNavbar = false;
+  title = 'OpenMind Health';
+  showChrome = false;
+  inProgram = false;
+  sidebarHidden = false;
 
   constructor(
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private layout: LayoutService,
+    private theme: ThemeService
   ) {}
 
   ngOnInit(): void {
-    // Watch for route changes and auth state to show/hide navbar
-    this.router.events.subscribe(() => {
-      this.updateNavbarVisibility();
-    });
+    this.theme.init();
 
-    this.apiService.currentUser$.subscribe(() => {
-      this.updateNavbarVisibility();
-    });
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.updateShell());
 
-    this.updateNavbarVisibility();
+    this.apiService.currentUser$.subscribe(() => this.updateShell());
+
+    this.layout.sidebarHidden$.subscribe(hidden => (this.sidebarHidden = hidden));
+
+    this.updateShell();
   }
 
-  private updateNavbarVisibility(): void {
-    const currentRoute = this.router.url;
-    const isAuthRoute = currentRoute === '/login' || currentRoute === '/register';
-    this.showNavbar = this.apiService.isLoggedIn && !isAuthRoute;
+  private updateShell(): void {
+    const url = this.router.url;
+    const isAuthRoute = url === '/login' || url === '/register';
+
+    this.showChrome = this.apiService.isLoggedIn && !isAuthRoute;
+    this.inProgram = programForUrl(url) !== null;
   }
 }

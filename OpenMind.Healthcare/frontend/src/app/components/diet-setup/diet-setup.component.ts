@@ -78,7 +78,7 @@ export class DietSetupComponent implements OnInit {
       next: plan => {
         this.existingPlan = plan;
         this.loading = false;
-        this.router.navigate(['/diet']);
+        this.router.navigate(['/diet/today']);
       },
       error: () => {
         this.loading = false;
@@ -162,9 +162,9 @@ export class DietSetupComponent implements OnInit {
         // A warning accompanies a successful save - it is not a refusal. Give the member a
         // moment to read it before moving on.
         if (this.floorWarning) {
-          setTimeout(() => this.router.navigate(['/diet']), 4000);
+          setTimeout(() => this.router.navigate(['/diet/today']), 4000);
         } else {
-          this.router.navigate(['/diet']);
+          this.router.navigate(['/diet/today']);
         }
       },
       error: err => {

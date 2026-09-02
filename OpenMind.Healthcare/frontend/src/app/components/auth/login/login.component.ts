@@ -26,7 +26,7 @@ export class LoginComponent {
 
     // Redirect if already logged in
     if (this.apiService.isLoggedIn) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/home']);
     }
   }
 
@@ -38,7 +38,7 @@ export class LoginComponent {
       this.apiService.login(this.loginForm.value).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/home']);
         },
         error: (error) => {
           this.isLoading = false;

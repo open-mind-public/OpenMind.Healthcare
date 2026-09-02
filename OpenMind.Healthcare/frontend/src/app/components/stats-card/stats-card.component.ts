@@ -14,44 +14,43 @@ import { Component, Input } from '@angular/core';
   `,
   styles: [`
     .stats-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+      background: var(--surface-sunken);
       border-radius: 20px;
       padding: 25px;
       display: flex;
       align-items: center;
       gap: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
       transition: all 0.3s ease;
       
       &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
       }
       
       &.primary {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
-        border-color: rgba(16, 185, 129, 0.3);
+        background: var(--accent-subtle);
+        border-color: var(--accent-border);
       }
       
       &.gold {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
-        border-color: rgba(245, 158, 11, 0.3);
+        background: var(--warning-subtle);
+        border-color: var(--warning-border);
       }
       
       &.blue {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(96, 165, 250, 0.1));
-        border-color: rgba(59, 130, 246, 0.3);
+        background: var(--info-subtle);
+        border-color: var(--info-border);
       }
       
       &.pink {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.1));
-        border-color: rgba(236, 72, 153, 0.3);
+        background: var(--info-subtle);
+        border-color: var(--info-border);
       }
 
       &.danger {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1));
-        border-color: rgba(239, 68, 68, 0.3);
+        background: var(--danger-subtle);
+        border-color: var(--danger-border);
       }
     }
     
@@ -62,7 +61,7 @@ import { Component, Input } from '@angular/core';
     
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+      50% { transform: translateY(-1px); }
     }
     
     .content {
@@ -77,7 +76,7 @@ import { Component, Input } from '@angular/core';
     
     .label {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       margin-top: 5px;
     }
   `]

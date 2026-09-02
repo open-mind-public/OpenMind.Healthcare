@@ -1,10 +1,9 @@
 .food-search {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 20px;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .field {
@@ -17,7 +16,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text);
 }
 
 .field input,
@@ -28,8 +27,8 @@
 }
 
 .field select option {
-  background: #16213e;
-  color: var(--text-light);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .field-row {
@@ -42,22 +41,22 @@
 }
 
 .searching {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 0.88rem;
   margin: 6px 0;
 }
 
 .no-match {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  color: #fcd34d;
-  border-radius: 10px;
+  background: var(--warning-subtle);
+  border: 1px solid var(--warning-border);
+  color: var(--warning);
+  border-radius: var(--r-md);
   padding: 10px 12px;
   font-size: 0.9rem;
 }
 
 .no-match strong {
-  color: #fde68a;
+  color: var(--warning);
 }
 
 .matches {
@@ -66,8 +65,8 @@
   padding: 0;
   max-height: 260px;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
 }
 
 .matches li {
@@ -76,8 +75,8 @@
   align-items: center;
   padding: 11px 12px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-light);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
 }
 
 .matches li:last-child {
@@ -85,11 +84,11 @@
 }
 
 .matches li:hover {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--accent-subtle);
 }
 
 .matches .category {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 0.78rem;
 }
 
@@ -98,7 +97,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .servings {
@@ -109,10 +108,10 @@
 }
 
 .serving {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-light);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text);
+  border-radius: var(--r-md);
   padding: 9px 13px;
   cursor: pointer;
   text-align: left;
@@ -122,28 +121,28 @@
 
 .serving small {
   display: block;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 0.76rem;
 }
 
 .serving.active {
-  border-color: var(--primary-color);
-  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--accent);
+  background: var(--accent-subtle);
 }
 
 .preview {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
   font-size: 0.92rem;
 }
 
 .preview strong {
-  color: var(--primary-light);
+  color: var(--accent);
 }
 
 .link {
   background: none;
   border: none;
-  color: var(--primary-light);
+  color: var(--accent);
   cursor: pointer;
   text-decoration: underline;
   font-size: 0.86rem;
@@ -155,16 +154,16 @@
   width: 100%;
   padding: 12px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: #fff;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--text-on-accent);
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
 }
 
 .primary:disabled {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.4);
+  background: var(--border);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
