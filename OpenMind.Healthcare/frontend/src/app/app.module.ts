@@ -17,6 +17,13 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { ProgressCalendarComponent } from './components/progress-calendar/progress-calendar.component';
 import { RelapseAnalyticsComponent } from './components/relapse-analytics/relapse-analytics.component';
 import { AccountComponent } from './components/account/account.component';
+import { DietSetupComponent } from './components/diet-setup/diet-setup.component';
+import { DietDashboardComponent } from './components/diet-dashboard/diet-dashboard.component';
+import { FoodSearchComponent } from './components/food-search/food-search.component';
+import { DietCalendarComponent } from './components/diet-calendar/diet-calendar.component';
+import { WeightTrackerComponent } from './components/weight-tracker/weight-tracker.component';
+import { DietAchievementsComponent } from './components/diet-achievements/diet-achievements.component';
+import { DietGuidanceComponent } from './components/diet-guidance/diet-guidance.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
@@ -34,7 +41,14 @@ const routes: Routes = [
   { path: 'craving-help', component: CravingHelpComponent, canActivate: [AuthGuard] },
   { path: 'calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] },
   { path: 'analytics', component: RelapseAnalyticsComponent, canActivate: [AuthGuard] },
-  { path: 'account', component: AccountComponent, canActivate: [AuthGuard] }
+  { path: 'account', component: AccountComponent, canActivate: [AuthGuard] },
+  { path: 'diet/setup', component: DietSetupComponent, canActivate: [AuthGuard] },
+  { path: 'diet', component: DietDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'diet/log/:date', component: DietDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'diet/calendar', component: DietCalendarComponent, canActivate: [AuthGuard] },
+  { path: 'diet/weight', component: WeightTrackerComponent, canActivate: [AuthGuard] },
+  { path: 'diet/achievements', component: DietAchievementsComponent, canActivate: [AuthGuard] },
+  { path: 'diet/guidance', component: DietGuidanceComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({
@@ -52,7 +66,14 @@ const routes: Routes = [
     RelapseAnalyticsComponent,
     AccountComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    DietSetupComponent,
+    DietDashboardComponent,
+    FoodSearchComponent,
+    DietCalendarComponent,
+    WeightTrackerComponent,
+    DietAchievementsComponent,
+    DietGuidanceComponent
   ],
   imports: [
     BrowserModule,

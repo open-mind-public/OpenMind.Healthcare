@@ -1,0 +1,233 @@
+.diet-calendar {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--text-light);
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.cal-header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--text-light);
+}
+
+.view-toggle button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.view-toggle button:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.view-toggle button:last-child {
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+
+.view-toggle button.active {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  border-color: transparent;
+  color: #fff;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  flex: 1;
+  min-width: 130px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 15px;
+  text-align: center;
+}
+
+.stat .value {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary-light);
+}
+
+.stat .label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.period {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.period button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-light);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.period button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.months.year-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.month {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.month h2 {
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.weekdays span {
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  color: #0f3460;
+}
+
+.day:disabled {
+  cursor: default;
+}
+
+/* One marking scale, used identically by the month and year views. */
+.day.on-target {
+  background: var(--primary-color);
+  color: #06301f;
+}
+
+.day.over-target {
+  background: var(--accent-color);
+  color: #3d2600;
+}
+
+.day.not-logged {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.day.outside {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.year-view .day {
+  font-size: 0;
+  border-radius: 3px;
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 0;
+  margin-top: 18px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.swatch.on-target {
+  background: var(--primary-color);
+}
+
+.swatch.over-target {
+  background: var(--accent-color);
+}
+
+.swatch.not-logged {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.swatch.outside {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.alert.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.55);
+}

@@ -1,0 +1,41 @@
+<div class="diet-achievements">
+  <h1>Your achievements</h1>
+
+  <p class="loading" *ngIf="loading">Loading...</p>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="celebrate" *ngIf="newlyUnlocked.length > 0">
+    <h2>Just unlocked</h2>
+    <div class="card new" *ngFor="let achievement of newlyUnlocked">
+      <span class="icon">{{ achievement.icon }}</span>
+      <div>
+        <strong>{{ achievement.name }}</strong>
+        <p>{{ achievement.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="unlocked.length > 0">
+    <h2>Earned</h2>
+    <div class="card" *ngFor="let achievement of unlocked">
+      <span class="icon">{{ achievement.icon }}</span>
+      <div>
+        <strong>{{ achievement.name }}</strong>
+        <p>{{ achievement.description }}</p>
+        <small>Earned {{ achievement.earnedOn }}</small>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="locked.length > 0">
+    <h2>Still to come</h2>
+    <div class="card locked" *ngFor="let achievement of locked">
+      <span class="icon">{{ achievement.icon }}</span>
+      <div>
+        <strong>{{ achievement.name }}</strong>
+        <p>{{ achievement.description }}</p>
+        <small>{{ remainingLabel(achievement) }}</small>
+      </div>
+    </div>
+  </section>
+</div>

@@ -47,6 +47,10 @@ interface SettingsItem {
           <span class="icon">💪</span>
           Motivation
         </li>
+        <li (click)="navigate('/diet')" [class.active]="isActive('/diet')">
+          <span class="icon">🥗</span>
+          Diet
+        </li>
         <li (click)="navigate('/craving-help')" [class.active]="isActive('/craving-help')" class="craving-btn">
           <span class="icon">🆘</span>
           Craving Help

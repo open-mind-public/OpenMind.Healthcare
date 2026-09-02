@@ -1,0 +1,76 @@
+.diet-achievements {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--text-light);
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 18px;
+  color: var(--text-light);
+}
+
+h2 {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 24px 0 10px;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 15px 17px;
+  margin-bottom: 10px;
+}
+
+.card.new {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.card.locked {
+  opacity: 0.6;
+}
+
+.icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.card strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text-light);
+}
+
+.card p {
+  margin: 0 0 4px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+}
+
+.card small {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+}
+
+.celebrate h2 {
+  color: var(--primary-light);
+}
+
+.alert.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.55);
+}

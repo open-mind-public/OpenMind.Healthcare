@@ -1,0 +1,223 @@
+/* Glass-on-dark, matching the app shell: translucent panels over the body gradient,
+   light text, emerald accents. Every text colour is explicit - inheriting it is what
+   made these labels invisible in the first place. */
+
+.diet-setup {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--text-light);
+}
+
+.setup-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  color: var(--text-light);
+}
+
+.lead {
+  margin: 0 0 24px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  color: var(--text-light);
+}
+
+.field {
+  display: block;
+  margin: 16px 0;
+}
+
+.field > span {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.field em {
+  font-weight: 400;
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Inputs keep the global glass styling; only layout is set here. */
+.field input,
+.field select {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.field select option {
+  background: #16213e;
+  color: var(--text-light);
+}
+
+.field-row {
+  display: flex;
+  gap: 14px;
+}
+
+.field-row .field {
+  flex: 1;
+}
+
+.hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
+}
+
+.suggestion {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.target-number {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 12px 0 4px;
+  color: var(--primary-light);
+}
+
+.target-number span {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  display: block;
+}
+
+.macros {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.macros strong {
+  color: var(--text-light);
+}
+
+.workings {
+  margin-bottom: 12px;
+}
+
+.workings summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--primary-light);
+}
+
+.workings ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+}
+
+.workings strong {
+  color: var(--text-light);
+}
+
+.workings .clamped {
+  color: var(--accent-color);
+}
+
+.disclaimer {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  border-left: 3px solid rgba(255, 255, 255, 0.25);
+  padding-left: 10px;
+  margin: 12px 0;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--primary-light);
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.override {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.prompt {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin: 20px 0;
+}
+
+.alert {
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  border: 1px solid transparent;
+}
+
+.alert.error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.alert.warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+.primary {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+}
+
+.primary:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

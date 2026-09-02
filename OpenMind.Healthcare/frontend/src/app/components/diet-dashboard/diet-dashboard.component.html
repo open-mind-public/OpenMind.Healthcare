@@ -1,0 +1,80 @@
+<div class="diet-dashboard">
+  <header class="day-header">
+    <h1>Your day</h1>
+    <input type="date" [value]="date" (change)="changeDate($any($event.target).value)" />
+  </header>
+
+  <nav class="diet-nav">
+    <a routerLink="/diet" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Today</a>
+    <a routerLink="/diet/calendar" routerLinkActive="active">History</a>
+    <a routerLink="/diet/weight" routerLinkActive="active">Weight</a>
+    <a routerLink="/diet/achievements" routerLinkActive="active">Achievements</a>
+    <a routerLink="/diet/guidance" routerLinkActive="active">Guidance</a>
+    <a routerLink="/diet/setup" routerLinkActive="active">Plan</a>
+  </nav>
+
+  <p class="loading" *ngIf="loading">Loading...</p>
+
+  <div class="alert error" *ngIf="error">
+    {{ error }}
+    <button type="button" class="link" *ngIf="conflict" (click)="load()">Reload the day</button>
+  </div>
+
+  <ng-container *ngIf="day">
+    <section class="totals" [class.over]="day.state === 'OverTarget'">
+      <div class="figure">
+        <span class="value">{{ day.totals.calories }}</span>
+        <span class="label">eaten</span>
+      </div>
+      <div class="figure">
+        <span class="value">{{ day.targets.calories }}</span>
+        <span class="label">target</span>
+      </div>
+      <div class="figure" *ngIf="day.state !== 'OverTarget'">
+        <span class="value">{{ day.remainingCalories }}</span>
+        <span class="label">left</span>
+      </div>
+      <div class="figure over-figure" *ngIf="day.state === 'OverTarget'">
+        <span class="value">{{ day.overageCalories }}</span>
+        <span class="label">over</span>
+      </div>
+    </section>
+
+    <p class="state-line" [ngSwitch]="day.state">
+      <span *ngSwitchCase="'NotLogged'">Nothing logged for this day yet.</span>
+      <span *ngSwitchCase="'OnTarget'">On target so far.</span>
+      <span *ngSwitchCase="'OverTarget'">Over target for this day.</span>
+    </p>
+
+    <app-food-search (chosen)="add($event)"></app-food-search>
+
+    <section class="meal" *ngFor="let meal of meals">
+      <ng-container *ngIf="entriesFor(meal).length > 0">
+        <h2>
+          {{ meal }}
+          <span class="meal-calories">{{ caloriesFor(meal) }} kcal</span>
+        </h2>
+
+        <ul class="entries">
+          <li *ngFor="let entry of entriesFor(meal)">
+            <div class="entry-main">
+              <span class="entry-name">{{ entry.foodName }}</span>
+              <span class="entry-serving">{{ entry.quantity }} &times; {{ entry.servingLabel }}</span>
+            </div>
+            <span class="entry-calories">{{ entry.nutrition.calories }}</span>
+            <div class="entry-actions">
+              <input
+                type="number"
+                min="0.25"
+                step="0.25"
+                [value]="entry.quantity"
+                (change)="changeQuantity(entry, +$any($event.target).value)"
+                title="Change how many servings" />
+              <button type="button" class="remove" (click)="remove(entry)" title="Remove">&times;</button>
+            </div>
+          </li>
+        </ul>
+      </ng-container>
+    </section>
+  </ng-container>
+</div>

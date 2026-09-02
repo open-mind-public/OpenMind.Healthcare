@@ -1,0 +1,65 @@
+<div class="food-search">
+  <label class="field">
+    <span>Add a food</span>
+    <input
+      type="text"
+      [(ngModel)]="query"
+      (ngModelChange)="onQueryChanged()"
+      placeholder="Start typing, e.g. oats, chicken, banana"
+      autocomplete="off" />
+  </label>
+
+  <p class="searching" *ngIf="searching">Searching...</p>
+
+  <!-- An empty result is the honest answer, not an invitation to invent an entry. -->
+  <p class="no-match" *ngIf="searched && !searching && matches.length === 0">
+    We do not have <strong>{{ query }}</strong> in the food library yet, so it cannot be logged.
+    Try a simpler name, or pick the closest food you can find.
+  </p>
+
+  <ul class="matches" *ngIf="matches.length > 0 && !selectedFood">
+    <li *ngFor="let food of matches" (click)="select(food)">
+      <span class="name">{{ food.name }}</span>
+      <span class="category">{{ food.category }}</span>
+    </li>
+  </ul>
+
+  <div class="chosen" *ngIf="selectedFood">
+    <div class="chosen-head">
+      <strong>{{ selectedFood.name }}</strong>
+      <button type="button" class="link" (click)="reset()">Change</button>
+    </div>
+
+    <div class="servings">
+      <button
+        type="button"
+        *ngFor="let serving of selectedFood.servingSizes"
+        class="serving"
+        [class.active]="selectedServing?.id === serving.id"
+        (click)="chooseServing(serving)">
+        {{ serving.label }}
+        <small>{{ serving.nutrition.calories }} kcal</small>
+      </button>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>How many</span>
+        <input type="number" min="0.25" step="0.25" [(ngModel)]="quantity" />
+      </label>
+
+      <label class="field">
+        <span>Meal</span>
+        <select [(ngModel)]="mealType">
+          <option *ngFor="let meal of meals" [value]="meal">{{ meal }}</option>
+        </select>
+      </label>
+    </div>
+
+    <p class="preview">That is <strong>{{ previewCalories }}</strong> calories.</p>
+
+    <button type="button" class="primary" (click)="add()" [disabled]="quantity <= 0">
+      Add to my day
+    </button>
+  </div>
+</div>

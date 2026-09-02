@@ -1,0 +1,130 @@
+<div class="diet-setup">
+  <header class="setup-header">
+    <h1>Set up your diet plan</h1>
+    <p class="lead">
+      Tell us what you are aiming for and a little about you. We will suggest a daily target you
+      can keep or change.
+    </p>
+  </header>
+
+  <form *ngIf="form" [formGroup]="form" class="setup-form" (ngSubmit)="save()">
+    <section class="panel">
+      <h2>Your goal</h2>
+
+      <label class="field">
+        <span>What are you aiming for?</span>
+        <select formControlName="goal" (change)="requestSuggestion()">
+          <option *ngFor="let goal of goals" [value]="goal.value">{{ goal.label }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Starting from</span>
+        <input type="date" formControlName="startDate" />
+        <small class="hint">Cannot be in the future.</small>
+      </label>
+
+      <label class="field">
+        <span>Target weight (kg) <em>optional</em></span>
+        <input type="number" step="0.1" formControlName="targetWeightKg" placeholder="e.g. 78" />
+      </label>
+    </section>
+
+    <section class="panel">
+      <h2>About you</h2>
+      <p class="hint">Used only to size your daily target.</p>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Height (cm)</span>
+          <input type="number" step="0.1" formControlName="heightCm" (blur)="requestSuggestion()" />
+        </label>
+
+        <label class="field">
+          <span>Age</span>
+          <input type="number" formControlName="age" (blur)="requestSuggestion()" />
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Current weight (kg)</span>
+          <input type="number" step="0.1" formControlName="currentWeightKg" (blur)="requestSuggestion()" />
+        </label>
+
+        <label class="field">
+          <span>Sex</span>
+          <select formControlName="sex" (change)="requestSuggestion()">
+            <option *ngFor="let s of sexes" [value]="s.value">{{ s.label }}</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>How active are you?</span>
+        <select formControlName="activityLevel" (change)="requestSuggestion()">
+          <option *ngFor="let level of activityLevels" [value]="level.value">{{ level.label }}</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="panel suggestion" *ngIf="suggestion">
+      <h2>Your suggested daily target</h2>
+
+      <p class="target-number">
+        {{ suggestion.suggestedTargets.calories }} <span>calories a day</span>
+      </p>
+
+      <ul class="macros" *ngIf="suggestion.suggestedTargets.proteinG !== null">
+        <li><strong>{{ suggestion.suggestedTargets.proteinG }}g</strong> protein</li>
+        <li><strong>{{ suggestion.suggestedTargets.carbsG }}g</strong> carbs</li>
+        <li><strong>{{ suggestion.suggestedTargets.fatG }}g</strong> fat</li>
+      </ul>
+
+      <!-- The workings are shown so the number can be understood, not just accepted. -->
+      <details class="workings">
+        <summary>How we got there</summary>
+        <ul>
+          <li>At rest your body uses about <strong>{{ suggestion.restingEnergyKcal }}</strong> calories a day.</li>
+          <li>With your activity level that becomes <strong>{{ suggestion.activityAdjustedKcal }}</strong>.</li>
+          <li *ngIf="suggestion.goalAdjustmentKcal !== 0">
+            Your goal adjusts that by <strong>{{ suggestion.goalAdjustmentKcal }}</strong>.
+          </li>
+          <li *ngIf="suggestion.wasClampedToFloor" class="clamped">
+            That came out below {{ suggestion.floorKcal }} calories, so we raised it to the
+            recommended minimum.
+          </li>
+        </ul>
+      </details>
+
+      <p class="disclaimer">{{ suggestion.disclaimer }}</p>
+
+      <div class="suggestion-actions" *ngIf="!overriding">
+        <button type="button" class="link" (click)="startOverriding()">
+          I would rather set my own number
+        </button>
+      </div>
+
+      <div class="override" *ngIf="overriding">
+        <label class="field">
+          <span>Your daily calorie target</span>
+          <input type="number" formControlName="calories" />
+        </label>
+        <button type="button" class="link" (click)="acceptSuggestion()">
+          Use the suggested {{ suggestion.suggestedTargets.calories }} instead
+        </button>
+      </div>
+    </section>
+
+    <p class="prompt" *ngIf="!suggestion">
+      Fill in your details above and we will suggest a daily target.
+    </p>
+
+    <div class="alert error" *ngIf="error">{{ error }}</div>
+    <div class="alert warning" *ngIf="floorWarning">{{ floorWarning }}</div>
+
+    <button type="submit" class="primary" [disabled]="saving || !suggestion">
+      {{ saving ? 'Saving...' : 'Save my plan' }}
+    </button>
+  </form>
+</div>

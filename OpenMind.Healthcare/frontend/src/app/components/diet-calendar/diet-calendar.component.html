@@ -1,0 +1,68 @@
+<div class="diet-calendar">
+  <header class="cal-header">
+    <h1>Your history</h1>
+    <div class="view-toggle">
+      <button type="button" [class.active]="view === 'month'" (click)="setView('month')">Month</button>
+      <button type="button" [class.active]="view === 'year'" (click)="setView('year')">Year</button>
+    </div>
+  </header>
+
+  <section class="stats" *ngIf="stats">
+    <div class="stat">
+      <span class="value">{{ stats.currentStreakDays }}</span>
+      <span class="label">current streak</span>
+    </div>
+    <div class="stat">
+      <span class="value">{{ stats.longestStreakDays }}</span>
+      <span class="label">longest streak</span>
+    </div>
+    <div class="stat">
+      <span class="value">{{ stats.totalDaysLogged }}</span>
+      <span class="label">days logged</span>
+    </div>
+    <div class="stat">
+      <span class="value">{{ stats.averageDailyCalories }}</span>
+      <span class="label">avg over {{ stats.averageWindowDays }} days</span>
+    </div>
+  </section>
+
+  <nav class="period">
+    <button type="button" (click)="step(-1)" aria-label="Previous">&larr;</button>
+    <span>{{ periodLabel }}</span>
+    <button type="button" (click)="step(1)" aria-label="Next">&rarr;</button>
+  </nav>
+
+  <p class="loading" *ngIf="loading">Loading...</p>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <div class="months" [class.year-view]="view === 'year'">
+    <section class="month" *ngFor="let month of months">
+      <h2 *ngIf="view === 'year'">{{ month.label }}</h2>
+
+      <div class="weekdays" *ngIf="view === 'month'">
+        <span *ngFor="let weekday of weekdays">{{ weekday }}</span>
+      </div>
+
+      <div class="grid">
+        <span class="blank" *ngFor="let blank of month.leadingBlanks"></span>
+        <button
+          type="button"
+          class="day"
+          *ngFor="let day of month.days"
+          [ngClass]="stateClass(day)"
+          [disabled]="!day.withinPlan"
+          [title]="day.date + (day.withinPlan ? ' - ' + day.state : ' - before your plan started')"
+          (click)="openDay(day)">
+          {{ dayNumber(day) }}
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <ul class="legend">
+    <li><span class="swatch on-target"></span> On target</li>
+    <li><span class="swatch over-target"></span> Over target</li>
+    <li><span class="swatch not-logged"></span> Not logged</li>
+    <li><span class="swatch outside"></span> Outside your plan</li>
+  </ul>
+</div>

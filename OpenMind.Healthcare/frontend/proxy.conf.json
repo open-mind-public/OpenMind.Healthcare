@@ -11,5 +11,13 @@
     "pathRewrite": {
       "^/user-api": "/api"
     }
+  },
+  "/diet-api": {
+    "target": "http://localhost:3005",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/diet-api": "/api"
+    }
   }
 }

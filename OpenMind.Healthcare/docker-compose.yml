@@ -35,6 +35,23 @@ services:
     networks:
       - quitsmoking-network
 
+  diet-api:
+    build:
+      context: ./backend
+      dockerfile: DietApi/Dockerfile
+    container_name: quitsmoking-diet-api
+    ports:
+      - "5436:5000"
+    volumes:
+      - diet-sqlite-data:/app/data
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/diet.db
+    restart: unless-stopped
+    networks:
+      - quitsmoking-network
+
   ui:
     build:
       context: ./frontend
@@ -45,6 +62,7 @@ services:
     depends_on:
       - api
       - user-api
+      - diet-api
     restart: unless-stopped
     networks:
       - quitsmoking-network
@@ -53,6 +71,8 @@ volumes:
   sqlite-data:
     driver: local
   user-sqlite-data:
+    driver: local
+  diet-sqlite-data:
     driver: local
 
 networks:

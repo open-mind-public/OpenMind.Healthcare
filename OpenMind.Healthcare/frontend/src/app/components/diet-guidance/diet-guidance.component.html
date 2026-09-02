@@ -1,0 +1,35 @@
+<div class="diet-guidance">
+  <h1>Guidance</h1>
+
+  <section class="encouragement" *ngIf="encouragement">
+    <p class="message">{{ encouragement.message }}</p>
+  </section>
+
+  <nav class="filters">
+    <button
+      type="button"
+      *ngFor="let option of categories"
+      [class.active]="category === option.value"
+      (click)="filter(option.value)">
+      {{ option.label }}
+    </button>
+  </nav>
+
+  <p class="loading" *ngIf="loading">Loading...</p>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <div class="tips">
+    <article class="tip" *ngFor="let tip of tips">
+      <span class="icon">{{ tip.icon }}</span>
+      <div>
+        <strong>{{ tip.title }}</strong>
+        <p>{{ tip.description }}</p>
+      </div>
+    </article>
+  </div>
+
+  <p class="disclaimer">
+    General wellbeing guidance, not medical advice. If you have a health condition that affects
+    what you eat, speak to a healthcare professional.
+  </p>
+</div>
