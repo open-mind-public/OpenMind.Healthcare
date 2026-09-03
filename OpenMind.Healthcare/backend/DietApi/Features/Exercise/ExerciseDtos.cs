@@ -54,6 +54,12 @@ public record AddExerciseEntryRequest(Guid ActivityTypeId, int DurationMinutes, 
 
 public record UpdateExerciseEntryRequest(Guid ActivityTypeId, int DurationMinutes, Guid Version);
 
+/// <summary>
+/// The one tap. <c>Version</c> is omitted when the date has no exercise day yet, required
+/// otherwise - exactly as for a session entered by hand.
+/// </summary>
+public record AddEntryFromShortcutRequest(Guid ShortcutId, Guid? Version);
+
 public static class ExerciseMapper
 {
     public static ExerciseEntryDto ToDto(ExerciseEntry entry) =>

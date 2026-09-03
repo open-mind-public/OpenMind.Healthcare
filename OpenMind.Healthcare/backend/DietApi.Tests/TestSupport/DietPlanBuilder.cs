@@ -25,6 +25,7 @@ public sealed class DietPlanBuilder
     private decimal? _targetWeightKg = 78m;
 
     private readonly List<(DateOnly Date, decimal WeightKg)> _extraReadings = [];
+    private readonly List<(Guid ActivityTypeId, int Minutes, string Name)> _shortcuts = [];
 
     public static DietPlanBuilder APlan() => new();
 
@@ -88,6 +89,13 @@ public sealed class DietPlanBuilder
         return this;
     }
 
+    /// <summary>A shortcut the member has already saved.</summary>
+    public DietPlanBuilder WithShortcut(Guid activityTypeId, int minutes, string name)
+    {
+        _shortcuts.Add((activityTypeId, minutes, name));
+        return this;
+    }
+
     public DietPlanBuilder WeighedDaysAgo(int daysAgo, decimal weightKg)
     {
         _extraReadings.Add((DaysAgo(daysAgo), weightKg));
@@ -111,6 +119,11 @@ public sealed class DietPlanBuilder
         foreach (var reading in _extraReadings)
         {
             plan.RecordWeight(reading.Date, reading.WeightKg, _clock);
+        }
+
+        foreach (var shortcut in _shortcuts)
+        {
+            plan.SaveExerciseShortcut(shortcut.ActivityTypeId, shortcut.Minutes, shortcut.Name, _clock);
         }
 
         return plan;

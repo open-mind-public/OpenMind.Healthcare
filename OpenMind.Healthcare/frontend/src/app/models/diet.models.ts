@@ -486,3 +486,38 @@ export interface IntakeTrend {
   peakKilocalories: number;
   points: DailyIntakePoint[];
 }
+
+// --- Exercise shortcuts -----------------------------------------------------
+// A saved activity and duration, tapped to record a session in one interaction. Deliberately no
+// MET and no estimate: the figure is computed when the session is recorded, from the member's
+// current weight, so a saved button cannot freeze the weight they had when they saved it.
+
+export interface ExerciseShortcut {
+  id: string;
+  name: string;
+  activityTypeId: string;
+  /** Resolved from the catalogue on read, not stored — a corrected name shows up here. */
+  activityName: string;
+  durationMinutes: number;
+  position: number;
+  /** False when the activity has left the catalogue; the button is shown unusable. */
+  available: boolean;
+}
+
+export interface ExerciseShortcutList {
+  shortcuts: ExerciseShortcut[];
+  maxShortcuts: number;
+  /** How many more may be added, so the limit is known before a save fails. */
+  remainingSlots: number;
+}
+
+export interface CreateShortcutRequest {
+  activityTypeId: string;
+  durationMinutes: number;
+  name: string | null;
+}
+
+export interface AddEntryFromShortcutRequest {
+  shortcutId: string;
+  version: string | null;
+}

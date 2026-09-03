@@ -1,5 +1,6 @@
 using DDD.BuildingBlocks;
 using DietApi.Domain;
+using DietApi.Features.Exercise.AddEntryFromShortcut;
 using DietApi.Features.Exercise.AddExerciseEntry;
 using DietApi.Features.Exercise.DeleteExerciseEntry;
 using DietApi.Features.Exercise.GetActivitySummary;
@@ -37,6 +38,10 @@ public static class ExerciseEndpoints
 
         group.MapPost("/{date}/entries", AddEntry)
             .WithName("AddExerciseEntry")
+            .WithOpenApi();
+
+        group.MapPost("/{date}/entries/from-shortcut", AddEntryFrom)
+            .WithName("AddExerciseEntryFromShortcut")
             .WithOpenApi();
 
         group.MapPut("/entries/{entryId:guid}", UpdateEntry)
@@ -136,6 +141,30 @@ public static class ExerciseEndpoints
         catch (ConcurrencyConflictException ex)
         {
             return Results.Conflict(new { message = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> AddEntryFrom(
+        DateOnly date,
+        [FromBody] AddEntryFromShortcutRequest request,
+        IMediator mediator)
+    {
+        try
+        {
+            // Null means the shortcut is not the caller's, or its activity has left the catalogue.
+            var day = await mediator.Send(new AddEntryFromShortcutCommand(date, request));
+
+            return day is null
+                ? Results.NotFound(new { message = "That shortcut is not available" })
+                : Results.Ok(day);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Results.Conflict(new { message = ex.Message });
+        }
+        catch (DomainException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
         }
     }
 }

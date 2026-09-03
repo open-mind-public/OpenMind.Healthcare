@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ActivitySearchResponse,
+  AddEntryFromShortcutRequest,
   ActivitySummary,
   AddExerciseEntryRequest,
   AddFoodEntryRequest,
@@ -15,8 +16,10 @@ import {
   DietStatistics,
   EatingPatterns,
   EatingTip,
+  CreateShortcutRequest,
   ExerciseDay,
   ExerciseRangeResponse,
+  ExerciseShortcutList,
   FoodSearchResult,
   IntakeAnalysis,
   IntakeTrend,
@@ -165,6 +168,36 @@ export class DietService {
   deleteExerciseEntry(entryId: string, version: string): Observable<ExerciseDay | null> {
     const params = new HttpParams().set('version', version);
     return this.http.delete<ExerciseDay | null>(`${this.baseUrl}/exercise/entries/${entryId}`, { params });
+  }
+
+  // --- Exercise shortcuts -----------------------------------------------
+  // Every one of these answers with the whole list, so the client updates in one round trip
+  // rather than reconciling a patch.
+
+  getExerciseShortcuts(): Observable<ExerciseShortcutList> {
+    return this.http.get<ExerciseShortcutList>(`${this.baseUrl}/exercise-shortcuts`);
+  }
+
+  createExerciseShortcut(request: CreateShortcutRequest): Observable<ExerciseShortcutList> {
+    return this.http.post<ExerciseShortcutList>(`${this.baseUrl}/exercise-shortcuts`, request);
+  }
+
+  renameExerciseShortcut(id: string, name: string): Observable<ExerciseShortcutList> {
+    return this.http.put<ExerciseShortcutList>(`${this.baseUrl}/exercise-shortcuts/${id}`, { name });
+  }
+
+  /** Sends the complete ordered list, not a move — idempotent and race-free. */
+  reorderExerciseShortcuts(orderedIds: string[]): Observable<ExerciseShortcutList> {
+    return this.http.put<ExerciseShortcutList>(`${this.baseUrl}/exercise-shortcuts/order`, { orderedIds });
+  }
+
+  deleteExerciseShortcut(id: string): Observable<ExerciseShortcutList> {
+    return this.http.delete<ExerciseShortcutList>(`${this.baseUrl}/exercise-shortcuts/${id}`);
+  }
+
+  addExerciseEntryFromShortcut(
+    date: string, request: AddEntryFromShortcutRequest): Observable<ExerciseDay> {
+    return this.http.post<ExerciseDay>(`${this.baseUrl}/exercise/${date}/entries/from-shortcut`, request);
   }
 
   searchActivities(query: string, limit = 20): Observable<ActivitySearchResponse> {

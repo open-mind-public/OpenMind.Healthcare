@@ -19,6 +19,7 @@ public class DietPlan : AggregateRoot
 {
     private readonly List<WeightReading> _weightReadings = [];
     private readonly List<UnlockedAchievement> _unlockedAchievements = [];
+    private readonly List<ExerciseShortcut> _exerciseShortcuts = [];
 
     public Guid UserId { get; private set; }
     public GoalType Goal { get; private set; }
@@ -40,6 +41,29 @@ public class DietPlan : AggregateRoot
     /// derived, so an achievement can never be taken back.
     /// </summary>
     public IReadOnlyCollection<UnlockedAchievement> UnlockedAchievements => _unlockedAchievements;
+
+    /// <summary>
+    /// Saved ways to record an exercise session in one tap, in the member's chosen order.
+    /// </summary>
+    /// <remarks>
+    /// Owned by the plan rather than being its own aggregate, and deliberately so. Two rules span
+    /// the whole set - at most <see cref="MaxShortcuts"/> of them, and no two recording the same
+    /// activity for the same duration. Neither can be enforced from inside a single shortcut
+    /// without a read-modify-write race: two concurrent saves would both pass the check. An
+    /// invariant over a set needs a consistency boundary containing the set, which is what an
+    /// aggregate is for.
+    /// <para>
+    /// The usual objection to owning a collection - that writes come to scale with its size - does
+    /// not apply here, because the cap bounds it at ten. That cap is a requirement rather than a
+    /// convenience, and it is what makes ownership safe.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyCollection<ExerciseShortcut> ExerciseShortcuts => _exerciseShortcuts;
+
+    /// <summary>Past roughly this many, scanning the list costs more than typing the session.</summary>
+    public const int MaxShortcuts = 10;
+
+    public int RemainingShortcutSlots => Math.Max(0, MaxShortcuts - _exerciseShortcuts.Count);
 
     private DietPlan() { }
 
@@ -209,6 +233,112 @@ public class DietPlan : AggregateRoot
 
         return ValueObjects.WeightTrend.Create(
             inPeriod, baseline?.WeightKg, current?.WeightKg, TargetWeightKg, Goal);
+    }
+
+    // --- Exercise shortcuts ------------------------------------------------
+
+    /// <summary>Ordered as the member arranged them.</summary>
+    public IReadOnlyList<ExerciseShortcut> ShortcutsInOrder() =>
+        [.. _exerciseShortcuts.OrderBy(s => s.Position)];
+
+    public ExerciseShortcut? ExerciseShortcut(Guid shortcutId) =>
+        _exerciseShortcuts.SingleOrDefault(s => s.Id == shortcutId);
+
+    /// <summary>
+    /// Saves a new shortcut at the end of the list.
+    /// </summary>
+    /// <remarks>
+    /// The duration rules are the very same objects that guard a recorded session, not copies of
+    /// them. That is what makes "a duration refused on a session is refused on a shortcut" true by
+    /// construction rather than by coincidence - a shortcut cannot hold a session that could never
+    /// be recorded.
+    /// </remarks>
+    public ExerciseShortcut SaveExerciseShortcut(
+        Guid activityTypeId, int durationMinutes, string name, DateTime? asOf = null)
+    {
+        CheckRule(new DurationMustBePositiveRule(durationMinutes));
+        CheckRule(new DurationWithinCeilingRule(durationMinutes));
+        CheckRule(new ShortcutNameMustNotBeEmptyRule(name));
+        CheckRule(new ShortcutNameWithinLengthRule(name));
+        CheckRule(new ShortcutLimitRule(_exerciseShortcuts.Count, MaxShortcuts));
+
+        var duplicate = _exerciseShortcuts.FirstOrDefault(s => s.Records(activityTypeId, durationMinutes));
+        CheckRule(new ShortcutMustBeUniqueRule(duplicate?.Name));
+
+        var shortcut = Entities.ExerciseShortcut.Save(
+            Id, activityTypeId, name, durationMinutes, _exerciseShortcuts.Count, asOf ?? DateTime.UtcNow);
+
+        _exerciseShortcuts.Add(shortcut);
+        Normalise();
+        SetUpdated();
+
+        return shortcut;
+    }
+
+    /// <returns><c>false</c> when the shortcut is not this member's.</returns>
+    public bool RenameExerciseShortcut(Guid shortcutId, string name)
+    {
+        var shortcut = ExerciseShortcut(shortcutId);
+        if (shortcut is null)
+            return false;
+
+        CheckRule(new ShortcutNameMustNotBeEmptyRule(name));
+        CheckRule(new ShortcutNameWithinLengthRule(name));
+
+        // No uniqueness check: duplicates compare activity and duration, so renaming cannot create
+        // one.
+        shortcut.Rename(name);
+        SetUpdated();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Rearranges the shortcuts into the given order.
+    /// </summary>
+    /// <remarks>
+    /// Takes the complete ordered list rather than a "move this one up", because a full list is
+    /// idempotent and has no race: two clients sending different orders produce one of the two,
+    /// never an interleaving.
+    /// </remarks>
+    public void ReorderExerciseShortcuts(IReadOnlyList<Guid> orderedIds)
+    {
+        CheckRule(new ReorderMustCoverEveryShortcutRule(
+            orderedIds, [.. _exerciseShortcuts.Select(s => s.Id)]));
+
+        for (var position = 0; position < orderedIds.Count; position++)
+        {
+            ExerciseShortcut(orderedIds[position])!.MoveTo(position);
+        }
+
+        SetUpdated();
+    }
+
+    /// <returns><c>false</c> when the shortcut is not this member's.</returns>
+    public bool RemoveExerciseShortcut(Guid shortcutId)
+    {
+        var shortcut = ExerciseShortcut(shortcutId);
+        if (shortcut is null)
+            return false;
+
+        _exerciseShortcuts.Remove(shortcut);
+        Normalise();
+        SetUpdated();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Rewrites positions contiguously from zero, so a removal never leaves a hole and no two
+    /// shortcuts can share a position.
+    /// </summary>
+    private void Normalise()
+    {
+        var position = 0;
+        foreach (var shortcut in _exerciseShortcuts.OrderBy(s => s.Position).ToList())
+        {
+            shortcut.MoveTo(position++);
+        }
     }
 
     /// <summary>

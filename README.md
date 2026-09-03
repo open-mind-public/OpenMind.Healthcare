@@ -34,7 +34,7 @@ token refresh under `/api/auth`:
 |---------|--------------|
 | `UserApi` | `/api/auth` |
 | `QuitSmokingApi` | `/api/progress`, `/api/smoked-days`, `/api/achievements`, `/api/motivation` |
-| `DietApi` | `/api/diet-plan`, `/api/food-library`, `/api/food-log`, `/api/exercise`, `/api/activity-catalogue`, `/api/weight`, `/api/diet-stats`, `/api/diet-analytics`, `/api/diet-achievements`, `/api/diet-guidance` |
+| `DietApi` | `/api/diet-plan`, `/api/food-library`, `/api/food-log`, `/api/exercise`, `/api/exercise-shortcuts`, `/api/activity-catalogue`, `/api/weight`, `/api/diet-stats`, `/api/diet-analytics`, `/api/diet-achievements`, `/api/diet-guidance` |
 
 **Frontend** — a single Angular application acting as a platform shell. Programmes are declared in
 one registry, [`src/app/programs/programs.ts`](OpenMind.Healthcare/frontend/src/app/programs/programs.ts),
@@ -71,5 +71,6 @@ Specs live in `specs/###-name/`. A spec describes behaviour and must not name a 
 endpoint; a plan describes construction. The diet programme was built this way and its artifacts —
 specification, research decisions, data model, contracts, task list — are in
 [`specs/001-diet-tracking/`](specs/001-diet-tracking/). Two features were added to it the same way:
-exercise logging in [`specs/002-exercise-logging/`](specs/002-exercise-logging/) and analytics in
-[`specs/003-diet-analytics/`](specs/003-diet-analytics/).
+exercise logging in [`specs/002-exercise-logging/`](specs/002-exercise-logging/), analytics in
+[`specs/003-diet-analytics/`](specs/003-diet-analytics/) and one-tap exercise shortcuts in
+[`specs/004-exercise-shortcuts/`](specs/004-exercise-shortcuts/).

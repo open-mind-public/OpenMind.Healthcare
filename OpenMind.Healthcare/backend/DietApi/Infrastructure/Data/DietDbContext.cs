@@ -114,6 +114,30 @@ public class DietDbContext(DbContextOptions<DietDbContext> options, IMediator me
                 unlocked.Ignore(u => u.DomainEvents);
             });
 
+            entity.OwnsMany(e => e.ExerciseShortcuts, shortcuts =>
+            {
+                shortcuts.ToTable("ExerciseShortcuts");
+                shortcuts.WithOwner().HasForeignKey(s => s.DietPlanId);
+                shortcuts.HasKey(s => s.Id);
+                shortcuts.Property(s => s.Id).ValueGeneratedNever();
+                shortcuts.Property(s => s.ActivityTypeId).IsRequired();
+                shortcuts.Property(s => s.Name).IsRequired().HasMaxLength(80);
+                shortcuts.Property(s => s.DurationMinutes).IsRequired();
+                shortcuts.Property(s => s.Position).IsRequired();
+                shortcuts.Property(s => s.CreatedAt).IsRequired();
+
+                // The no-duplicates rule, made true at the storage layer as well as in the domain,
+                // so a race that somehow slipped past the aggregate still cannot land.
+                shortcuts.HasIndex(s => new { s.DietPlanId, s.ActivityTypeId, s.DurationMinutes }).IsUnique();
+
+                // The ordered read.
+                shortcuts.HasIndex(s => new { s.DietPlanId, s.Position });
+
+                shortcuts.Ignore(s => s.DomainEvents);
+            });
+
+            entity.Navigation(e => e.ExerciseShortcuts).UsePropertyAccessMode(PropertyAccessMode.Field);
+
             entity.Navigation(e => e.UnlockedAchievements).UsePropertyAccessMode(PropertyAccessMode.Field);
 
             entity.Navigation(e => e.WeightReadings).UsePropertyAccessMode(PropertyAccessMode.Field);

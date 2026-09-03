@@ -1,7 +1,13 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { DietService } from '../../services/diet.service';
-import { ActivityTypeSummary, ExerciseDay, ExerciseEntry } from '../../models/diet.models';
+import {
+  ActivityTypeSummary,
+  ExerciseDay,
+  ExerciseEntry,
+  ExerciseShortcut,
+  ExerciseShortcutList
+} from '../../models/diet.models';
 
 /**
  * Recording and correcting a day's activity.
@@ -38,6 +44,23 @@ export class ExerciseLogComponent implements OnChanges {
   editingId: string | null = null;
   editDuration: number | null = null;
 
+  // --- Shortcuts --------------------------------------------------------
+
+  shortcuts: ExerciseShortcutList | null = null;
+  tappingId: string | null = null;
+  managingShortcuts = false;
+  renamingId: string | null = null;
+  renameValue = '';
+  shortcutNotice = '';
+
+  /**
+   * True when the day being viewed cannot accept a session at all.
+   *
+   * The client already knows the date it is showing, so it disables the row rather than offering a
+   * tap it knows the server will refuse (FR-013). The server still enforces every rule.
+   */
+  @Input() canRecord = true;
+
   private readonly terms = new Subject<string>();
 
   constructor(private dietService: DietService) {
@@ -67,6 +90,7 @@ export class ExerciseLogComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['date'] && this.date) {
       this.load();
+      this.loadShortcuts();
     }
   }
 
@@ -215,6 +239,137 @@ export class ExerciseLogComponent implements OnChanges {
       error: response => {
         this.saving = false;
         this.handleWriteError(response);
+      }
+    });
+  }
+
+  // --- Shortcuts --------------------------------------------------------
+
+  get shortcutList(): ExerciseShortcut[] {
+    return this.shortcuts?.shortcuts ?? [];
+  }
+
+  get canSaveMoreShortcuts(): boolean {
+    return (this.shortcuts?.remainingSlots ?? 0) > 0;
+  }
+
+  loadShortcuts(): void {
+    this.dietService.getExerciseShortcuts().subscribe({
+      next: list => (this.shortcuts = list),
+      error: () => (this.shortcuts = null)
+    });
+  }
+
+  /** The one tap. */
+  tap(shortcut: ExerciseShortcut): void {
+    if (!shortcut.available || !this.canRecord || this.saving) {
+      return;
+    }
+
+    this.tappingId = shortcut.id;
+    this.error = '';
+    this.shortcutNotice = '';
+
+    this.dietService
+      .addExerciseEntryFromShortcut(this.date, {
+        shortcutId: shortcut.id,
+        version: this.day?.version ?? null
+      })
+      .subscribe({
+        next: day => {
+          this.day = day;
+          this.tappingId = null;
+          this.staleWarning = '';
+        },
+        error: response => {
+          this.tappingId = null;
+          this.handleWriteError(response);
+        }
+      });
+  }
+
+  /** Saves a session the member has already recorded as a shortcut, in one action (FR-001). */
+  saveAsShortcut(entry: ExerciseEntry): void {
+    this.shortcutNotice = '';
+
+    this.dietService
+      .createExerciseShortcut({
+        activityTypeId: entry.activityTypeId,
+        durationMinutes: entry.durationMinutes,
+        name: null
+      })
+      .subscribe({
+        next: list => {
+          this.shortcuts = list;
+          this.shortcutNotice = 'Saved as a shortcut.';
+        },
+        error: response => {
+          // The duplicate and limit messages are the useful part, so they are shown as they came.
+          this.shortcutNotice = response?.error?.message ?? 'We could not save that shortcut.';
+        }
+      });
+  }
+
+  toggleManage(): void {
+    this.managingShortcuts = !this.managingShortcuts;
+    this.renamingId = null;
+    this.shortcutNotice = '';
+  }
+
+  startRename(shortcut: ExerciseShortcut): void {
+    this.renamingId = shortcut.id;
+    this.renameValue = shortcut.name;
+  }
+
+  cancelRename(): void {
+    this.renamingId = null;
+    this.renameValue = '';
+  }
+
+  saveRename(shortcut: ExerciseShortcut): void {
+    if (!this.renameValue.trim()) {
+      return;
+    }
+
+    this.dietService.renameExerciseShortcut(shortcut.id, this.renameValue.trim()).subscribe({
+      next: list => {
+        this.shortcuts = list;
+        this.cancelRename();
+      },
+      error: response => {
+        this.shortcutNotice = response?.error?.message ?? 'We could not rename that.';
+      }
+    });
+  }
+
+  /** Sends the complete ordered list rather than a move, so two clients cannot interleave. */
+  move(shortcut: ExerciseShortcut, direction: -1 | 1): void {
+    const ids = this.shortcutList.map(s => s.id);
+    const from = ids.indexOf(shortcut.id);
+    const to = from + direction;
+
+    if (from < 0 || to < 0 || to >= ids.length) {
+      return;
+    }
+
+    [ids[from], ids[to]] = [ids[to], ids[from]];
+
+    this.dietService.reorderExerciseShortcuts(ids).subscribe({
+      next: list => (this.shortcuts = list),
+      error: response => {
+        this.shortcutNotice = response?.error?.message ?? 'We could not reorder those.';
+      }
+    });
+  }
+
+  removeShortcut(shortcut: ExerciseShortcut): void {
+    this.dietService.deleteExerciseShortcut(shortcut.id).subscribe({
+      next: list => {
+        this.shortcuts = list;
+        this.shortcutNotice = '';
+      },
+      error: response => {
+        this.shortcutNotice = response?.error?.message ?? 'We could not remove that.';
       }
     });
   }

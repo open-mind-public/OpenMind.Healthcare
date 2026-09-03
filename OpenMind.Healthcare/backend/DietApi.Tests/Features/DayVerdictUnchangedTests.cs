@@ -1,6 +1,7 @@
 using LoggedDayAggregate = DietApi.Domain.Aggregates.LoggedDay;
 using DietApi.Domain.ValueObjects;
 using DietApi.Features.Exercise;
+using DietApi.Features.Exercise.AddEntryFromShortcut;
 using DietApi.Features.Exercise.AddExerciseEntry;
 using DietApi.Features.FoodLog;
 using DietApi.Features.FoodLog.GetDay;
@@ -138,6 +139,51 @@ public class DayVerdictUnchangedTests
         exerciseDay.RemoveEntry(exerciseDay.Entries.Single().Id);
 
         AssertUnchanged(loggedDay, before);
+    }
+
+    [Fact]
+    public async Task Recording_by_shortcut_moves_the_eating_verdict_no_more_than_recording_by_hand()
+    {
+        // The guarantee is about recording, not about one particular way of reaching it. A second
+        // recording path is exactly how a guarantee tested only on the first one gets lost.
+        var planBuilder = DietPlanBuilder.APlan().StartedDaysAgo(30).WithTargets(2100).Weighing(70m)
+            .WithShortcut(FakeActivityTypeRepository.Butterfly().Id, 120, "Hard swim");
+        var plan = planBuilder.Build();
+        var planRepo = FakeDietPlanRepository.Containing(plan);
+        var userId = planBuilder.UserId;
+
+        var loggedDay = LoggedDayBuilder.ADay()
+            .ForUser(userId).ForPlan(plan.Id).DaysAgo(4).Targeting(2100)
+            .Ate(FakeFoodLibraryRepository.Oats(), quantity: 12m)
+            .Build();
+
+        loggedDay.Assess().State.ShouldBe(DayState.OverTarget);
+        var before = Snapshot(loggedDay);
+
+        var butterfly = FakeActivityTypeRepository.Butterfly();
+        typeof(DietApi.Domain.Aggregates.ActivityType)
+            .GetProperty(nameof(DietApi.Domain.Aggregates.ActivityType.Id))!
+            .SetValue(butterfly, plan.ShortcutsInOrder()[0].ActivityTypeId);
+
+        var day = await new AddEntryFromShortcutHandler(
+                planRepo,
+                FakeExerciseDayRepository.Empty(),
+                FakeActivityTypeRepository.Containing(butterfly),
+                SignedInUser.WithId(userId))
+            .Handle(
+                new AddEntryFromShortcutCommand(
+                    Today.AddDays(-4),
+                    new AddEntryFromShortcutRequest(plan.ShortcutsInOrder()[0].Id, null)),
+                CancellationToken.None);
+
+        day.ShouldNotBeNull();
+        day.TotalKilocalories.ShouldBeGreaterThan(0);
+
+        AssertUnchanged(loggedDay, before);
+        loggedDay.Assess().State.ShouldBe(DayState.OverTarget);
+
+        plan.Targets.Calories.ShouldBe(2100);
+        plan.ActivityLevel.ShouldBe(planBuilder.Build().ActivityLevel);
     }
 
     [Fact]

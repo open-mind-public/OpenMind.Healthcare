@@ -16,6 +16,76 @@
     <button type="button" class="link" (click)="load()">Reload this day</button>
   </div>
 
+  <!-- The one tap. Above the session list, because it is the fastest thing on the panel. -->
+  <div class="shortcuts" *ngIf="shortcuts">
+    <div class="shortcut-head">
+      <span class="shortcut-title">Shortcuts</span>
+      <button type="button" class="link" (click)="toggleManage()" *ngIf="shortcutList.length > 0">
+        {{ managingShortcuts ? 'Done' : 'Manage' }}
+      </button>
+    </div>
+
+    <!-- Nothing saved yet: say how to make one rather than showing an empty row. -->
+    <p class="shortcut-empty" *ngIf="shortcutList.length === 0">
+      Record a session below, then choose <strong>Save as a shortcut</strong> to record it again
+      with one tap.
+    </p>
+
+    <!-- Tapping -->
+    <div class="shortcut-row" *ngIf="shortcutList.length > 0 && !managingShortcuts">
+      <button
+        type="button"
+        class="shortcut"
+        *ngFor="let shortcut of shortcutList"
+        [disabled]="!shortcut.available || !canRecord || saving || tappingId === shortcut.id"
+        [title]="!shortcut.available
+          ? shortcut.name + ' - that activity is no longer available'
+          : (!canRecord ? 'You cannot record exercise on this day' : 'Record ' + shortcut.name)"
+        (click)="tap(shortcut)">
+        <span class="shortcut-name">{{ shortcut.name }}</span>
+        <small>{{ shortcut.durationMinutes }} min</small>
+      </button>
+    </div>
+
+    <p class="shortcut-disabled" *ngIf="shortcutList.length > 0 && !canRecord && !managingShortcuts">
+      Exercise cannot be recorded on this day, so these are unavailable here.
+    </p>
+
+    <!-- Managing -->
+    <ul class="shortcut-manage" *ngIf="managingShortcuts">
+      <li *ngFor="let shortcut of shortcutList; let i = index">
+        <ng-container *ngIf="renamingId !== shortcut.id">
+          <span class="shortcut-name">{{ shortcut.name }}</span>
+          <span class="shortcut-detail">{{ shortcut.activityName }} &middot; {{ shortcut.durationMinutes }} min</span>
+          <span class="shortcut-actions">
+            <button type="button" class="link" (click)="move(shortcut, -1)" [disabled]="i === 0">Up</button>
+            <button type="button" class="link" (click)="move(shortcut, 1)"
+                    [disabled]="i === shortcutList.length - 1">Down</button>
+            <button type="button" class="link" (click)="startRename(shortcut)">Rename</button>
+            <button type="button" class="link danger" (click)="removeShortcut(shortcut)">Remove</button>
+          </span>
+        </ng-container>
+
+        <ng-container *ngIf="renamingId === shortcut.id">
+          <label class="field inline wide">
+            <span>Name</span>
+            <input type="text" [(ngModel)]="renameValue" maxlength="80" />
+          </label>
+          <span class="shortcut-actions">
+            <button type="button" class="link" (click)="saveRename(shortcut)">Save</button>
+            <button type="button" class="link" (click)="cancelRename()">Cancel</button>
+          </span>
+        </ng-container>
+      </li>
+    </ul>
+
+    <p class="shortcut-notice" *ngIf="shortcutNotice">{{ shortcutNotice }}</p>
+
+    <p class="shortcut-full" *ngIf="!canSaveMoreShortcuts && !managingShortcuts">
+      You have all {{ shortcuts.maxShortcuts }} shortcuts. Remove one to make room for another.
+    </p>
+  </div>
+
   <!-- No exercise is a plain fact, not an empty error state. -->
   <p class="empty" *ngIf="!loading && !hasActivity">
     No exercise recorded for this day. Add a session below if you did something.
@@ -32,6 +102,16 @@
           </span>
         </div>
         <div class="session-actions">
+          <button
+            type="button"
+            class="link"
+            (click)="saveAsShortcut(entry)"
+            [disabled]="saving || !canSaveMoreShortcuts"
+            [title]="canSaveMoreShortcuts
+              ? 'Save this as a shortcut'
+              : 'You have all your shortcuts - remove one to make room'">
+            Save as a shortcut
+          </button>
           <button type="button" class="link" (click)="startEdit(entry)" [disabled]="saving">Edit</button>
           <button type="button" class="link danger" (click)="remove(entry)" [disabled]="saving">Remove</button>
         </div>
