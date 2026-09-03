@@ -20,6 +20,7 @@ import { AccountComponent } from './components/account/account.component';
 import { DietSetupComponent } from './components/diet-setup/diet-setup.component';
 import { DietDashboardComponent } from './components/diet-dashboard/diet-dashboard.component';
 import { ActivitySummaryComponent } from './components/activity-summary/activity-summary.component';
+import { DietAnalyticsComponent } from './components/diet-analytics/diet-analytics.component';
 import { ExerciseLogComponent } from './components/exercise-log/exercise-log.component';
 import { FoodSearchComponent } from './components/food-search/food-search.component';
 import { DietCalendarComponent } from './components/diet-calendar/diet-calendar.component';
@@ -62,6 +63,7 @@ const routes: Routes = [
   { path: 'diet/calendar', component: DietCalendarComponent, canActivate: [AuthGuard] },
   { path: 'diet/weight', component: WeightTrackerComponent, canActivate: [AuthGuard] },
   { path: 'diet/activity', component: ActivitySummaryComponent, canActivate: [AuthGuard] },
+  { path: 'diet/analytics', component: DietAnalyticsComponent, canActivate: [AuthGuard] },
   { path: 'diet/achievements', component: DietAchievementsComponent, canActivate: [AuthGuard] },
   { path: 'diet/guidance', component: DietGuidanceComponent, canActivate: [AuthGuard] },
 
@@ -97,6 +99,7 @@ const routes: Routes = [
     DietSetupComponent,
     DietDashboardComponent,
     ActivitySummaryComponent,
+    DietAnalyticsComponent,
     ExerciseLogComponent,
     FoodSearchComponent,
     DietCalendarComponent,

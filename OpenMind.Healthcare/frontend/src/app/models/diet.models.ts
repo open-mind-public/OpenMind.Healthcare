@@ -331,3 +331,158 @@ export interface UpdateExerciseEntryRequest {
   durationMinutes: number;
   version: string;
 }
+
+// --- Diet analytics ---------------------------------------------------------
+// Read-only. Every response carries the period it was computed over, and every average carries
+// the number of days it divided by — the two travel together so a client cannot show one without
+// the other (FR-003).
+
+export type PeriodPreset = 'Week' | 'Month' | 'Quarter' | 'Plan';
+
+/** Which days an average divided by. */
+export type AveragedOver = 'LoggedDays' | 'AllDays';
+
+export interface AnalysisPeriod {
+  preset: PeriodPreset;
+  from: string;
+  to: string;
+  /** True when the requested window was clipped to the plan start or to today. */
+  wasNarrowed: boolean;
+  totalDays: number;
+  loggedDays: number;
+  /** False means there is no preceding window — not that the member did nothing in one. */
+  hasComparison: boolean;
+  previousFrom: string | null;
+  previousTo: string | null;
+}
+
+export interface IntakeSummary {
+  totalKilocalories: number;
+  averageDailyKilocalories: number;
+  averagedOverDays: number;
+  averagedOver: AveragedOver;
+  previousAverageDailyKilocalories: number | null;
+  onTargetDays: number;
+  overTargetDays: number;
+  notLoggedDays: number;
+}
+
+export interface MealShare {
+  meal: MealType;
+  kilocalories: number;
+  shareOfTotal: number;
+  entryCount: number;
+}
+
+export interface CategoryShare {
+  category: FoodCategory;
+  kilocalories: number;
+  shareOfTotal: number;
+}
+
+export interface FoodContribution {
+  foodLibraryItemId: string;
+  foodName: string;
+  kilocalories: number;
+  shareOfTotal: number;
+  timesLogged: number;
+}
+
+/** `meals` and `categories` are exhaustive and sum to the total; `topFoods` is a top ten and does not. */
+export interface IntakeAnalysis {
+  period: AnalysisPeriod;
+  summary: IntakeSummary;
+  meals: MealShare[];
+  topFoods: FoodContribution[];
+  categories: CategoryShare[];
+}
+
+export interface MacroAmounts {
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export interface MacroShares {
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+/** `target` is null when the plan carries no macronutrient targets. Do not substitute one. */
+export interface MacroAnalysis {
+  period: AnalysisPeriod;
+  averagedOverDays: number;
+  hasTargets: boolean;
+  actual: MacroAmounts;
+  target: MacroAmounts | null;
+  shareOfEnergy: MacroShares;
+}
+
+export interface WeekdayShare {
+  dayOfWeek: string;
+  averageKilocalories: number;
+  loggedDays: number;
+}
+
+export interface HourShare {
+  hour: number;
+  kilocalories: number;
+  shareOfTotal: number;
+}
+
+export interface EatingPatterns {
+  period: AnalysisPeriod;
+  utcOffsetMinutes: number;
+  /** Always true here: the time shown is when an entry was recorded, not when it was eaten. */
+  isApproximate: boolean;
+  approximationReason: string;
+  byWeekday: WeekdayShare[];
+  byHour: HourShare[];
+}
+
+export type ObservationFamily = 'Timing' | 'Composition' | 'Targets' | 'Consistency';
+
+export interface Observation {
+  family: ObservationFamily;
+  text: string;
+  /** The number the claim rests on, carried separately so it can be emphasised in the sentence. */
+  figure: string;
+  basedOnDays: number;
+  strength: number;
+}
+
+export interface Observations {
+  period: AnalysisPeriod;
+  observations: Observation[];
+  /** A stated answer, not something to infer from an empty list. */
+  nothingStoodOut: boolean;
+  minimumDaysForAnyObservation: number;
+}
+
+/**
+ * One calendar day on the intake trend.
+ *
+ * `logged` is the field a chart must read first: on an unlogged day the intake figures are
+ * placeholders rather than measurements, and a line must break rather than pass through them.
+ * The target is meaningful either way — it was in force whether or not the member logged.
+ */
+export interface DailyIntakePoint {
+  date: string;
+  logged: boolean;
+  kilocalories: number;
+  targetKilocalories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  targetProteinG: number | null;
+  targetCarbsG: number | null;
+  targetFatG: number | null;
+}
+
+export interface IntakeTrend {
+  period: AnalysisPeriod;
+  loggedDays: number;
+  peakKilocalories: number;
+  points: DailyIntakePoint[];
+}

@@ -69,6 +69,7 @@ export const PROGRAMS: HealthProgram[] = [
       { path: 'calendar', label: 'History', icon: 'calendar' },
       { path: 'weight', label: 'Weight', icon: 'scale' },
       { path: 'activity', label: 'Activity', icon: 'zap' },
+      { path: 'analytics', label: 'Analytics', icon: 'trending' },
       { path: 'achievements', label: 'Achievements', icon: 'award' },
       { path: 'guidance', label: 'Guidance', icon: 'lightbulb' }
     ],

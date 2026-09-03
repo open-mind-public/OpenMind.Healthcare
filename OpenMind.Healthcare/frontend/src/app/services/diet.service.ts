@@ -13,12 +13,18 @@ import {
   DietPlan,
   DietPlanResponse,
   DietStatistics,
+  EatingPatterns,
   EatingTip,
   ExerciseDay,
   ExerciseRangeResponse,
   FoodSearchResult,
+  IntakeAnalysis,
+  IntakeTrend,
+  MacroAnalysis,
   LoggedDay,
   NewlyUnlocked,
+  Observations,
+  PeriodPreset,
   SetTargetsRequest,
   SuggestTargetsRequest,
   TargetSuggestion,
@@ -93,6 +99,41 @@ export class DietService {
   searchFoods(query: string, limit = 20): Observable<FoodSearchResult> {
     const params = new HttpParams().set('q', query).set('limit', limit);
     return this.http.get<FoodSearchResult>(`${this.baseUrl}/food-library/search`, { params });
+  }
+
+  // --- Analytics --------------------------------------------------------
+  // Read-only. Four calls rather than one composite response, so each section renders as it
+  // arrives and each user story is independently testable.
+
+  getIntakeAnalysis(period: PeriodPreset): Observable<IntakeAnalysis> {
+    const params = new HttpParams().set('period', period);
+    return this.http.get<IntakeAnalysis>(`${this.baseUrl}/diet-analytics/intake`, { params });
+  }
+
+  getIntakeTrend(period: PeriodPreset): Observable<IntakeTrend> {
+    const params = new HttpParams().set('period', period);
+    return this.http.get<IntakeTrend>(`${this.baseUrl}/diet-analytics/trend`, { params });
+  }
+
+  getMacroAnalysis(period: PeriodPreset): Observable<MacroAnalysis> {
+    const params = new HttpParams().set('period', period);
+    return this.http.get<MacroAnalysis>(`${this.baseUrl}/diet-analytics/macros`, { params });
+  }
+
+  getEatingPatterns(period: PeriodPreset): Observable<EatingPatterns> {
+    // The browser reports the offset with the opposite sign to the one the contract expects:
+    // getTimezoneOffset() is minutes to ADD to local time to reach UTC.
+    const params = new HttpParams()
+      .set('period', period)
+      .set('utcOffsetMinutes', -new Date().getTimezoneOffset());
+    return this.http.get<EatingPatterns>(`${this.baseUrl}/diet-analytics/patterns`, { params });
+  }
+
+  getObservations(period: PeriodPreset): Observable<Observations> {
+    const params = new HttpParams()
+      .set('period', period)
+      .set('utcOffsetMinutes', -new Date().getTimezoneOffset());
+    return this.http.get<Observations>(`${this.baseUrl}/diet-analytics/observations`, { params });
   }
 
   // --- Exercise ---------------------------------------------------------

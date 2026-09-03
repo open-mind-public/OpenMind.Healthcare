@@ -1,11 +1,14 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using DietApi.Domain.Repositories;
+using DietApi.Domain.Observations;
+using DietApi.Domain.Observations.Rules;
 using DietApi.Domain.Services;
 using DietApi.Features.ActivityCatalogue;
 using DietApi.Features.DietPlan;
 using DietApi.Features.FoodLibrary;
 using DietApi.Features.DietAchievements;
+using DietApi.Features.DietAnalytics;
 using DietApi.Features.DietGuidance;
 using DietApi.Features.DietStats;
 using DietApi.Features.Exercise;
@@ -65,6 +68,7 @@ builder.Services.AddScoped<ILoggedDayRepository, LoggedDayRepository>();
 builder.Services.AddScoped<IFoodLibraryRepository, FoodLibraryRepository>();
 builder.Services.AddScoped<IExerciseDayRepository, ExerciseDayRepository>();
 builder.Services.AddScoped<IActivityTypeRepository, ActivityTypeRepository>();
+builder.Services.AddScoped<IDietAnalyticsRepository, DietAnalyticsRepository>();
 builder.Services.AddScoped<IDietAchievementRepository, DietAchievementRepository>();
 builder.Services.AddScoped<IEatingTipRepository, EatingTipRepository>();
 
@@ -72,6 +76,22 @@ builder.Services.AddScoped<TargetSuggestionService>();
 builder.Services.AddScoped<StreakCalculator>();
 builder.Services.AddScoped<EnergyEstimator>();
 builder.Services.AddScoped<ActivitySummaryCalculator>();
+builder.Services.AddScoped<AnalysisPeriodResolver>();
+builder.Services.AddScoped<IntakeAnalyser>();
+builder.Services.AddScoped<MacronutrientAnalyser>();
+builder.Services.AddScoped<PatternAnalyser>();
+builder.Services.AddScoped<TrendAnalyser>();
+
+// Every observation rule the programme can produce. Adding one here is all it takes; the engine
+// and the tests that assert properties across every rule pick it up automatically.
+builder.Services.AddScoped<IObservationRule, LateEatingRule>();
+builder.Services.AddScoped<IObservationRule, WeekendHeavierRule>();
+builder.Services.AddScoped<IObservationRule, SingleFoodDominanceRule>();
+builder.Services.AddScoped<IObservationRule, MealSkewRule>();
+builder.Services.AddScoped<IObservationRule, LowPlantShareRule>();
+builder.Services.AddScoped<IObservationRule, ProteinBelowTargetRule>();
+builder.Services.AddScoped<IObservationRule, LoggingImprovedRule>();
+builder.Services.AddScoped<ObservationEngine>();
 builder.Services.AddScoped<DietAchievementStatusService>();
 
 builder.Services.AddCors(options =>
@@ -101,6 +121,7 @@ app.MapFoodLibraryEndpoints();
 app.MapFoodLogEndpoints();
 app.MapExerciseEndpoints();
 app.MapActivityCatalogueEndpoints();
+app.MapDietAnalyticsEndpoints();
 app.MapDietStatsEndpoints();
 app.MapWeightEndpoints();
 app.MapDietAchievementsEndpoints();

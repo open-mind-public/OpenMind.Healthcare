@@ -1,5 +1,8 @@
 .activity-summary {
-  max-width: 900px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+  color: var(--text);
 }
 
 .head h1 {

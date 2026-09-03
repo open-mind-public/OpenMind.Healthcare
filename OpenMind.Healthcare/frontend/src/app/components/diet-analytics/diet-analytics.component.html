@@ -1,0 +1,307 @@
+<div class="analytics">
+  <header class="head">
+    <h1>Your analytics</h1>
+    <p class="sub">What your log says, over a period you choose.</p>
+  </header>
+
+  <nav class="periods">
+    <button
+      type="button"
+      *ngFor="let choice of periods"
+      [class.active]="period === choice.value"
+      (click)="choosePeriod(choice.value)">
+      {{ choice.label }}
+    </button>
+  </nav>
+
+  <!-- The window actually analysed, when it is not the one that was asked for (FR-002). -->
+  <p class="narrowed" *ngIf="intake?.period?.wasNarrowed">
+    Your plan started on {{ intake?.period?.from }}, so this covers
+    {{ intake?.period?.totalDays }} days rather than the full period.
+  </p>
+
+  <p class="loading" *ngIf="loadingIntake">Working through your log...</p>
+  <div class="alert error" *ngIf="intakeError">{{ intakeError }}</div>
+
+  <ng-container *ngIf="intake && !loadingIntake">
+    <!-- Nothing to analyse is a plain fact with a next step, not an empty chart (SC-005). -->
+    <div class="empty" *ngIf="!hasIntake">
+      <h2>Nothing logged in this period yet</h2>
+      <p>
+        Analytics are built from the days you log. Add a few days under <strong>Today</strong> and
+        this page will start telling you where your calories go.
+      </p>
+    </div>
+
+    <ng-container *ngIf="hasIntake">
+      <!-- What the programme noticed (US4). Above the charts, because it is what a member reads. -->
+      <section class="noticed" *ngIf="noticed && !loadingObservations">
+        <h2>What stands out</h2>
+
+        <ul class="observations" *ngIf="noticed.observations.length > 0">
+          <li *ngFor="let observation of noticed.observations">
+            <span class="observation-text">{{ observation.text }}</span>
+            <span class="observation-basis">from {{ observation.basedOnDays }} logged days</span>
+          </li>
+        </ul>
+
+        <!-- Not enough history yet: say what it would take, rather than showing a blank. -->
+        <p class="observation-quiet" *ngIf="noticed.nothingStoodOut && needsMoreDaysForObservations">
+          Keep logging. Another {{ moreDaysNeeded }}
+          {{ moreDaysNeeded === 1 ? 'day' : 'days' }} and this section will start pointing things
+          out — below {{ noticed.minimumDaysForAnyObservation }} days there is not enough to go on.
+        </p>
+
+        <!-- Enough history, and nothing past a threshold. Also an answer (FR-021). -->
+        <p class="observation-quiet" *ngIf="noticed.nothingStoodOut && !needsMoreDaysForObservations">
+          Nothing stood out in this period.
+        </p>
+      </section>
+
+      <!-- Headline figures -->
+      <section class="cards">
+        <div class="card">
+          <span class="value">{{ intake.summary.averageDailyKilocalories }}</span>
+          <span class="label">kcal a day</span>
+          <span class="note">{{ averageCaption }}</span>
+        </div>
+
+        <div class="card">
+          <span class="value">{{ intake.summary.totalKilocalories }}</span>
+          <span class="label">kcal in total</span>
+          <span class="note" *ngIf="intakeChange !== null">
+            <ng-container *ngIf="intakeChange! > 0">+{{ intakeChange }} a day vs the period before</ng-container>
+            <ng-container *ngIf="intakeChange! < 0">{{ intakeChange }} a day vs the period before</ng-container>
+            <ng-container *ngIf="intakeChange === 0">the same as the period before</ng-container>
+          </span>
+          <span class="note" *ngIf="intakeChange === null">no earlier period to compare with</span>
+        </div>
+
+        <div class="card">
+          <span class="value">{{ intake.summary.onTargetDays }}</span>
+          <span class="label">days on target</span>
+          <!-- A different denominator from the average above, and labelled as one. -->
+          <span class="note">
+            {{ intake.summary.overTargetDays }} over &middot;
+            {{ intake.summary.notLoggedDays }} not logged &middot;
+            of {{ intake.period.totalDays }} days
+          </span>
+        </div>
+      </section>
+
+      <!-- Day by day -->
+      <section class="panel" *ngIf="trend && hasTrend">
+        <div class="panel-head">
+          <h2>Day by day</h2>
+          <div class="series">
+            <button
+              type="button"
+              *ngFor="let choice of seriesChoices"
+              [class.active]="series === choice.value"
+              (click)="chooseSeries(choice.value)">
+              {{ choice.label }}
+            </button>
+          </div>
+        </div>
+
+        <svg
+          class="line-chart"
+          [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height"
+          role="img"
+          [attr.aria-label]="seriesChoice.label + ' day by day over ' + trend.period.totalDays + ' days'">
+
+          <!-- Gridlines and their labels -->
+          <g class="grid">
+            <ng-container *ngFor="let line of gridLines">
+              <line [attr.x1]="chart.left" [attr.x2]="chart.width - chart.right"
+                    [attr.y1]="line.y" [attr.y2]="line.y" />
+              <text [attr.x]="chart.left - 8" [attr.y]="line.y + 3" text-anchor="end">{{ line.label }}</text>
+            </ng-container>
+          </g>
+
+          <!-- The target in force, continuous across gaps because a target does not lapse. -->
+          <polyline *ngIf="seriesHasTarget" class="target-line" [attr.points]="targetLine" />
+
+          <!-- One line per unbroken run of logged days. Never drawn across a gap. -->
+          <polyline *ngFor="let segment of trendSegments" class="series-line" [attr.points]="segment" />
+
+          <circle
+            *ngFor="let dot of trendDots"
+            class="series-dot"
+            [attr.cx]="dot.x"
+            [attr.cy]="dot.y"
+            r="2.5">
+            <title>{{ dot.point.date }} — {{ dot.point.logged ? '' : 'not logged' }}</title>
+          </circle>
+        </svg>
+
+        <div class="axis-dates">
+          <span>{{ firstDate }}</span>
+          <span>{{ lastDate }}</span>
+        </div>
+
+        <ul class="legend">
+          <li><span class="key series"></span> {{ seriesChoice.label }} ({{ seriesChoice.unit }})</li>
+          <li *ngIf="seriesHasTarget"><span class="key target"></span> Target</li>
+        </ul>
+
+        <!-- Said plainly, because a break in the line is the one thing a reader could misread. -->
+        <p class="caption" *ngIf="gapDays > 0">
+          The line breaks on the {{ gapDays }} {{ gapDays === 1 ? 'day' : 'days' }} you did not log.
+          Those are gaps, not zeros.
+        </p>
+        <p class="caption" *ngIf="!seriesHasTarget">
+          Your plan sets no {{ seriesChoice.label.toLowerCase() }} target, so there is no reference
+          line to draw.
+        </p>
+      </section>
+
+      <!-- Where it came from -->
+      <section class="panel">
+        <h2>By meal</h2>
+        <ul class="bars">
+          <li *ngFor="let meal of intake.meals">
+            <span class="bar-label">{{ meal.meal }}</span>
+            <span class="bar-track">
+              <span class="bar-fill" [style.width]="barWidth(meal.kilocalories, largestMeal)"></span>
+            </span>
+            <span class="bar-value">{{ meal.kilocalories }} kcal &middot; {{ meal.shareOfTotal }}%</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Biggest contributors</h2>
+        <ul class="bars">
+          <li *ngFor="let food of intake.topFoods">
+            <span class="bar-label">{{ food.foodName }}</span>
+            <span class="bar-track">
+              <span class="bar-fill" [style.width]="barWidth(food.kilocalories, largestFood)"></span>
+            </span>
+            <span class="bar-value">
+              {{ food.kilocalories }} kcal &middot; {{ food.shareOfTotal }}% &middot;
+              {{ food.timesLogged }}&times;
+            </span>
+          </li>
+        </ul>
+        <!-- Said plainly, because these shares deliberately do not sum to 100. -->
+        <p class="caption">The largest single foods, as a share of everything you logged.</p>
+      </section>
+
+      <!-- Macronutrients against the targets that were in force (US2) -->
+      <section class="panel" *ngIf="macros && hasMacros">
+        <h2>Protein, carbohydrate and fat</h2>
+
+        <ul class="macros">
+          <li>
+            <span class="macro-name">Protein</span>
+            <span class="macro-bars">
+              <span class="macro-track">
+                <span class="macro-actual" [style.width]="macroWidth(macros.actual.proteinG, macros.target?.proteinG ?? null)"></span>
+              </span>
+              <span class="macro-track target" *ngIf="macros.hasTargets">
+                <span class="macro-target" [style.width]="macroTargetWidth(macros.target?.proteinG ?? null, macros.actual.proteinG)"></span>
+              </span>
+            </span>
+            <span class="macro-value">
+              {{ macros.actual.proteinG }} g
+              <ng-container *ngIf="macros.hasTargets"> of {{ macros.target?.proteinG }} g</ng-container>
+              &middot; {{ macros.shareOfEnergy.protein }}% of energy
+            </span>
+          </li>
+          <li>
+            <span class="macro-name">Carbohydrate</span>
+            <span class="macro-bars">
+              <span class="macro-track">
+                <span class="macro-actual" [style.width]="macroWidth(macros.actual.carbsG, macros.target?.carbsG ?? null)"></span>
+              </span>
+              <span class="macro-track target" *ngIf="macros.hasTargets">
+                <span class="macro-target" [style.width]="macroTargetWidth(macros.target?.carbsG ?? null, macros.actual.carbsG)"></span>
+              </span>
+            </span>
+            <span class="macro-value">
+              {{ macros.actual.carbsG }} g
+              <ng-container *ngIf="macros.hasTargets"> of {{ macros.target?.carbsG }} g</ng-container>
+              &middot; {{ macros.shareOfEnergy.carbs }}% of energy
+            </span>
+          </li>
+          <li>
+            <span class="macro-name">Fat</span>
+            <span class="macro-bars">
+              <span class="macro-track">
+                <span class="macro-actual" [style.width]="macroWidth(macros.actual.fatG, macros.target?.fatG ?? null)"></span>
+              </span>
+              <span class="macro-track target" *ngIf="macros.hasTargets">
+                <span class="macro-target" [style.width]="macroTargetWidth(macros.target?.fatG ?? null, macros.actual.fatG)"></span>
+              </span>
+            </span>
+            <span class="macro-value">
+              {{ macros.actual.fatG }} g
+              <ng-container *ngIf="macros.hasTargets"> of {{ macros.target?.fatG }} g</ng-container>
+              &middot; {{ macros.shareOfEnergy.fat }}% of energy
+            </span>
+          </li>
+        </ul>
+
+        <p class="caption">
+          Daily averages over {{ macros.averagedOverDays }} logged
+          {{ macros.averagedOverDays === 1 ? 'day' : 'days' }}<ng-container *ngIf="macros.hasTargets">,
+          against the targets that were set on each of those days</ng-container>.
+        </p>
+
+        <!-- No target is not a reason to invent one (FR-012). -->
+        <p class="caption" *ngIf="!macros.hasTargets">
+          Your plan sets a calorie target but no macronutrient targets, so there is nothing to
+          compare these against.
+        </p>
+      </section>
+
+      <!-- When the eating happens (US3) -->
+      <section class="panel" *ngIf="patterns && hasPatterns">
+        <h2>Across the week</h2>
+        <ul class="bars">
+          <li *ngFor="let day of patterns.byWeekday">
+            <span class="bar-label">{{ day.dayOfWeek }}</span>
+            <span class="bar-track">
+              <span class="bar-fill" [style.width]="barWidth(day.averageKilocalories, largestWeekday)"></span>
+            </span>
+            <span class="bar-value">
+              {{ day.averageKilocalories }} kcal
+              <ng-container *ngIf="day.loggedDays > 0">
+                &middot; {{ day.loggedDays }} {{ day.loggedDays === 1 ? 'day' : 'days' }}
+              </ng-container>
+              <ng-container *ngIf="day.loggedDays === 0">&middot; none logged</ng-container>
+            </span>
+          </li>
+        </ul>
+        <p class="caption">A daily average for each weekday, over the days of it you logged.</p>
+      </section>
+
+      <section class="panel" *ngIf="patterns && hasPatterns">
+        <h2>Across the day</h2>
+        <div class="histogram">
+          <div class="hour" *ngFor="let hour of patterns.byHour">
+            <span class="hour-bar" [style.height]="hourHeight(hour.kilocalories)"
+                  [title]="hour.hour + ':00 — ' + hour.kilocalories + ' kcal (' + hour.shareOfTotal + '%)'"></span>
+            <span class="hour-label">{{ showsHourLabel(hour.hour) ? hour.hour : '' }}</span>
+          </div>
+        </div>
+        <!-- FR-015, on the screen and not only in the payload. -->
+        <p class="caption">{{ patterns.approximationReason }}</p>
+      </section>
+
+      <section class="panel">
+        <h2>By category</h2>
+        <ul class="bars">
+          <li *ngFor="let category of shownCategories">
+            <span class="bar-label">{{ category.category }}</span>
+            <span class="bar-track">
+              <span class="bar-fill" [style.width]="barWidth(category.kilocalories, largestCategory)"></span>
+            </span>
+            <span class="bar-value">{{ category.kilocalories }} kcal &middot; {{ category.shareOfTotal }}%</span>
+          </li>
+        </ul>
+      </section>
+    </ng-container>
+  </ng-container>
+</div>

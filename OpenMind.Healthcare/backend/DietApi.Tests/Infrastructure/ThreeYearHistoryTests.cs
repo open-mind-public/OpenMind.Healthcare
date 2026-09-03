@@ -137,6 +137,99 @@ public class ThreeYearHistoryTests : IDisposable
     /// One session a day for the whole plan. The range read must still project to summaries in
     /// SQL - if it starts loading the sessions themselves, this is where it shows.
     /// </summary>
+    [Fact]
+    public async Task Every_analytics_read_stays_fast_over_three_years()
+    {
+        await SeedThreeYearsAsync();
+
+        using var context = NewContext();
+        var analytics = new DietAnalyticsRepository(context);
+        var planRepository = new DietPlanRepository(context);
+
+        var plan = await planRepository.GetByUserIdAsync(_userId);
+        plan.ShouldNotBeNull();
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var from = plan.StartDate;
+
+        // Warm the connection so the first query is not measured against schema load.
+        await analytics.GetDayRowsAsync(_userId, today, today);
+
+        var reads = new (string Name, Func<Task<int>> Run)[]
+        {
+            ("day rows", async () => (await analytics.GetDayRowsAsync(_userId, from, today)).Count),
+            ("by meal", async () => (await analytics.GetMealRowsAsync(_userId, from, today)).Count),
+            ("top foods", async () => (await analytics.GetTopFoodRowsAsync(_userId, from, today)).Count),
+            ("by category", async () => (await analytics.GetCategoryRowsAsync(_userId, from, today)).Count),
+            ("quarter hours", async () => (await analytics.GetQuarterHourRowsAsync(_userId, from, today)).Count)
+        };
+
+        foreach (var read in reads)
+        {
+            var watch = Stopwatch.StartNew();
+            var rows = await read.Run();
+            watch.Stop();
+
+            rows.ShouldBeGreaterThan(0, $"the {read.Name} read returned nothing at three-year scale");
+
+            watch.ElapsedMilliseconds.ShouldBeLessThan(BudgetMs,
+                $"the {read.Name} read over {Days} days took {watch.ElapsedMilliseconds}ms");
+        }
+    }
+
+    [Fact]
+    public async Task The_analytics_range_read_uses_the_user_and_date_index_rather_than_scanning()
+    {
+        // Research R-008 assumed this index would be used and did not check. An assumption about a
+        // query plan holds right up until the table grows.
+        await SeedThreeYearsAsync();
+
+        using var context = NewContext();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        await context.Database.OpenConnectionAsync();
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+
+        // Written out rather than lifted from ToQueryString, which carries a parameter-declaration
+        // header that is not valid SQL on its own.
+        command.CommandText =
+            """
+            EXPLAIN QUERY PLAN
+            SELECT "d"."Date"
+            FROM "LoggedDays" AS "d"
+            WHERE "d"."UserId" = $userId AND "d"."Date" >= $from AND "d"."Date" <= $to
+            """;
+
+        Add(command, "$userId", _userId.ToString());
+        Add(command, "$from", today.AddDays(-364).ToString("yyyy-MM-dd"));
+        Add(command, "$to", today.ToString("yyyy-MM-dd"));
+
+        var plan = new List<string>();
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                plan.Add(reader.GetString(reader.FieldCount - 1));
+            }
+        }
+
+        var detail = string.Join(" | ", plan);
+
+        detail.ShouldContain("IX_LoggedDays_UserId_Date",
+            customMessage: $"the analytics range read is not using its index. Plan was: {detail}");
+
+        detail.ShouldNotContain("SCAN LoggedDays",
+            customMessage: $"the analytics range read is scanning the table. Plan was: {detail}");
+
+        static void Add(System.Data.Common.DbCommand command, string name, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.Value = value;
+            command.Parameters.Add(parameter);
+        }
+    }
+
     private async Task SeedThreeYearsOfExerciseAsync()
     {
         using var context = NewContext();
