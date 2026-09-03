@@ -248,3 +248,86 @@ export interface DailyEncouragement {
   currentStreakDays: number;
   tone: string;
 }
+
+// --- Exercise logging -------------------------------------------------------
+// Deliberately separate from the eating types above. No shape here combines an estimate with a
+// calorie target, and no food-log type gained an exercise field: a day's eating verdict cannot
+// move because activity was recorded (FR-013, FR-016).
+
+export type ActivityCategory =
+  | 'Walking'
+  | 'Running'
+  | 'Cycling'
+  | 'Swimming'
+  | 'Gym'
+  | 'Sport'
+  | 'HomeAndGarden'
+  | 'Everyday';
+
+export interface ActivityTypeSummary {
+  id: string;
+  name: string;
+  category: ActivityCategory;
+  met: number;
+}
+
+/** An empty `matches` is how a member learns an activity is not in the catalogue. */
+export interface ActivitySearchResponse {
+  query: string;
+  matches: ActivityTypeSummary[];
+}
+
+export interface ExerciseEntry {
+  id: string;
+  activityTypeId: string;
+  activityName: string;
+  met: number;
+  durationMinutes: number;
+  /** An estimate, and labelled as one wherever it is shown. Never a spendable allowance. */
+  estimatedKcal: number;
+  recordedAt: string;
+}
+
+export interface ExerciseDay {
+  date: string;
+  /** Null when no exercise day exists yet; echoed back on every write to an existing day. */
+  version: string | null;
+  totalMinutes: number;
+  totalKilocalories: number;
+  entries: ExerciseEntry[];
+}
+
+/** One row per day that has activity. Absence means no exercise, not an unknown state. */
+export interface ExerciseDaySummary {
+  date: string;
+  totalMinutes: number;
+  totalKilocalories: number;
+  entryCount: number;
+}
+
+export interface ExerciseRangeResponse {
+  from: string;
+  to: string;
+  days: ExerciseDaySummary[];
+}
+
+export interface ActivitySummary {
+  windowDays: number;
+  activeDays: number;
+  totalMinutes: number;
+  totalKilocalories: number;
+  previousWindowActiveDays: number;
+  previousWindowMinutes: number;
+}
+
+export interface AddExerciseEntryRequest {
+  activityTypeId: string;
+  durationMinutes: number;
+  version: string | null;
+}
+
+export interface UpdateExerciseEntryRequest {
+  activityTypeId: string;
+  durationMinutes: number;
+  version: string;
+}

@@ -9,7 +9,7 @@ the next one without disturbing the last.
 | Programme | What it does | Service | Routes |
 |-----------|--------------|---------|--------|
 | **Quit Smoking** | Smoke-free days, money saved, health milestones, relapse analytics, craving support | `QuitSmokingApi` | `/quit-smoking/*` |
-| **Diet** | A calculated daily calorie and macro target, meal logging against a curated food library, streaks, weight tracking | `DietApi` | `/diet/*` |
+| **Diet** | A calculated daily calorie and macro target, meal logging against a curated food library, exercise logging with energy estimates, streaks, weight tracking | `DietApi` | `/diet/*` |
 
 Authentication is platform-level and shared: `UserApi` issues the token, and every programme
 validates it with identical parameters, so one sign-in covers all of them.
@@ -26,6 +26,15 @@ Features/<Feature>/
   <Feature>Dtos.cs
   <UseCase>/<UseCase>Handler.cs  # command/query record + handler in one file
 ```
+
+Each service's route groups. Every route requires a bearer token except registration, sign-in and
+token refresh under `/api/auth`:
+
+| Service | Route groups |
+|---------|--------------|
+| `UserApi` | `/api/auth` |
+| `QuitSmokingApi` | `/api/progress`, `/api/smoked-days`, `/api/achievements`, `/api/motivation` |
+| `DietApi` | `/api/diet-plan`, `/api/food-library`, `/api/food-log`, `/api/exercise`, `/api/activity-catalogue`, `/api/weight`, `/api/diet-stats`, `/api/diet-achievements`, `/api/diet-guidance` |
 
 **Frontend** — a single Angular application acting as a platform shell. Programmes are declared in
 one registry, [`src/app/programs/programs.ts`](OpenMind.Healthcare/frontend/src/app/programs/programs.ts),
@@ -61,4 +70,5 @@ Non-trivial work follows [Spec Kit](https://github.com/github/spec-kit):
 Specs live in `specs/###-name/`. A spec describes behaviour and must not name a class, table or
 endpoint; a plan describes construction. The diet programme was built this way and its artifacts —
 specification, research decisions, data model, contracts, task list — are in
-[`specs/001-diet-tracking/`](specs/001-diet-tracking/).
+[`specs/001-diet-tracking/`](specs/001-diet-tracking/), and exercise logging, which was added to it
+the same way, is in [`specs/002-exercise-logging/`](specs/002-exercise-logging/).

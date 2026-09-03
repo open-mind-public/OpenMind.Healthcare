@@ -54,10 +54,13 @@
           class="day"
           *ngFor="let day of month.days"
           [ngClass]="stateClass(day)"
+          [class.has-exercise]="hasExercise(day)"
           [disabled]="!day.withinPlan"
-          [title]="day.date + (day.withinPlan ? ' - ' + day.state : ' - before your plan started')"
+          [title]="dayTitle(day)"
           (click)="openDay(day)">
           {{ dayNumber(day) }}
+          <!-- An extra mark on the cell, not a replacement colour: both facts stay visible. -->
+          <span class="exercise-dot" *ngIf="hasExercise(day)" aria-hidden="true"></span>
         </button>
       </div>
     </section>
@@ -68,5 +71,6 @@
     <li><span class="swatch over-target"></span> Over target</li>
     <li><span class="swatch not-logged"></span> Not logged</li>
     <li><span class="swatch outside"></span> Outside your plan</li>
+    <li><span class="swatch exercise"><span class="exercise-dot" aria-hidden="true"></span></span> Exercise recorded</li>
   </ul>
 </div>

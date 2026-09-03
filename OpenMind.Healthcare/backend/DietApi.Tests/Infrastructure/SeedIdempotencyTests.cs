@@ -20,7 +20,7 @@ public class SeedIdempotencyTests : IDisposable
     [Fact]
     public void Seeding_twice_leaves_exactly_one_copy_of_every_curated_item()
     {
-        int foods, achievements, tips;
+        int foods, activities, achievements, tips;
 
         // First boot: creates the schema and seeds it.
         using (var context = NewContext())
@@ -29,11 +29,13 @@ public class SeedIdempotencyTests : IDisposable
             DbInitializer.Initialize(context);
 
             foods = context.FoodLibraryItems.Count();
+            activities = context.ActivityTypes.Count();
             achievements = context.DietAchievements.Count();
             tips = context.EatingTips.Count();
         }
 
         foods.ShouldBeGreaterThan(150);
+        activities.ShouldBeInRange(60, 80);
         achievements.ShouldBe(8);
         tips.ShouldBeGreaterThan(0);
 
@@ -44,6 +46,7 @@ public class SeedIdempotencyTests : IDisposable
             DbInitializer.Initialize(context);
 
             context.FoodLibraryItems.Count().ShouldBe(foods);
+            context.ActivityTypes.Count().ShouldBe(activities);
             context.DietAchievements.Count().ShouldBe(achievements);
             context.EatingTips.Count().ShouldBe(tips);
         }
@@ -53,6 +56,7 @@ public class SeedIdempotencyTests : IDisposable
         {
             DbInitializer.Initialize(context);
             context.FoodLibraryItems.Count().ShouldBe(foods);
+            context.ActivityTypes.Count().ShouldBe(activities);
         }
     }
 
@@ -68,6 +72,27 @@ public class SeedIdempotencyTests : IDisposable
         oats.ShouldNotBeNull();
         oats.ServingSizes.ShouldNotBeEmpty();
         oats.ServingSizes.First().Nutrition.Calories.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public void An_empty_database_produces_a_searchable_activity_catalogue()
+    {
+        using var context = NewContext();
+        context.Database.Migrate();
+        DbInitializer.Initialize(context);
+
+        var running = context.ActivityTypes.FirstOrDefault(a => a.SearchName.Contains("running"));
+
+        running.ShouldNotBeNull();
+        running.Met.ShouldBeGreaterThan(0);
+
+        // Every one of the eight categories has something in it, so a member browsing any of them
+        // finds an activity rather than an empty list.
+        context.ActivityTypes
+            .Select(a => a.Category)
+            .Distinct()
+            .Count()
+            .ShouldBe(Enum.GetValues<DietApi.Domain.ValueObjects.ActivityCategory>().Length);
     }
 
     private DietDbContext NewContext()

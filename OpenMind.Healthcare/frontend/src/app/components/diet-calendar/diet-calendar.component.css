@@ -150,6 +150,7 @@
 }
 
 .day {
+  position: relative;
   aspect-ratio: 1;
   border: none;
   border-radius: var(--r-sm);
@@ -157,6 +158,24 @@
   cursor: pointer;
   font-family: inherit;
   color: var(--text);
+}
+
+/*
+  An independent mark, not a fourth colour. It sits on top of whichever eating colour the cell
+  already carries, so an on-target day that also had a run shows both.
+
+  The ring is what makes it work: a solid dot in --text with a --surface ring reads against the
+  teal, the amber and the grey, in both themes, without needing a colour of its own.
+*/
+.exercise-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 0 1px var(--surface);
 }
 
 .day:disabled {
@@ -198,6 +217,15 @@
   font-size: 0.62rem;
   border-radius: 3px;
   line-height: 1;
+}
+
+/* The year view's cells are about 21px, so the dot shrinks with them. */
+.year-view .exercise-dot {
+  top: 1px;
+  right: 1px;
+  width: 4px;
+  height: 4px;
+  box-shadow: 0 0 0 0.5px var(--surface);
 }
 
 /* Out-of-plan dates stay legible but clearly recede. */
@@ -256,4 +284,17 @@
 
 .loading {
   color: var(--text-muted);
+}
+
+/* The legend swatch shows the dot on a plain cell, so the mark is explained as itself. */
+.swatch.exercise {
+  position: relative;
+  background: var(--border-strong);
+}
+
+.swatch.exercise .exercise-dot {
+  top: 1px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
 }

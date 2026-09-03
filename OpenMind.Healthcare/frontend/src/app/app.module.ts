@@ -19,6 +19,8 @@ import { RelapseAnalyticsComponent } from './components/relapse-analytics/relaps
 import { AccountComponent } from './components/account/account.component';
 import { DietSetupComponent } from './components/diet-setup/diet-setup.component';
 import { DietDashboardComponent } from './components/diet-dashboard/diet-dashboard.component';
+import { ActivitySummaryComponent } from './components/activity-summary/activity-summary.component';
+import { ExerciseLogComponent } from './components/exercise-log/exercise-log.component';
 import { FoodSearchComponent } from './components/food-search/food-search.component';
 import { DietCalendarComponent } from './components/diet-calendar/diet-calendar.component';
 import { WeightTrackerComponent } from './components/weight-tracker/weight-tracker.component';
@@ -59,6 +61,7 @@ const routes: Routes = [
   { path: 'diet/log/:date', component: DietDashboardComponent, canActivate: [AuthGuard] },
   { path: 'diet/calendar', component: DietCalendarComponent, canActivate: [AuthGuard] },
   { path: 'diet/weight', component: WeightTrackerComponent, canActivate: [AuthGuard] },
+  { path: 'diet/activity', component: ActivitySummaryComponent, canActivate: [AuthGuard] },
   { path: 'diet/achievements', component: DietAchievementsComponent, canActivate: [AuthGuard] },
   { path: 'diet/guidance', component: DietGuidanceComponent, canActivate: [AuthGuard] },
 
@@ -93,6 +96,8 @@ const routes: Routes = [
     RegisterComponent,
     DietSetupComponent,
     DietDashboardComponent,
+    ActivitySummaryComponent,
+    ExerciseLogComponent,
     FoodSearchComponent,
     DietCalendarComponent,
     WeightTrackerComponent,

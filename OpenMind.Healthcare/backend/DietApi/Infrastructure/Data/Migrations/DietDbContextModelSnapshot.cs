@@ -17,6 +17,44 @@ namespace DietApi.Infrastructure.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
+            modelBuilder.Entity("DietApi.Domain.Aggregates.ActivityType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Met")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SearchName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SearchName");
+
+                    b.ToTable("ActivityTypes");
+                });
+
             modelBuilder.Entity("DietApi.Domain.Aggregates.DietAchievement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -137,6 +175,41 @@ namespace DietApi.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EatingTips");
+                });
+
+            modelBuilder.Entity("DietApi.Domain.Aggregates.ExerciseDay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("DietPlanId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DietPlanId", "Date")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Date");
+
+                    b.ToTable("ExerciseDays");
                 });
 
             modelBuilder.Entity("DietApi.Domain.Aggregates.FoodLibraryItem", b =>
@@ -333,6 +406,74 @@ namespace DietApi.Infrastructure.Data.Migrations
                     b.Navigation("UnlockedAchievements");
 
                     b.Navigation("WeightReadings");
+                });
+
+            modelBuilder.Entity("DietApi.Domain.Aggregates.ExerciseDay", b =>
+                {
+                    b.OwnsMany("DietApi.Domain.Entities.ExerciseEntry", "Entries", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("ActivityName")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("ActivityTypeId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("DurationMinutes")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<int>("EstimatedKcal")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<Guid>("ExerciseDayId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("Met")
+                                .HasPrecision(4, 1)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateTime>("RecordedAt")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("ExerciseDayId");
+
+                            b1.ToTable("ExerciseEntries", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExerciseDayId");
+                        });
+
+                    b.OwnsOne("DietApi.Domain.ValueObjects.ExerciseTotals", "Totals", b1 =>
+                        {
+                            b1.Property<Guid>("ExerciseDayId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("Kilocalories")
+                                .HasColumnType("INTEGER")
+                                .HasColumnName("TotalKilocalories");
+
+                            b1.Property<int>("Minutes")
+                                .HasColumnType("INTEGER")
+                                .HasColumnName("TotalMinutes");
+
+                            b1.HasKey("ExerciseDayId");
+
+                            b1.ToTable("ExerciseDays");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExerciseDayId");
+                        });
+
+                    b.Navigation("Entries");
+
+                    b.Navigation("Totals")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DietApi.Domain.Aggregates.FoodLibraryItem", b =>

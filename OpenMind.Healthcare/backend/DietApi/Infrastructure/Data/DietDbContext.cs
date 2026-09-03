@@ -14,7 +14,9 @@ public class DietDbContext(DbContextOptions<DietDbContext> options, IMediator me
 {
     public DbSet<DietPlan> DietPlans { get; set; }
     public DbSet<LoggedDay> LoggedDays { get; set; }
+    public DbSet<ExerciseDay> ExerciseDays { get; set; }
     public DbSet<FoodLibraryItem> FoodLibraryItems { get; set; }
+    public DbSet<ActivityType> ActivityTypes { get; set; }
     public DbSet<DietAchievement> DietAchievements { get; set; }
     public DbSet<EatingTip> EatingTips { get; set; }
 
@@ -181,6 +183,76 @@ public class DietDbContext(DbContextOptions<DietDbContext> options, IMediator me
             });
 
             entity.Navigation(e => e.Entries).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            entity.Ignore(e => e.DomainEvents);
+        });
+
+        // A sibling of LoggedDay, not a part of it. Their lifecycles differ - a logged day is
+        // deleted when its last meal goes - so exercise owned there would be destroyed with the
+        // dinner it had nothing to do with (research.md R-002, FR-013).
+        modelBuilder.Entity<ExerciseDay>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DietPlanId).IsRequired();
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.Date).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+
+            // Conflicting writes are refused, not merged. SQLite has no native row version, so
+            // the aggregate reassigns this on every mutation and EF Core puts the previous value
+            // in the UPDATE's WHERE clause - a zero-row result is the conflict signal.
+            entity.Property(e => e.Version).IsRequired().IsConcurrencyToken();
+
+            // One exercise day per date per plan
+            entity.HasIndex(e => new { e.DietPlanId, e.Date }).IsUnique();
+
+            // Range reads for the calendar and the weekly summary
+            entity.HasIndex(e => new { e.UserId, e.Date });
+
+            entity.OwnsOne(e => e.Totals, totals =>
+            {
+                // Both int: the weekly summary aggregates them in SQL, and EF Core maps decimal
+                // to SQLite TEXT, which cannot be summed numerically (ADR 0002).
+                totals.Property(t => t.Minutes).HasColumnName("TotalMinutes");
+                totals.Property(t => t.Kilocalories).HasColumnName("TotalKilocalories");
+            });
+
+            entity.OwnsMany(e => e.Entries, entries =>
+            {
+                entries.ToTable("ExerciseEntries");
+                entries.WithOwner().HasForeignKey(x => x.ExerciseDayId);
+                entries.HasKey(x => x.Id);
+                entries.Property(x => x.Id).ValueGeneratedNever();
+                entries.Property(x => x.ActivityTypeId).IsRequired();
+                entries.Property(x => x.ActivityName).IsRequired().HasMaxLength(120);
+
+                // Snapshotted and displayed, never SQL-aggregated - so decimal is safe here.
+                entries.Property(x => x.Met).IsRequired().HasPrecision(4, 1);
+
+                entries.Property(x => x.DurationMinutes).IsRequired();
+                entries.Property(x => x.EstimatedKcal).IsRequired();
+                entries.Property(x => x.RecordedAt).IsRequired();
+
+                entries.Ignore(x => x.DomainEvents);
+            });
+
+            entity.Navigation(e => e.Entries).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            entity.Ignore(e => e.DomainEvents);
+        });
+
+        modelBuilder.Entity<ActivityType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(120);
+            entity.Property(e => e.SearchName).IsRequired().HasMaxLength(120);
+            entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            entity.Property(e => e.Met).IsRequired().HasPrecision(4, 1);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+
+            entity.HasIndex(e => e.SearchName);
 
             entity.Ignore(e => e.DomainEvents);
         });

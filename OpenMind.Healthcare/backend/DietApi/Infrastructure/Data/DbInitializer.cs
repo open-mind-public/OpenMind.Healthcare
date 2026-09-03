@@ -3,7 +3,8 @@ using DietApi.Infrastructure.Data.Seeds;
 namespace DietApi.Infrastructure.Data;
 
 /// <summary>
-/// Seeds curated reference data - the food library, achievement definitions, and eating tips.
+/// Seeds curated reference data - the food library, the activity catalogue, achievement
+/// definitions, and eating tips.
 /// </summary>
 /// <remarks>
 /// Every seed is guarded so restarting the service never duplicates rows, and there is exactly
@@ -19,6 +20,12 @@ public static class DbInitializer
         if (!context.FoodLibraryItems.Any())
         {
             context.FoodLibraryItems.AddRange(FoodLibrarySeed.Items());
+            hasChanges = true;
+        }
+
+        if (!context.ActivityTypes.Any())
+        {
+            context.ActivityTypes.AddRange(ActivityCatalogueSeed.Activities());
             hasChanges = true;
         }
 

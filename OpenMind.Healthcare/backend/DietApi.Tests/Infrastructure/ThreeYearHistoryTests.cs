@@ -95,6 +95,70 @@ public class ThreeYearHistoryTests : IDisposable
             $"adding one entry against {Days} days of history took {watch.ElapsedMilliseconds}ms");
     }
 
+    [Fact]
+    public async Task The_exercise_calendar_and_the_weekly_summary_stay_fast_over_three_years()
+    {
+        await SeedThreeYearsAsync();
+        await SeedThreeYearsOfExerciseAsync();
+
+        using var context = NewContext();
+        var exerciseRepository = new ExerciseDayRepository(context);
+        var planRepository = new DietPlanRepository(context);
+
+        var plan = await planRepository.GetByUserIdAsync(_userId);
+        plan.ShouldNotBeNull();
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // A calendar year of exercise marking.
+        var yearWatch = Stopwatch.StartNew();
+        var year = await exerciseRepository.GetRangeAsync(_userId, today.AddDays(-364), today);
+        yearWatch.Stop();
+
+        year.Count.ShouldBeGreaterThan(360);
+        year.ShouldAllBe(d => d.TotalMinutes > 0);
+
+        // The weekly summary, which reads two windows and totals them.
+        var summaryWatch = Stopwatch.StartNew();
+        var recent = await exerciseRepository.GetRangeAsync(_userId, today.AddDays(-13), today);
+        var summary = new ActivitySummaryCalculator().Summarise(recent, plan.StartDate);
+        summaryWatch.Stop();
+
+        summary.ActiveDays.ShouldBe(7);
+        summary.PreviousWindowActiveDays.ShouldBe(7);
+
+        yearWatch.ElapsedMilliseconds.ShouldBeLessThan(BudgetMs,
+            $"an exercise year view over {Days} days took {yearWatch.ElapsedMilliseconds}ms");
+        summaryWatch.ElapsedMilliseconds.ShouldBeLessThan(BudgetMs,
+            $"the weekly summary over {Days} days took {summaryWatch.ElapsedMilliseconds}ms");
+    }
+
+    /// <summary>
+    /// One session a day for the whole plan. The range read must still project to summaries in
+    /// SQL - if it starts loading the sessions themselves, this is where it shows.
+    /// </summary>
+    private async Task SeedThreeYearsOfExerciseAsync()
+    {
+        using var context = NewContext();
+
+        var plan = context.DietPlans.First(p => p.UserId == _userId);
+        var activity = context.ActivityTypes.First(a => a.SearchName.Contains("running"));
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var startDate = today.AddDays(-(Days - 1));
+
+        for (var i = 0; i < Days; i++)
+        {
+            var date = startDate.AddDays(i);
+            var day = ExerciseDay.StartDay(plan.Id, _userId, date, startDate);
+            day.AddEntry(activity.Id, activity.Name, activity.Met, 45, 84.6m);
+
+            context.ExerciseDays.Add(day);
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     private async Task SeedThreeYearsAsync()
     {
         using var context = NewContext();

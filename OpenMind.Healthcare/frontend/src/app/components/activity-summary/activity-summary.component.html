@@ -1,0 +1,62 @@
+<div class="activity-summary">
+  <header class="head">
+    <h1>Your activity</h1>
+    <p class="sub">The last seven days, next to the seven before them.</p>
+  </header>
+
+  <p class="loading" *ngIf="loading">Loading...</p>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <ng-container *ngIf="summary && !loading">
+    <section class="cards">
+      <div class="card">
+        <span class="value">{{ summary.activeDays }}</span>
+        <span class="label">active days</span>
+        <span class="delta" [class.up]="activeDaysChange > 0" [class.down]="activeDaysChange < 0">
+          <ng-container *ngIf="activeDaysChange > 0">+{{ activeDaysChange }} vs last week</ng-container>
+          <ng-container *ngIf="activeDaysChange < 0">{{ activeDaysChange }} vs last week</ng-container>
+          <ng-container *ngIf="activeDaysChange === 0">same as last week</ng-container>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="value">{{ formatDuration(summary.totalMinutes) }}</span>
+        <span class="label">time active</span>
+        <span class="delta" [class.up]="minutesChange > 0" [class.down]="minutesChange < 0">
+          <ng-container *ngIf="minutesChange > 0">+{{ minutesChange }} min vs last week</ng-container>
+          <ng-container *ngIf="minutesChange < 0">{{ minutesChange }} min vs last week</ng-container>
+          <ng-container *ngIf="minutesChange === 0">same as last week</ng-container>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="value">{{ summary.totalKilocalories }}</span>
+        <span class="label">estimated kcal</span>
+        <span class="delta">an estimate, not an allowance</span>
+      </div>
+    </section>
+
+    <p class="comparison">{{ comparison }}</p>
+
+    <!-- Zeros, plainly. Not an error, and not an empty panel. -->
+    <p class="zero-state" *ngIf="!hasActivity">
+      Nothing recorded in the last seven days. Open a day under <strong>Today</strong> or
+      <strong>History</strong> to add a session.
+    </p>
+
+    <section class="previous">
+      <h2>Last week</h2>
+      <p>
+        {{ summary.previousWindowActiveDays }} active
+        {{ summary.previousWindowActiveDays === 1 ? 'day' : 'days' }},
+        {{ formatDuration(summary.previousWindowMinutes) }} in total.
+      </p>
+    </section>
+
+    <p class="note">
+      Calorie figures here are estimates based on the activity, how long it lasted and your
+      weight. Your daily calorie target already accounts for how active you usually are, so
+      nothing on this page changes it.
+    </p>
+  </ng-container>
+</div>

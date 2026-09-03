@@ -1,0 +1,285 @@
+/*
+  A custom element is inline by default, so the host needs to be a block before a margin means
+  anything. Without this the panel butts straight into the food search card above it on a day with
+  nothing eaten - two rounded cards sharing an edge, which reads as one broken card.
+*/
+:host {
+  display: block;
+  margin-top: 18px;
+}
+
+.exercise-log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  color: var(--text);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.totals {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.loading,
+.searching {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin: 6px 0;
+}
+
+.empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 14px;
+}
+
+.error {
+  background: var(--danger-subtle);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.stale {
+  background: var(--warning-subtle);
+  border: 1px solid var(--warning-border);
+  color: var(--warning);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.stale p {
+  margin: 0 0 6px;
+  color: var(--warning);
+}
+
+.stale .link {
+  color: var(--warning);
+  text-decoration: underline;
+}
+
+.sessions {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.sessions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sessions li:last-child {
+  border-bottom: none;
+}
+
+.session-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.session-main .name {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.session-main .detail {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+/* Labelled as an estimate wherever it appears - never as an allowance. */
+.estimate {
+  color: var(--text-muted);
+}
+
+.session-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+
+  /* The buttons' own padding is the spacing; pull the last one back to the row's edge. */
+  margin-right: -6px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.field > span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.field input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.field.inline {
+  margin: 4px 0 0;
+  max-width: 130px;
+}
+
+.field.inline > span {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.no-match {
+  background: var(--warning-subtle);
+  border: 1px solid var(--warning-border);
+  color: var(--warning);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.no-match strong {
+  color: var(--warning);
+}
+
+.matches {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.matches li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.matches li:last-child {
+  border-bottom: none;
+}
+
+.matches li:hover {
+  background: var(--accent-subtle);
+}
+
+.matches .category {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.chosen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+/*
+  Row actions read as quiet controls, not hyperlinks. Underlined accent-and-red text made a
+  two-line row shout twice, and "Remove" was the loudest thing on the panel before anyone had
+  decided to remove anything - so colour arrives on hover, when the intent does.
+*/
+.link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.86rem;
+  padding: 3px 6px;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.link:hover:not(:disabled) {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.link:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.link.danger:hover:not(:disabled) {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.link.danger:disabled {
+  color: var(--text-muted);
+}
+
+.primary {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.primary:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

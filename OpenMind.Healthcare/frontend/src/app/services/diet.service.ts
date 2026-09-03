@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  ActivitySearchResponse,
+  ActivitySummary,
+  AddExerciseEntryRequest,
   AddFoodEntryRequest,
   CreateDietPlanRequest,
   DailyEncouragement,
@@ -11,6 +14,8 @@ import {
   DietPlanResponse,
   DietStatistics,
   EatingTip,
+  ExerciseDay,
+  ExerciseRangeResponse,
   FoodSearchResult,
   LoggedDay,
   NewlyUnlocked,
@@ -19,6 +24,7 @@ import {
   TargetSuggestion,
   UpdateDietPlanRequest,
   UpdateDietPlanResponse,
+  UpdateExerciseEntryRequest,
   UpdateFoodEntryRequest,
   WeightTrend
 } from '../models/diet.models';
@@ -87,6 +93,42 @@ export class DietService {
   searchFoods(query: string, limit = 20): Observable<FoodSearchResult> {
     const params = new HttpParams().set('q', query).set('limit', limit);
     return this.http.get<FoodSearchResult>(`${this.baseUrl}/food-library/search`, { params });
+  }
+
+  // --- Exercise ---------------------------------------------------------
+  // Deliberately separate calls from the food log. The eating endpoints know nothing about
+  // exercise; screens that show both fetch both and merge (research.md R-005).
+
+  getExerciseDay(date: string): Observable<ExerciseDay> {
+    return this.http.get<ExerciseDay>(`${this.baseUrl}/exercise/${date}`);
+  }
+
+  getExerciseRange(from: string, to: string): Observable<ExerciseRangeResponse> {
+    const params = new HttpParams().set('from', from).set('to', to);
+    return this.http.get<ExerciseRangeResponse>(`${this.baseUrl}/exercise`, { params });
+  }
+
+  getActivitySummary(): Observable<ActivitySummary> {
+    return this.http.get<ActivitySummary>(`${this.baseUrl}/exercise/summary`);
+  }
+
+  addExerciseEntry(date: string, request: AddExerciseEntryRequest): Observable<ExerciseDay> {
+    return this.http.post<ExerciseDay>(`${this.baseUrl}/exercise/${date}/entries`, request);
+  }
+
+  updateExerciseEntry(entryId: string, request: UpdateExerciseEntryRequest): Observable<ExerciseDay> {
+    return this.http.put<ExerciseDay>(`${this.baseUrl}/exercise/entries/${entryId}`, request);
+  }
+
+  /** Null once the day's last session goes - the date reverts to no exercise recorded. */
+  deleteExerciseEntry(entryId: string, version: string): Observable<ExerciseDay | null> {
+    const params = new HttpParams().set('version', version);
+    return this.http.delete<ExerciseDay | null>(`${this.baseUrl}/exercise/entries/${entryId}`, { params });
+  }
+
+  searchActivities(query: string, limit = 20): Observable<ActivitySearchResponse> {
+    const params = new HttpParams().set('q', query).set('limit', limit);
+    return this.http.get<ActivitySearchResponse>(`${this.baseUrl}/activity-catalogue/search`, { params });
   }
 
   // --- Weight -----------------------------------------------------------

@@ -2,11 +2,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using DietApi.Domain.Repositories;
 using DietApi.Domain.Services;
+using DietApi.Features.ActivityCatalogue;
 using DietApi.Features.DietPlan;
 using DietApi.Features.FoodLibrary;
 using DietApi.Features.DietAchievements;
 using DietApi.Features.DietGuidance;
 using DietApi.Features.DietStats;
+using DietApi.Features.Exercise;
 using DietApi.Features.FoodLog;
 using DietApi.Features.Weight;
 using DietApi.Infrastructure.Data;
@@ -61,11 +63,15 @@ builder.Services.AddScoped<IUserService>(provider => provider.GetRequiredService
 builder.Services.AddScoped<IDietPlanRepository, DietPlanRepository>();
 builder.Services.AddScoped<ILoggedDayRepository, LoggedDayRepository>();
 builder.Services.AddScoped<IFoodLibraryRepository, FoodLibraryRepository>();
+builder.Services.AddScoped<IExerciseDayRepository, ExerciseDayRepository>();
+builder.Services.AddScoped<IActivityTypeRepository, ActivityTypeRepository>();
 builder.Services.AddScoped<IDietAchievementRepository, DietAchievementRepository>();
 builder.Services.AddScoped<IEatingTipRepository, EatingTipRepository>();
 
 builder.Services.AddScoped<TargetSuggestionService>();
 builder.Services.AddScoped<StreakCalculator>();
+builder.Services.AddScoped<EnergyEstimator>();
+builder.Services.AddScoped<ActivitySummaryCalculator>();
 builder.Services.AddScoped<DietAchievementStatusService>();
 
 builder.Services.AddCors(options =>
@@ -93,6 +99,8 @@ app.UseAuthorization();
 app.MapDietPlanEndpoints();
 app.MapFoodLibraryEndpoints();
 app.MapFoodLogEndpoints();
+app.MapExerciseEndpoints();
+app.MapActivityCatalogueEndpoints();
 app.MapDietStatsEndpoints();
 app.MapWeightEndpoints();
 app.MapDietAchievementsEndpoints();

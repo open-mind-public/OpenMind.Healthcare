@@ -1,0 +1,110 @@
+<div class="exercise-log">
+  <div class="head">
+    <h3>Activity</h3>
+    <span class="totals" *ngIf="showDayTotal">
+      {{ day?.totalMinutes }} min &middot; about {{ day?.totalKilocalories }} kcal
+    </span>
+  </div>
+
+  <p class="loading" *ngIf="loading">Loading your activity...</p>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <!-- A stale copy is not the member's mistake, so it reads as a prompt, not a failure. -->
+  <div class="stale" *ngIf="staleWarning">
+    <p>{{ staleWarning }}</p>
+    <button type="button" class="link" (click)="load()">Reload this day</button>
+  </div>
+
+  <!-- No exercise is a plain fact, not an empty error state. -->
+  <p class="empty" *ngIf="!loading && !hasActivity">
+    No exercise recorded for this day. Add a session below if you did something.
+  </p>
+
+  <ul class="sessions" *ngIf="hasActivity">
+    <li *ngFor="let entry of entries">
+      <ng-container *ngIf="editingId !== entry.id">
+        <div class="session-main">
+          <span class="name">{{ entry.activityName }}</span>
+          <span class="detail">
+            {{ entry.durationMinutes }} min &middot;
+            <span class="estimate">about {{ entry.estimatedKcal }} kcal</span>
+          </span>
+        </div>
+        <div class="session-actions">
+          <button type="button" class="link" (click)="startEdit(entry)" [disabled]="saving">Edit</button>
+          <button type="button" class="link danger" (click)="remove(entry)" [disabled]="saving">Remove</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="editingId === entry.id">
+        <div class="session-main">
+          <span class="name">{{ entry.activityName }}</span>
+          <label class="field inline">
+            <span>Minutes</span>
+            <input type="number" min="1" step="1" [(ngModel)]="editDuration" />
+          </label>
+        </div>
+        <div class="session-actions">
+          <button type="button" class="link" (click)="saveEdit(entry)" [disabled]="saving">Save</button>
+          <button type="button" class="link" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+        </div>
+      </ng-container>
+    </li>
+  </ul>
+
+  <!-- Recording a session -->
+  <div class="add">
+    <label class="field">
+      <span>Add a session</span>
+      <input
+        type="text"
+        [(ngModel)]="query"
+        (ngModelChange)="onQueryChanged()"
+        placeholder="Start typing, e.g. running, swimming, gardening"
+        autocomplete="off" />
+    </label>
+
+    <p class="searching" *ngIf="searching">Searching...</p>
+
+    <!-- An empty result is the honest answer, not an invitation to invent an activity. -->
+    <p class="no-match" *ngIf="searched && !searching && matches.length === 0">
+      We do not have <strong>{{ query }}</strong> in the activity catalogue yet, so it cannot be
+      recorded. Try a simpler name, or pick the closest activity you can find.
+    </p>
+
+    <ul class="matches" *ngIf="matches.length > 0 && !selected">
+      <li *ngFor="let activity of matches" (click)="select(activity)">
+        <span class="name">{{ activity.name }}</span>
+        <span class="category">{{ activity.category }}</span>
+      </li>
+    </ul>
+
+    <div class="chosen" *ngIf="selected">
+      <div class="chosen-head">
+        <strong>{{ selected.name }}</strong>
+        <button type="button" class="link" (click)="resetSearch()">Change</button>
+      </div>
+
+      <label class="field">
+        <span>How long, in minutes</span>
+        <input type="number" min="1" step="1" [(ngModel)]="durationMinutes" placeholder="45" />
+      </label>
+
+      <button
+        type="button"
+        class="primary"
+        (click)="add()"
+        [disabled]="saving || !durationMinutes || durationMinutes <= 0">
+        Record this session
+      </button>
+    </div>
+  </div>
+
+  <!-- FR-019, said once and said plainly. -->
+  <p class="note">
+    Calorie figures are estimates based on the activity, how long it lasted and your weight. Your
+    daily calorie target already accounts for how active you usually are, so recording a session
+    does not change it.
+  </p>
+</div>

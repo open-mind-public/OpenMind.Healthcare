@@ -85,6 +85,15 @@
           <option *ngFor="let level of activityLevels" [value]="level.value">{{ level.label }}</option>
         </select>
       </label>
+      <!--
+        FR-019, said where the confusion would otherwise start. A member who logs a run and sees
+        their target unchanged should already know why.
+      -->
+      <small class="hint">
+        This level already accounts for the exercise you usually do, which is why it shapes your
+        daily target. Sessions you log on the Activity page are a record of what you did, not an
+        allowance on top of it - they do not change this target.
+      </small>
       <small class="hint" *ngIf="mode === 'edit'">
         Recording a weight on the Weight page also updates the figure used here.
       </small>

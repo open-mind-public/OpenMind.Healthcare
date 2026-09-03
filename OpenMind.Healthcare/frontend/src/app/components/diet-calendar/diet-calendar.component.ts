@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { catchError, forkJoin, of } from 'rxjs';
 import { DietService } from '../../services/diet.service';
-import { DaySummary, DietStatistics } from '../../models/diet.models';
+import { DaySummary, DietStatistics, ExerciseDaySummary } from '../../models/diet.models';
 
 interface CalendarMonth {
   label: string;
@@ -24,6 +25,13 @@ export class DietCalendarComponent implements OnInit {
 
   months: CalendarMonth[] = [];
   stats: DietStatistics | null = null;
+
+  /**
+   * Exercise, keyed by date. Fetched separately from the eating range and merged here: the two
+   * are independent records of the same day, and neither endpoint knows about the other
+   * (research.md R-005).
+   */
+  private exerciseByDate = new Map<string, ExerciseDaySummary>();
 
   loading = false;
   error: string | null = null;
@@ -74,9 +82,18 @@ export class DietCalendarComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.dietService.getDayRange(from, to).subscribe({
-      next: range => {
-        this.months = this.groupIntoMonths(range.days);
+    forkJoin({
+      eating: this.dietService.getDayRange(from, to),
+
+      // A failure here must not cost the member their calendar. Exercise marking is additional
+      // information about days that are drawn either way, so it degrades to nothing.
+      exercise: this.dietService
+        .getExerciseRange(from, to)
+        .pipe(catchError(() => of({ from, to, days: [] as ExerciseDaySummary[] })))
+    }).subscribe({
+      next: ({ eating, exercise }) => {
+        this.exerciseByDate = new Map(exercise.days.map(day => [day.date, day]));
+        this.months = this.groupIntoMonths(eating.days);
         this.loading = false;
       },
       error: err => {
@@ -88,6 +105,27 @@ export class DietCalendarComponent implements OnInit {
         this.error = err?.error?.message ?? 'Could not load your calendar.';
       }
     });
+  }
+
+  /**
+   * Whether the date has recorded activity. Deliberately independent of the eating state: a day
+   * can be on target and active, over target and active, or not logged and active, and the
+   * calendar shows both facts rather than letting one hide the other (FR-021, R-009).
+   */
+  hasExercise(day: DaySummary): boolean {
+    return this.exerciseByDate.has(day.date);
+  }
+
+  /** The tooltip, so the marking is readable and not only visible. */
+  dayTitle(day: DaySummary): string {
+    if (!day.withinPlan) {
+      return `${day.date} - before your plan started`;
+    }
+
+    const exercise = this.exerciseByDate.get(day.date);
+    const activity = exercise ? ` - ${exercise.totalMinutes} min of exercise` : '';
+
+    return `${day.date} - ${day.state}${activity}`;
   }
 
   openDay(day: DaySummary): void {
