@@ -128,6 +128,37 @@ public record ObservationsResponse(
     bool NothingStoodOut,
     int MinimumDaysForAnyObservation);
 
+// --- Habits: beer and exercise -----------------------------------------------
+
+/// <summary>How one group of days stood against target - counts, and the same counts as shares.</summary>
+public record EatingOutcomeDto(
+    int Days,
+    int OnTargetDays,
+    int OverTargetDays,
+    int NotLoggedDays,
+    decimal OnTargetShare,
+    decimal OverTargetShare,
+    decimal NotLoggedShare);
+
+/// <summary>
+/// How often the member logs beer and exercise over the period, and how their eating on beer days
+/// compares with every other in-plan day.
+/// </summary>
+/// <remarks>
+/// Carries no amount of beer and no calorie figure for it, and no "net" number - consistent with
+/// the analytics feature's scope. <c>BeerDays + OnNonBeerDays.Days == InPlanDays</c>, and
+/// <c>OnBeerDays.Days == BeerDays</c>.
+/// </remarks>
+public record HabitInsightsResponse(
+    AnalysisPeriodDto Period,
+    int InPlanDays,
+    int BeerDays,
+    decimal BeerDaysPerWeek,
+    int ExerciseDays,
+    decimal ExerciseDaysPerWeek,
+    EatingOutcomeDto OnBeerDays,
+    EatingOutcomeDto OnNonBeerDays);
+
 public static class DietAnalyticsMapper
 {
     public static AnalysisPeriodDto ToDto(AnalysisPeriod period) =>
@@ -159,4 +190,23 @@ public static class DietAnalyticsMapper
             observation.Figure,
             observation.BasedOnDays,
             observation.Strength);
+
+    public static EatingOutcomeDto ToDto(EatingOutcome outcome) =>
+        new(outcome.Days,
+            outcome.OnTargetDays,
+            outcome.OverTargetDays,
+            outcome.NotLoggedDays,
+            outcome.OnTargetShare,
+            outcome.OverTargetShare,
+            outcome.NotLoggedShare);
+
+    public static HabitInsightsResponse ToResponse(AnalysisPeriod period, HabitAnalysis analysis) =>
+        new(ToDto(period),
+            analysis.InPlanDays,
+            analysis.BeerDays,
+            analysis.BeerDaysPerWeek,
+            analysis.ExerciseDays,
+            analysis.ExerciseDaysPerWeek,
+            ToDto(analysis.OnBeerDays),
+            ToDto(analysis.OnNonBeerDays));
 }

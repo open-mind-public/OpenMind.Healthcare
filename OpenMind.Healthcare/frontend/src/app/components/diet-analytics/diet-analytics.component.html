@@ -304,4 +304,50 @@
       </section>
     </ng-container>
   </ng-container>
+
+  <!-- Habits: beer and exercise (005 US3). Independent of the intake sections above - it has its
+       own data and stands on its own even in a period with little logging. -->
+  <section class="panel habits" *ngIf="habits && !loadingHabits">
+    <h2>Beer &amp; exercise</h2>
+
+    <div class="habit-cards">
+      <div class="habit-card beer">
+        <span class="value">{{ habits.beerDays }}</span>
+        <span class="label">beer {{ habits.beerDays === 1 ? 'day' : 'days' }}</span>
+        <span class="note">{{ perWeek(habits.beerDaysPerWeek) }} a week</span>
+      </div>
+      <div class="habit-card exercise">
+        <span class="value">{{ habits.exerciseDays }}</span>
+        <span class="label">exercise {{ habits.exerciseDays === 1 ? 'day' : 'days' }}</span>
+        <span class="note">{{ perWeek(habits.exerciseDaysPerWeek) }} a week</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="hasBeerComparison">
+      <h3 class="habit-sub">Eating on beer days vs other days</h3>
+      <ul class="bars">
+        <li>
+          <span class="bar-label">Beer days</span>
+          <span class="bar-track">
+            <span class="bar-fill beer" [style.width]="asPercent(habits.onBeerDays.overTargetShare) + '%'"></span>
+          </span>
+          <span class="bar-value">{{ asPercent(habits.onBeerDays.overTargetShare) }}% over target</span>
+        </li>
+        <li>
+          <span class="bar-label">Other days</span>
+          <span class="bar-track">
+            <span class="bar-fill" [style.width]="asPercent(habits.onNonBeerDays.overTargetShare) + '%'"></span>
+          </span>
+          <span class="bar-value">{{ asPercent(habits.onNonBeerDays.overTargetShare) }}% over target</span>
+        </li>
+      </ul>
+      <p class="caption">{{ beerComparisonSentence }}</p>
+    </ng-container>
+
+    <!-- Zero beer days is an answer, not an empty panel (FR-015). -->
+    <p class="caption" *ngIf="habits.beerDays === 0">
+      No beer days logged in this period. Mark them on your <strong>History</strong> calendar and
+      this will show how they line up with your eating.
+    </p>
+  </section>
 </div>

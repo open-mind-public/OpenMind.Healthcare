@@ -15,6 +15,7 @@ public class DietDbContext(DbContextOptions<DietDbContext> options, IMediator me
     public DbSet<DietPlan> DietPlans { get; set; }
     public DbSet<LoggedDay> LoggedDays { get; set; }
     public DbSet<ExerciseDay> ExerciseDays { get; set; }
+    public DbSet<BeerDay> BeerDays { get; set; }
     public DbSet<FoodLibraryItem> FoodLibraryItems { get; set; }
     public DbSet<ActivityType> ActivityTypes { get; set; }
     public DbSet<DietAchievement> DietAchievements { get; set; }
@@ -262,6 +263,28 @@ public class DietDbContext(DbContextOptions<DietDbContext> options, IMediator me
             });
 
             entity.Navigation(e => e.Entries).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            entity.Ignore(e => e.DomainEvents);
+        });
+
+        // A sibling of LoggedDay and ExerciseDay, not a part of either. It records one fact - that
+        // beer was drunk on a date - and carries no total and no child, so it needs no concurrency
+        // token: it either exists or it does not (research.md R-001, R-002).
+        modelBuilder.Entity<BeerDay>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DietPlanId).IsRequired();
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.Date).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+
+            // One beer day per date per plan - the no-duplicates rule made true at the storage
+            // layer as well, so a race that slipped past the handler still cannot land twice.
+            entity.HasIndex(e => new { e.DietPlanId, e.Date }).IsUnique();
+
+            // Range reads for the calendar and the habits analytics.
+            entity.HasIndex(e => new { e.UserId, e.Date });
 
             entity.Ignore(e => e.DomainEvents);
         });

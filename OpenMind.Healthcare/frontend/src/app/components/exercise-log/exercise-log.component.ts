@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { DietService } from '../../services/diet.service';
 import {
@@ -61,6 +61,13 @@ export class ExerciseLogComponent implements OnChanges {
    */
   @Input() canRecord = true;
 
+  /**
+   * Fires after any change to the day's activity (a session added, edited, removed, or tapped in
+   * from a shortcut). A host that shows this alongside other views of the same day - the calendar,
+   * for one - listens so it can refresh its own marking.
+   */
+  @Output() changed = new EventEmitter<void>();
+
   private readonly terms = new Subject<string>();
 
   constructor(private dietService: DietService) {
@@ -100,6 +107,32 @@ export class ExerciseLogComponent implements OnChanges {
 
   get hasActivity(): boolean {
     return this.entries.length > 0;
+  }
+
+  /** True when there is a valid, not-yet-saved session or edit waiting in the form. */
+  get hasPendingInput(): boolean {
+    const pendingEdit = !!this.editingId && !!this.editDuration && this.editDuration > 0;
+    const pendingAdd = !!this.selected && !!this.durationMinutes && this.durationMinutes > 0;
+    return pendingEdit || pendingAdd;
+  }
+
+  /**
+   * Commit whatever is in the form - the half-filled "add a session" row, or an open edit - as if
+   * the member had clicked its own button. A host with its own "save and close" affordance calls
+   * this so nothing typed is silently dropped. A `changed` event follows on success.
+   */
+  commitPending(): void {
+    if (this.editingId && this.editDuration && this.editDuration > 0) {
+      const entry = this.entries.find(e => e.id === this.editingId);
+      if (entry) {
+        this.saveEdit(entry);
+      }
+      return;
+    }
+
+    if (this.selected && this.durationMinutes && this.durationMinutes > 0) {
+      this.add();
+    }
   }
 
   /**
@@ -173,6 +206,7 @@ export class ExerciseLogComponent implements OnChanges {
           this.saving = false;
           this.staleWarning = '';
           this.resetSearch();
+          this.changed.emit();
         },
         error: response => {
           this.saving = false;
@@ -211,6 +245,7 @@ export class ExerciseLogComponent implements OnChanges {
           this.saving = false;
           this.staleWarning = '';
           this.cancelEdit();
+          this.changed.emit();
         },
         error: response => {
           this.saving = false;
@@ -235,6 +270,7 @@ export class ExerciseLogComponent implements OnChanges {
         this.saving = false;
         this.staleWarning = '';
         this.cancelEdit();
+        this.changed.emit();
       },
       error: response => {
         this.saving = false;
@@ -280,6 +316,7 @@ export class ExerciseLogComponent implements OnChanges {
           this.day = day;
           this.tappingId = null;
           this.staleWarning = '';
+          this.changed.emit();
         },
         error: response => {
           this.tappingId = null;

@@ -55,12 +55,18 @@
           *ngFor="let day of month.days"
           [ngClass]="stateClass(day)"
           [class.has-exercise]="hasExercise(day)"
+          [class.has-beer]="isBeer(day)"
           [disabled]="!day.withinPlan"
           [title]="dayTitle(day)"
-          (click)="openDay(day)">
+          (click)="selectDay(day)">
           {{ dayNumber(day) }}
-          <!-- An extra mark on the cell, not a replacement colour: both facts stay visible. -->
-          <span class="exercise-dot" *ngIf="hasExercise(day)" aria-hidden="true"></span>
+          <!--
+            Extra marks on the cell, not replacement colours: the eating-state fill stays, and
+            these sit on top so every fact about the day is visible at once (FR-007). They differ
+            by shape and position as well as hue, so they read without relying on colour (SC-005).
+          -->
+          <span class="exercise-mark" *ngIf="hasExercise(day)" aria-hidden="true"></span>
+          <span class="beer-mark" *ngIf="isBeer(day)" aria-hidden="true"></span>
         </button>
       </div>
     </section>
@@ -71,6 +77,44 @@
     <li><span class="swatch over-target"></span> Over target</li>
     <li><span class="swatch not-logged"></span> Not logged</li>
     <li><span class="swatch outside"></span> Outside your plan</li>
-    <li><span class="swatch exercise"><span class="exercise-dot" aria-hidden="true"></span></span> Exercise recorded</li>
+    <li><span class="swatch mark-sample"><span class="exercise-mark" aria-hidden="true"></span></span> Exercise recorded</li>
+    <li><span class="swatch mark-sample"><span class="beer-mark" aria-hidden="true"></span></span> Beer day</li>
   </ul>
+
+  <!-- The day popover: mark a beer day and log activity, without leaving the calendar (FR-001). -->
+  <div class="day-popover-backdrop" *ngIf="selectedDay" (click)="closePopover()">
+    <div class="day-popover" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button type="button" class="popover-close" aria-label="Close" (click)="closePopover()">&times;</button>
+      <h3>{{ selectedDay.date }}</h3>
+
+      <p class="popover-state" *ngIf="selectedDay.state as state">
+        {{ state === 'OnTarget' ? 'On target' : state === 'OverTarget' ? 'Over target' : 'Not logged' }}
+      </p>
+
+      <button
+        type="button"
+        class="beer-toggle"
+        [class.on]="isBeer(selectedDay)"
+        [disabled]="savingBeer"
+        (click)="toggleBeer(selectedDay)">
+        🍺 {{ isBeer(selectedDay) ? 'Beer day — tap to remove' : 'Mark as a beer day' }}
+      </button>
+
+      <!-- Full activity logging for the day, reused from the day view. -->
+      <app-exercise-log
+        class="popover-activity"
+        [date]="selectedDay.date"
+        [canRecord]="selectedDay.withinPlan"
+        (changed)="onActivityChanged()"></app-exercise-log>
+
+      <div class="popover-actions">
+        <button type="button" class="popover-save" [disabled]="savingBeer" (click)="saveAndClose()">
+          Save &amp; close
+        </button>
+        <button type="button" class="popover-open-day" (click)="openDay(selectedDay)">
+          Open food log &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

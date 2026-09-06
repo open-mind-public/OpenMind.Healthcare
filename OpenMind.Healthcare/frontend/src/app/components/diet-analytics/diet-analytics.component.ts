@@ -4,6 +4,7 @@ import { DietService } from '../../services/diet.service';
 import {
   DailyIntakePoint,
   EatingPatterns,
+  HabitInsights,
   IntakeAnalysis,
   IntakeTrend,
   MacroAnalysis,
@@ -64,6 +65,9 @@ export class DietAnalyticsComponent implements OnInit {
   trend: IntakeTrend | null = null;
   loadingTrend = false;
 
+  habits: HabitInsights | null = null;
+  loadingHabits = false;
+
   readonly seriesChoices: SeriesChoice[] = [
     { value: 'calories', label: 'Calories', unit: 'kcal' },
     { value: 'protein', label: 'Protein', unit: 'g' },
@@ -96,6 +100,7 @@ export class DietAnalyticsComponent implements OnInit {
     this.loadPatterns();
     this.loadObservations();
     this.loadTrend();
+    this.loadHabits();
   }
 
   chooseSeries(series: TrendSeries): void {
@@ -358,6 +363,61 @@ export class DietAnalyticsComponent implements OnInit {
     const ratio = Math.min(1, Math.max(0, value / this.axisMax));
 
     return this.chart.top + span - ratio * span;
+  }
+
+  // --- Habits: beer and exercise --------------------------------------
+
+  /** Whether there is anything to compare - beer days on one side, other in-plan days on the other. */
+  get hasBeerComparison(): boolean {
+    return !!this.habits && this.habits.beerDays > 0 && this.habits.onNonBeerDays.days > 0;
+  }
+
+  /** A share (0..1) as a whole percentage. */
+  asPercent(share: number): number {
+    return Math.round(share * 100);
+  }
+
+  /** A count per week, shown to one decimal unless it is whole. */
+  perWeek(value: number): string {
+    return Number.isInteger(value) ? `${value}` : value.toFixed(1);
+  }
+
+  /**
+   * The plain-language read of the comparison: are beer days more often over target than other
+   * days, less often, or about the same?
+   */
+  get beerComparisonSentence(): string {
+    if (!this.habits || !this.hasBeerComparison) {
+      return '';
+    }
+
+    const beer = this.asPercent(this.habits.onBeerDays.overTargetShare);
+    const other = this.asPercent(this.habits.onNonBeerDays.overTargetShare);
+    const gap = beer - other;
+
+    if (Math.abs(gap) < 10) {
+      return `Your eating on beer days looks about the same as on other days (${beer}% over target vs ${other}%).`;
+    }
+    if (gap > 0) {
+      return `On beer days you go over target ${beer}% of the time, against ${other}% on other days.`;
+    }
+    return `On beer days you go over target ${beer}% of the time — less often than the ${other}% on other days.`;
+  }
+
+  private loadHabits(): void {
+    this.loadingHabits = true;
+
+    this.dietService.getHabitInsights(this.period).subscribe({
+      next: habits => {
+        this.habits = habits;
+        this.loadingHabits = false;
+      },
+      error: () => {
+        // One section, not the page.
+        this.habits = null;
+        this.loadingHabits = false;
+      }
+    });
   }
 
   private loadTrend(): void {

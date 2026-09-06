@@ -47,8 +47,15 @@ public class AnalyticsBoundaryTests
     [MemberData(nameof(AnalyticsShapes))]
     public void No_analytics_shape_carries_a_figure_combining_exercise_with_intake(Type shape)
     {
-        // Words that would only appear on a field that had merged the two.
-        string[] forbidden = ["net", "available", "burned", "burnt", "exercise", "activity", "deficit", "surplus"];
+        // Words that would only appear on a field that had merged the two into one number - a
+        // "net calories", a spendable balance, an energy deficit or surplus.
+        //
+        // A plain count of how often a member exercised or drank beer is not such a figure:
+        // analytics reports those frequencies and compares eating outcomes across them (005 FR-012,
+        // FR-013). What it must never do is let exercise or beer carry an energy value into an
+        // intake shape - and that is checked directly by the calorie/energy test below rather than
+        // by banning the words "exercise" and "activity" outright.
+        string[] forbidden = ["net", "available", "burned", "burnt", "deficit", "surplus"];
 
         foreach (var property in shape.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
@@ -60,6 +67,32 @@ public class AnalyticsBoundaryTests
                     $"{shape.Name}.{property.Name} reads like a figure combining exercise with intake. "
                     + "Recorded exercise is never calories available to eat (FR-023).");
             }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(AnalyticsShapes))]
+    public void No_analytics_shape_attaches_an_energy_figure_to_exercise_or_beer(Type shape)
+    {
+        // The line FR-023 actually draws: exercise and beer may appear as counts and comparisons,
+        // never carrying calories. A property that names both an energy unit and one of these
+        // subjects would be a merged figure by another name.
+        foreach (var property in shape.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            var name = property.Name;
+
+            var namesEnergy =
+                name.Contains("kcal", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("calorie", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("kilocalorie", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("energy", StringComparison.OrdinalIgnoreCase);
+
+            if (!namesEnergy)
+                continue;
+
+            name.ShouldNotContain("exercise", Case.Insensitive, $"{shape.Name}.{name} attaches energy to exercise (FR-023)");
+            name.ShouldNotContain("activity", Case.Insensitive, $"{shape.Name}.{name} attaches energy to exercise (FR-023)");
+            name.ShouldNotContain("beer", Case.Insensitive, $"{shape.Name}.{name} attaches energy to beer (005 FR-004)");
         }
     }
 

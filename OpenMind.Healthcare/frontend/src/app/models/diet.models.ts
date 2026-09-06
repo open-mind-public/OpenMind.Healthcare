@@ -326,6 +326,17 @@ export interface AddExerciseEntryRequest {
   version: string | null;
 }
 
+// --- Beer days -------------------------------------------------------------
+// A lightweight day-level marker: it records only that beer was drunk on a date - no amount and
+// no calories, and it never touches the day's eating verdict (005 FR-004).
+
+/** `days` holds only the dates that are beer days within the plan. Absence means "not a beer day". */
+export interface BeerDayRange {
+  from: string;
+  to: string;
+  days: string[];
+}
+
 export interface UpdateExerciseEntryRequest {
   activityTypeId: string;
   durationMinutes: number;
@@ -485,6 +496,33 @@ export interface IntakeTrend {
   loggedDays: number;
   peakKilocalories: number;
   points: DailyIntakePoint[];
+}
+
+/** The eating-state split for one group of days: the counts, and the same counts as fractions. */
+export interface EatingOutcome {
+  days: number;
+  onTargetDays: number;
+  overTargetDays: number;
+  notLoggedDays: number;
+  onTargetShare: number;
+  overTargetShare: number;
+  notLoggedShare: number;
+}
+
+/**
+ * How often the member logs beer and exercise over the period, and how eating on beer days
+ * compares with every other day. Carries no amount of beer and no calorie figure — consistent
+ * with the rest of analytics (005 FR-011..FR-013).
+ */
+export interface HabitInsights {
+  period: AnalysisPeriod;
+  inPlanDays: number;
+  beerDays: number;
+  beerDaysPerWeek: number;
+  exerciseDays: number;
+  exerciseDaysPerWeek: number;
+  onBeerDays: EatingOutcome;
+  onNonBeerDays: EatingOutcome;
 }
 
 // --- Exercise shortcuts -----------------------------------------------------

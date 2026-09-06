@@ -7,6 +7,7 @@ import {
   ActivitySummary,
   AddExerciseEntryRequest,
   AddFoodEntryRequest,
+  BeerDayRange,
   CreateDietPlanRequest,
   DailyEncouragement,
   DayRange,
@@ -16,6 +17,7 @@ import {
   DietStatistics,
   EatingPatterns,
   EatingTip,
+  HabitInsights,
   CreateShortcutRequest,
   ExerciseDay,
   ExerciseRangeResponse,
@@ -139,6 +141,12 @@ export class DietService {
     return this.http.get<Observations>(`${this.baseUrl}/diet-analytics/observations`, { params });
   }
 
+  /** Beer and exercise frequency for the period, and eating outcomes on beer days vs other days. */
+  getHabitInsights(period: PeriodPreset): Observable<HabitInsights> {
+    const params = new HttpParams().set('period', period);
+    return this.http.get<HabitInsights>(`${this.baseUrl}/diet-analytics/habits`, { params });
+  }
+
   // --- Exercise ---------------------------------------------------------
   // Deliberately separate calls from the food log. The eating endpoints know nothing about
   // exercise; screens that show both fetch both and merge (research.md R-005).
@@ -168,6 +176,23 @@ export class DietService {
   deleteExerciseEntry(entryId: string, version: string): Observable<ExerciseDay | null> {
     const params = new HttpParams().set('version', version);
     return this.http.delete<ExerciseDay | null>(`${this.baseUrl}/exercise/entries/${entryId}`, { params });
+  }
+
+  // --- Beer days ------------------------------------------------------------
+  // A third independent calendar range, merged client-side alongside eating and exercise. The
+  // eating endpoints know nothing about beer (005 research.md R-003).
+
+  getBeerRange(from: string, to: string): Observable<BeerDayRange> {
+    const params = new HttpParams().set('from', from).set('to', to);
+    return this.http.get<BeerDayRange>(`${this.baseUrl}/beer-days`, { params });
+  }
+
+  markBeerDay(date: string): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/beer-days/${date}`, {});
+  }
+
+  unmarkBeerDay(date: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/beer-days/${date}`);
   }
 
   // --- Exercise shortcuts -----------------------------------------------

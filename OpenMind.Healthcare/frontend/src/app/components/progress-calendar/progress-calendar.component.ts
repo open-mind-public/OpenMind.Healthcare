@@ -1058,7 +1058,7 @@ const MONTH_NAMES = [
     }
 
     .modal {
-      background: var(--text);
+      background: var(--surface);
       border: 1px solid var(--danger-border);
       border-radius: 18px;
       padding: 25px;
@@ -1286,8 +1286,8 @@ export class ProgressCalendarComponent implements OnInit {
   unlockedAchievements: Achievement[] = [];
   calendarWeeks: CalendarWeek[] = [];
   selectedDay: CalendarDay | null = null;
-  weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  weekDayInitials = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  weekDayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   viewMode: CalendarViewMode = 'month';
   yearMonths: MiniMonth[] = [];
@@ -1375,7 +1375,8 @@ export class ProgressCalendarComponent implements OnInit {
 
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const startingDayOfWeek = firstDayOfMonth.getDay();
+    // JavaScript weeks start on Sunday; this calendar starts on Monday.
+    const startingDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
     const totalDaysInMonth = lastDayOfMonth.getDate();
 
     const weeks: CalendarWeek[] = [];
@@ -1450,7 +1451,8 @@ export class ProgressCalendarComponent implements OnInit {
 
     for (let m = 0; m < 12; m++) {
       const daysInMonth = new Date(year, m + 1, 0).getDate();
-      const leadingBlanks = new Date(year, m, 1).getDay();
+      // Monday-based offset: JS getDay() is Sunday-based.
+      const leadingBlanks = (new Date(year, m, 1).getDay() + 6) % 7;
 
       const cells: (CalendarDay | null)[] = [];
       for (let i = 0; i < leadingBlanks; i++) cells.push(null);

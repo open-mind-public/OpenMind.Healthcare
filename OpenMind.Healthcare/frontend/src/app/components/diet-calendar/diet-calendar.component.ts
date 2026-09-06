@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import { DietService } from '../../services/diet.service';
 import { DaySummary, DietStatistics, ExerciseDaySummary } from '../../models/diet.models';
+import { ExerciseLogComponent } from '../exercise-log/exercise-log.component';
+
+type BeerRange = { from: string; to: string; days: string[] };
 
 interface CalendarMonth {
   label: string;
@@ -32,6 +35,27 @@ export class DietCalendarComponent implements OnInit {
    * (research.md R-005).
    */
   private exerciseByDate = new Map<string, ExerciseDaySummary>();
+
+  /**
+   * The dates the member has marked as beer days, fetched as its own range and merged here - the
+   * eating and exercise endpoints know nothing about beer (research.md R-003). A beer day is a
+   * plain marker: it never changes the day's eating state (FR-004).
+   */
+  private beerByDate = new Set<string>();
+
+  /** The day whose popover is open, where a member marks or unmarks a beer day (FR-001). */
+  selectedDay: DaySummary | null = null;
+
+  /** True while a mark/unmark round-trips, so the toggle cannot be double-fired. */
+  savingBeer = false;
+
+  /** Set when the embedded activity log reported a change, so closing the popover refreshes the grid. */
+  private activityDirty = false;
+
+  /** Set by "Save & close" while a pending session is being committed, so the close waits for it. */
+  private closeAfterSave = false;
+
+  @ViewChild(ExerciseLogComponent) private activityLog?: ExerciseLogComponent;
 
   loading = false;
   error: string | null = null;
@@ -85,14 +109,20 @@ export class DietCalendarComponent implements OnInit {
     forkJoin({
       eating: this.dietService.getDayRange(from, to),
 
-      // A failure here must not cost the member their calendar. Exercise marking is additional
-      // information about days that are drawn either way, so it degrades to nothing.
+      // A failure in either of these must not cost the member their calendar. Exercise and beer
+      // markings are additional information about days that are drawn either way, so they degrade
+      // to nothing.
       exercise: this.dietService
         .getExerciseRange(from, to)
-        .pipe(catchError(() => of({ from, to, days: [] as ExerciseDaySummary[] })))
+        .pipe(catchError(() => of({ from, to, days: [] as ExerciseDaySummary[] }))),
+
+      beer: this.dietService
+        .getBeerRange(from, to)
+        .pipe(catchError(() => of({ from, to, days: [] as string[] } as BeerRange)))
     }).subscribe({
-      next: ({ eating, exercise }) => {
+      next: ({ eating, exercise, beer }) => {
         this.exerciseByDate = new Map(exercise.days.map(day => [day.date, day]));
+        this.beerByDate = new Set(beer.days);
         this.months = this.groupIntoMonths(eating.days);
         this.loading = false;
       },
@@ -116,7 +146,12 @@ export class DietCalendarComponent implements OnInit {
     return this.exerciseByDate.has(day.date);
   }
 
-  /** The tooltip, so the marking is readable and not only visible. */
+  /** Whether the date is marked as a beer day. Independent of the eating state (FR-004). */
+  isBeer(day: DaySummary): boolean {
+    return this.beerByDate.has(day.date);
+  }
+
+  /** The tooltip, so a marking is readable and not only visible. */
   dayTitle(day: DaySummary): string {
     if (!day.withinPlan) {
       return `${day.date} - before your plan started`;
@@ -124,8 +159,59 @@ export class DietCalendarComponent implements OnInit {
 
     const exercise = this.exerciseByDate.get(day.date);
     const activity = exercise ? ` - ${exercise.totalMinutes} min of exercise` : '';
+    const beer = this.isBeer(day) ? ' - beer day' : '';
 
-    return `${day.date} - ${day.state}${activity}`;
+    return `${day.date} - ${day.state}${activity}${beer}`;
+  }
+
+  /** A within-plan day opens the popover; out-of-plan days are inert, as before. */
+  selectDay(day: DaySummary): void {
+    if (day.withinPlan) {
+      this.selectedDay = day;
+      this.activityDirty = false;
+    }
+  }
+
+  /** The embedded activity log logged, edited or removed a session on the open day. */
+  onActivityChanged(): void {
+    this.activityDirty = true;
+
+    // "Save & close" was waiting on this commit to land before closing.
+    if (this.closeAfterSave) {
+      this.closeAfterSave = false;
+      this.closePopover();
+    }
+  }
+
+  /**
+   * Commit anything still sitting unsaved in the activity form, then close. If there is nothing
+   * pending, this is just a close; if a commit is in flight, the close waits for it (and stays
+   * open, showing the error, if it is refused).
+   */
+  saveAndClose(): void {
+    if (this.savingBeer) {
+      return;
+    }
+
+    if (this.activityLog?.hasPendingInput) {
+      this.closeAfterSave = true;
+      this.activityLog.commitPending();
+      return;
+    }
+
+    this.closePopover();
+  }
+
+  closePopover(): void {
+    this.selectedDay = null;
+    this.closeAfterSave = false;
+
+    // A session was added or removed while the popover was open - refresh so the day's exercise
+    // bar reflects it. Beer is already kept in step locally by toggleBeer.
+    if (this.activityDirty) {
+      this.activityDirty = false;
+      this.load();
+    }
   }
 
   openDay(day: DaySummary): void {
@@ -133,6 +219,35 @@ export class DietCalendarComponent implements OnInit {
       this.router.navigate(['/diet/log', day.date]);
     }
   }
+
+  /** Mark or unmark the open day as a beer day, then reflect it in the merged set (FR-002, SC-001). */
+  toggleBeer(day: DaySummary): void {
+    if (this.savingBeer) {
+      return;
+    }
+
+    this.savingBeer = true;
+    const wasBeer = this.isBeer(day);
+    const request = wasBeer
+      ? this.dietService.unmarkBeerDay(day.date)
+      : this.dietService.markBeerDay(day.date);
+
+    request.subscribe({
+      next: () => {
+        if (wasBeer) {
+          this.beerByDate.delete(day.date);
+        } else {
+          this.beerByDate.add(day.date);
+        }
+        this.savingBeer = false;
+      },
+      error: err => {
+        this.savingBeer = false;
+        this.error = err?.error?.message ?? 'Could not update this beer day.';
+      }
+    });
+  }
+
 
   /** One marking function shared by both views, so they can never disagree. */
   stateClass(day: DaySummary): string {

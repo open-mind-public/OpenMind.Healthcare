@@ -5,6 +5,7 @@ using DietApi.Domain.Observations;
 using DietApi.Domain.Observations.Rules;
 using DietApi.Domain.Services;
 using DietApi.Features.ActivityCatalogue;
+using DietApi.Features.BeerDays;
 using DietApi.Features.DietPlan;
 using DietApi.Features.FoodLibrary;
 using DietApi.Features.DietAchievements;
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IDietPlanRepository, DietPlanRepository>();
 builder.Services.AddScoped<ILoggedDayRepository, LoggedDayRepository>();
 builder.Services.AddScoped<IFoodLibraryRepository, FoodLibraryRepository>();
 builder.Services.AddScoped<IExerciseDayRepository, ExerciseDayRepository>();
+builder.Services.AddScoped<IBeerDayRepository, BeerDayRepository>();
 builder.Services.AddScoped<IActivityTypeRepository, ActivityTypeRepository>();
 builder.Services.AddScoped<IDietAnalyticsRepository, DietAnalyticsRepository>();
 builder.Services.AddScoped<IDietAchievementRepository, DietAchievementRepository>();
@@ -83,6 +85,7 @@ builder.Services.AddScoped<IntakeAnalyser>();
 builder.Services.AddScoped<MacronutrientAnalyser>();
 builder.Services.AddScoped<PatternAnalyser>();
 builder.Services.AddScoped<TrendAnalyser>();
+builder.Services.AddScoped<HabitAnalyser>();
 
 // Every observation rule the programme can produce. Adding one here is all it takes; the engine
 // and the tests that assert properties across every rule pick it up automatically.
@@ -122,6 +125,7 @@ app.MapDietPlanEndpoints();
 app.MapFoodLibraryEndpoints();
 app.MapFoodLogEndpoints();
 app.MapExerciseEndpoints();
+app.MapBeerDaysEndpoints();
 app.MapActivityCatalogueEndpoints();
 app.MapExerciseShortcutsEndpoints();
 app.MapDietAnalyticsEndpoints();

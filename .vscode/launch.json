@@ -1,0 +1,62 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "UserApi",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-backend",
+      "program": "${workspaceFolder}/OpenMind.Healthcare/backend/UserApi/bin/Debug/net10.0/UserApi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/OpenMind.Healthcare/backend/UserApi",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:3004"
+      }
+    },
+    {
+      "name": "QuitSmokingApi",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-backend",
+      "program": "${workspaceFolder}/OpenMind.Healthcare/backend/QuitSmokingApi/bin/Debug/net10.0/QuitSmokingApi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/OpenMind.Healthcare/backend/QuitSmokingApi",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:3003"
+      }
+    },
+    {
+      "name": "DietApi",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-backend",
+      "program": "${workspaceFolder}/OpenMind.Healthcare/backend/DietApi/bin/Debug/net10.0/DietApi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/OpenMind.Healthcare/backend/DietApi",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:3005"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "All APIs",
+      "configurations": ["UserApi", "QuitSmokingApi", "DietApi"],
+      "preLaunchTask": "build-backend",
+      "stopAll": true,
+      "presentation": {
+        "group": "00_compound",
+        "order": 1
+      }
+    }
+  ]
+}

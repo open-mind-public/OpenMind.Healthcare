@@ -494,3 +494,70 @@
 .legend .key.target {
   border-top: 2px dashed var(--text-muted);
 }
+
+/* --- Habits: beer & exercise --------------------------------------------- */
+
+.habit-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.habit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+
+.habit-card .value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Beer is red, exercise is green - the same coding as the calendar markings. */
+.habit-card.beer {
+  border-left: 3px solid var(--beer-mark);
+}
+
+.habit-card.beer .value {
+  color: var(--beer-mark);
+}
+
+.habit-card.exercise {
+  border-left: 3px solid var(--exercise-mark);
+}
+
+.habit-card.exercise .value {
+  color: var(--exercise-mark);
+}
+
+.habit-card .label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.habit-card .note {
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.habit-sub {
+  margin: 18px 0 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* The beer-day bar carries the calendar's beer colour, so the two screens agree. */
+.bar-fill.beer {
+  background: var(--beer-mark);
+}

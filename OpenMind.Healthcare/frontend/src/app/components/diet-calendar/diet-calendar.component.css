@@ -161,21 +161,32 @@
 }
 
 /*
-  An independent mark, not a fourth colour. It sits on top of whichever eating colour the cell
-  already carries, so an on-target day that also had a run shows both.
+  Independent marks, not extra fill colours. They sit on top of whichever eating colour the cell
+  already carries, so an over-target day that also had a run and a beer shows all three (FR-007).
 
-  The ring is what makes it work: a solid dot in --text with a --surface ring reads against the
-  teal, the amber and the grey, in both themes, without needing a colour of its own.
+  Same bar treatment for both, told apart by colour and edge, so neither hides the other and both
+  fit the tiny year-view cells (SC-005):
+    - exercise is a green bar across the top edge (--exercise-mark)
+    - beer is a red bar across the bottom edge (--beer-mark)
 */
-.exercise-dot {
+.exercise-mark {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text);
-  box-shadow: 0 0 0 1px var(--surface);
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 7px;
+  background: var(--exercise-mark);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+.beer-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 7px;
+  background: var(--beer-mark);
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
 }
 
 .day:disabled {
@@ -219,13 +230,15 @@
   line-height: 1;
 }
 
-/* The year view's cells are about 21px, so the dot shrinks with them. */
-.year-view .exercise-dot {
-  top: 1px;
-  right: 1px;
-  width: 4px;
+/* The year view's cells are about 21px, so the bars thin down but stay legible. */
+.year-view .exercise-mark {
   height: 4px;
-  box-shadow: 0 0 0 0.5px var(--surface);
+  border-radius: 3px 3px 0 0;
+}
+
+.year-view .beer-mark {
+  height: 4px;
+  border-radius: 0 0 3px 3px;
 }
 
 /* Out-of-plan dates stay legible but clearly recede. */
@@ -286,15 +299,167 @@
   color: var(--text-muted);
 }
 
-/* The legend swatch shows the dot on a plain cell, so the mark is explained as itself. */
-.swatch.exercise {
+/* The legend swatch shows the mark on a plain cell, so it is explained as itself. */
+.swatch.mark-sample {
   position: relative;
   background: var(--border-strong);
 }
 
-.swatch.exercise .exercise-dot {
-  top: 1px;
-  right: 1px;
-  width: 6px;
-  height: 6px;
+.swatch.mark-sample .exercise-mark {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  border-radius: 4px 4px 0 0;
+}
+
+.swatch.mark-sample .beer-mark {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  border-radius: 0 0 4px 4px;
+}
+
+/* --- day popover ----------------------------------------------------------- */
+
+.day-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.day-popover {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.popover-activity {
+  display: block;
+  margin: 16px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.day-popover h3 {
+  margin: 0 24px 4px 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.popover-state {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.popover-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.popover-close:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.beer-toggle {
+  display: block;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.beer-toggle:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.beer-toggle.on {
+  border-color: var(--beer-mark);
+  border-width: 2px;
+  padding: 10px 13px;
+  font-weight: 600;
+}
+
+.beer-toggle:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.popover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popover-save {
+  display: block;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: 0.92rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.popover-save:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.popover-save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.popover-open-day {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.popover-open-day:hover {
+  background: var(--surface-sunken);
+  color: var(--text);
 }

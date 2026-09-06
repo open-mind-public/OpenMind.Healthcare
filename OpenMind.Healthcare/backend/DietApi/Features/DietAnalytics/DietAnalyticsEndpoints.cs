@@ -1,6 +1,7 @@
 using DDD.BuildingBlocks;
 using DietApi.Domain.ValueObjects;
 using DietApi.Features.DietAnalytics.GetEatingPatterns;
+using DietApi.Features.DietAnalytics.GetHabitInsights;
 using DietApi.Features.DietAnalytics.GetIntakeAnalysis;
 using DietApi.Features.DietAnalytics.GetIntakeTrend;
 using DietApi.Features.DietAnalytics.GetObservations;
@@ -44,6 +45,25 @@ public static class DietAnalyticsEndpoints
         group.MapGet("/observations", GetObservations)
             .WithName("GetObservations")
             .WithOpenApi();
+
+        group.MapGet("/habits", GetHabits)
+            .WithName("GetHabitInsights")
+            .WithOpenApi();
+    }
+
+    private static async Task<IResult> GetHabits(
+        IMediator mediator,
+        [FromQuery] PeriodPreset period = PeriodPreset.Month)
+    {
+        try
+        {
+            var habits = await mediator.Send(new GetHabitInsightsQuery(period));
+            return habits is null ? Results.NotFound() : Results.Ok(habits);
+        }
+        catch (DomainException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> GetIntake(
